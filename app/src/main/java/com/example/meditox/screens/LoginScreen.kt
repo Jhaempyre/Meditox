@@ -1,0 +1,75 @@
+package com.example.meditox.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextField
+
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
+
+@Composable
+fun LoginScreen(modifier: Modifier = Modifier,navController: NavController){
+    var phoneNumber by remember { mutableStateOf("") }
+    val backgroundColor = Color(0xFFE8F5E9)
+    val GreenDark = Color(0xFF005005)
+
+    //Here we are introdicting colum ui for just easy practice will see things in another upgrade for ui beautification
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Enter your phone number", style = MaterialTheme.typography.displayMedium,
+                color = GreenDark)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = phoneNumber,
+                onValueChange = { phoneNumber = it },
+                label = { Text("Phone Number") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = LocalTextStyle.current.copy(color = Color.Black),
+
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = { navController.navigate("otp") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                modifier = Modifier.fillMaxWidth(),
+
+            ) {
+                Text("Send OTP", color = Color.White)
+            }
+        }
+    }
+}

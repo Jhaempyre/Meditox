@@ -1,11 +1,11 @@
 package com.example.meditox.screens
 
-
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
-@Composable()
-fun SplashScreen(navController: NavController){
-    Text(text= "Splash Screen, yaha aur bhi bahot kuch hogaa let's see just ")
+@Composable
+fun OtpScreen(modifier: Modifier,navController: NavController){
+    Text(text="Yaha otp lunga sbse")
 }
