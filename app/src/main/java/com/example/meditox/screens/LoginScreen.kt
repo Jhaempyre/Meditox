@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.meditox.models.viewModel.AuthViewModel
@@ -35,8 +36,8 @@ import com.example.meditox.utils.ApiResult
 fun LoginScreen(modifier: Modifier = Modifier,navController: NavController, viewModel: AuthViewModel){
     var phoneNumber by remember { mutableStateOf("") }
     val backgroundColor = Color(0xFFE8F5E9)
-    val GreenDark = Color(0xFF005005)
-    val loginResult = viewModel.loginResult.value
+    val greenDark = Color(0xFF005005)
+    val loginResult = viewModel.loginResult.collectAsState().value
 
     //Here we are introdicting colum ui for just easy practice will see things in another upgrade for ui beautification
     Surface(
@@ -50,7 +51,7 @@ fun LoginScreen(modifier: Modifier = Modifier,navController: NavController, view
             verticalArrangement = Arrangement.Center
         ) {
             Text("Enter your phone number", style = MaterialTheme.typography.displayMedium,
-                color = GreenDark)
+                color = greenDark)
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -67,7 +68,9 @@ fun LoginScreen(modifier: Modifier = Modifier,navController: NavController, view
 
             Button(
                 onClick = { if(phoneNumber.isNotBlank()){
+                    viewModel.savePhoneInDataStore(phoneNumber)
                     viewModel.sendOtp(phoneNumber)
+
                     }
                  },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
@@ -84,6 +87,7 @@ fun LoginScreen(modifier: Modifier = Modifier,navController: NavController, view
                     // Navigate to OTP screen once OTP is sent successfully
                     LaunchedEffect(Unit) {
                         viewModel.resetLoginState()
+
                         navController.navigate("otp") {
                             popUpTo("login") { inclusive = true }
                         }

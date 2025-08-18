@@ -18,6 +18,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,19 +30,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.meditox.models.viewModel.OtpViewModel
 
 @Composable
-fun OtpScreen(modifier: Modifier,navController: NavController){
+fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpViewModel){
     var otp by remember { mutableStateOf("") }
     val backgroundColor = Color(0xFFE8F5E9)
     val GreenDark = Color(0xFF005005)
+    val phoneNumber = viewModel.phoneNumber.collectAsState().value
 
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor
     ) {
-
+        Text("yeh number tha bhdve $phoneNumber")
         Column(
             modifier = Modifier
                 .fillMaxSize()

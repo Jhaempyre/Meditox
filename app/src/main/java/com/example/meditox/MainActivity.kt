@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.meditox.models.viewModel.AuthViewModel
+import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
 import com.example.meditox.screens.SplashScreen
@@ -42,7 +43,8 @@ fun AppNavigation() {
             LoginScreen(modifier = Modifier,navController,loginViewModel)
         }
         composable(Routes.OTP) {
-            OtpScreen(modifier = Modifier, navController)
+            val otpViewModel : OtpViewModel = viewModel()
+            OtpScreen(modifier = Modifier, navController,otpViewModel)
         }
     }
 }
