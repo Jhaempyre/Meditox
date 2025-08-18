@@ -18,6 +18,7 @@ import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.screens.Dashboard
 import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
+import com.example.meditox.screens.PermissionsScreen
 import com.example.meditox.screens.RegisterUser
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.ui.theme.MeditoxTheme
@@ -30,6 +31,7 @@ object Routes{
     const val DASHBOARD = "dashboard"
     const val REGISTER_USER = "register_user"
     const val REGISTER_SHOP = "register_shop"
+    const val PERMISSIONS="permissions"
 
 }
 
@@ -57,6 +59,9 @@ fun AppNavigation() {
         }
         composable(Routes.REGISTER_USER) {
             RegisterUser(modifier = Modifier, navController)
+        }
+        composable(Routes.PERMISSIONS) {
+            PermissionsScreen(navController)
         }
     }
 }
