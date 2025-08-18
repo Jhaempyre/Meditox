@@ -21,19 +21,24 @@ import androidx.navigation.NavController
 import androidx.compose.material.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.meditox.models.AuthViewModel
+import com.example.meditox.utils.ApiResult
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier,navController: NavController){
+fun LoginScreen(modifier: Modifier = Modifier,navController: NavController, viewModel: AuthViewModel){
     var phoneNumber by remember { mutableStateOf("") }
     val backgroundColor = Color(0xFFE8F5E9)
     val GreenDark = Color(0xFF005005)
+    val loginResult = viewModel.loginResult.value
 
     //Here we are introdicting colum ui for just easy practice will see things in another upgrade for ui beautification
     Surface(
@@ -63,12 +68,37 @@ fun LoginScreen(modifier: Modifier = Modifier,navController: NavController){
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { navController.navigate("otp") },
+                onClick = { if(phoneNumber.isNotBlank()){
+                    viewModel.sendOtp(phoneNumber)
+                    }
+                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                 modifier = Modifier.fillMaxWidth(),
 
             ) {
                 Text("Send OTP", color = Color.White)
+            }
+            when (loginResult) {
+                is ApiResult.Loading -> {
+                    CircularProgressIndicator()
+                }
+                is ApiResult.Success -> {
+                    // Navigate to OTP screen once OTP is sent successfully
+                    LaunchedEffect(Unit) {
+                        viewModel.resetLoginState()
+                        navController.navigate("otp") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                }
+                is ApiResult.Error -> {
+                    Text(
+                        text = (loginResult as ApiResult.Error).message,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                null -> { /* no-op */ }
+
             }
         }
     }

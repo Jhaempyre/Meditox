@@ -13,22 +13,26 @@ class AuthViewModel : ViewModel() {
     val loginResult: State<ApiResult<AuthResponse>?> = _loginResult
 
 
-    fun SendOtp(phone: String){
+    fun sendOtp(phone: String){
         viewModelScope.launch{
             try {
                 _loginResult.value = ApiResult.Loading
-                val response = ApiClient.userApiService.SendOtp(AuthRequest(phone))
+                val response = ApiClient.userApiService.sendOtp(AuthRequest(phone))
                 if(response.isSuccessful){
                     _loginResult.value = ApiResult.Success(response.body()!!)
                 }else{
-                    _loginResult.value = ApiResult.Error(response.message())
+                    _loginResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Login failed")
                 }
 
 
             }catch(e:Exception){
-                _loginResult.value = ApiResult.Error(e.message ?: "Unknown error")
+                _loginResult.value = ApiResult.Error(e.message ?: "Unexpected error")
             }
 
         }
+    }
+
+    fun resetLoginState() {
+        _loginResult.value = null
     }
 }
