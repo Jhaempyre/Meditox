@@ -59,7 +59,7 @@ fun AppNavigation() {
             RegisterUser(modifier = Modifier, navController)
         }
     }
-
+}
     class MainActivity : ComponentActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
@@ -71,7 +71,7 @@ fun AppNavigation() {
             }
         }
     }
-}
+
 
 
 
