@@ -66,6 +66,10 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
 
+    implementation("androidx.multidex:multidex:2.0.1")
+
+
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

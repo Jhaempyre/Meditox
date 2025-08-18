@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import com.example.meditox.Routes
 import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.DataStoreManager
 
 @Composable
 fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpViewModel){
@@ -113,6 +114,7 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
                         if (result.data.data == null) {
                             // User not registered
                             Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
+                            DataStoreManager.setIsLoggedIn(context,true)
                             navController.navigate(Routes.REGISTER_USER) {
                                 popUpTo(Routes.OTP) { inclusive = true }
                                 launchSingleTop = true
@@ -120,6 +122,8 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
                         } else {
                             // User is registered
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                            DataStoreManager.setIsLoggedIn(context,true)
+                            //yaha register bhi dalenge
                             navController.navigate(Routes.DASHBOARD) {
                                 popUpTo(Routes.OTP) { inclusive = true }
                                 launchSingleTop = true

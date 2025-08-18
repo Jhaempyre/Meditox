@@ -1,5 +1,6 @@
 package com.example.meditox
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,7 +40,7 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current //not needed as such now
 
-    NavHost(navController = navController, startDestination = Routes.LOGIN) {
+    NavHost(navController = navController, startDestination = Routes.SPLASH) {
         composable(Routes.SPLASH) {
             SplashScreen(navController)
         }
