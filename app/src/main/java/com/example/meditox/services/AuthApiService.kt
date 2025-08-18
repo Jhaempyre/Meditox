@@ -1,8 +1,8 @@
 package com.example.meditox.services
 
-import com.example.meditox.models.AuthRequest
-import com.example.meditox.models.AuthResponse
-import com.example.meditox.models.VerifyOtpRequest
+import com.example.meditox.models.auth.AuthRequest
+import com.example.meditox.models.auth.AuthResponse
+import com.example.meditox.models.otpVerication.VerifyOtpRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST

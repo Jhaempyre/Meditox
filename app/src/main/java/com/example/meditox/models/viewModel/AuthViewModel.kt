@@ -1,9 +1,11 @@
-package com.example.meditox.models
+package com.example.meditox.models.viewModel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.meditox.models.auth.AuthRequest
+import com.example.meditox.models.auth.AuthResponse
 import com.example.meditox.services.ApiClient
 import com.example.meditox.utils.ApiResult
 import kotlinx.coroutines.launch

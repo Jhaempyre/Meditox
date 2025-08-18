@@ -1,4 +1,4 @@
-package com.example.meditox.models
+package com.example.meditox.models.otpVerication
 
 data class VerifyOtpRequest(
     val phone: String,
