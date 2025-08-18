@@ -30,4 +30,30 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val _otpResult = MutableStateFlow<ApiResult<VerifyOtpResponse>?>(null)
+    val otpResult: StateFlow<ApiResult<VerifyOtpResponse>?> = _otpResult
+
+    fun verifyOtp(otp: String) {
+        viewModelScope.launch {
+            try {
+                _otpResult.value = ApiResult.Loading
+                val response =
+                    ApiClient.userApiService.verifyOtp(VerifyOtpRequest(_phoneNumber.value!!, otp))
+                if (response.isSuccessful) {
+                    _otpResult.value = ApiResult.Success(response.body()!!)
+                } else {
+                    _otpResult.value =
+                        ApiResult.Error(response.errorBody()?.string() ?: "Login failed")
+                }
+            }catch (e:Exception){
+                _otpResult.value = ApiResult.Error(e.message ?: "Unexpected error")
+            }
+
+        }
+    }
+
+    fun resetOtpVerificationState(){
+        _otpResult.value = null
+    }
+
 }

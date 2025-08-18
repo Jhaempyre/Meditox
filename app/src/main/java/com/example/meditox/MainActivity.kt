@@ -14,8 +14,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.meditox.models.viewModel.AuthViewModel
 import com.example.meditox.models.viewModel.OtpViewModel
+import com.example.meditox.screens.Dashboard
 import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
+import com.example.meditox.screens.RegisterUser
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.ui.theme.MeditoxTheme
 
@@ -24,6 +26,9 @@ object Routes{
     const val SPLASH = "splash"
     const val LOGIN = "login"
     const val OTP = "otp"
+    const val DASHBOARD = "dashboard"
+    const val REGISTER_USER = "register_user"
+    const val REGISTER_SHOP = "register_shop"
 
 }
 
@@ -39,23 +44,29 @@ fun AppNavigation() {
             SplashScreen(navController)
         }
         composable(Routes.LOGIN) {
-            val loginViewModel : AuthViewModel = viewModel()
-            LoginScreen(modifier = Modifier,navController,loginViewModel)
+            val loginViewModel: AuthViewModel = viewModel()
+            LoginScreen(modifier = Modifier, navController, loginViewModel)
         }
         composable(Routes.OTP) {
-            val otpViewModel : OtpViewModel = viewModel()
-            OtpScreen(modifier = Modifier, navController,otpViewModel)
+            val otpViewModel: OtpViewModel = viewModel()
+            OtpScreen(modifier = Modifier, navController, otpViewModel)
+        }
+        composable(Routes.DASHBOARD) {
+            Dashboard(modifier = Modifier, navController)
+        }
+        composable(Routes.REGISTER_USER) {
+            RegisterUser(modifier = Modifier, navController)
         }
     }
-}
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            MeditoxTheme {
-                AppNavigation()
+    class MainActivity : ComponentActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            enableEdgeToEdge()
+            setContent {
+                MeditoxTheme {
+                    AppNavigation()
+                }
             }
         }
     }

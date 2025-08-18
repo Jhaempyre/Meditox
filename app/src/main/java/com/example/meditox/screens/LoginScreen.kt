@@ -90,12 +90,13 @@ fun LoginScreen(modifier: Modifier = Modifier,navController: NavController, view
 
                         navController.navigate("otp") {
                             popUpTo("login") { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 }
                 is ApiResult.Error -> {
                     Text(
-                        text = (loginResult as ApiResult.Error).message,
+                        text = (loginResult).message,
                         color = MaterialTheme.colorScheme.error
                     )
                 }

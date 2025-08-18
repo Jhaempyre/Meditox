@@ -39,7 +39,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 if(response.isSuccessful){
                     _loginResult.value = ApiResult.Success(response.body()!!)
                 }else{
-                    _loginResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Login failed")
+                    _loginResult.value = ApiResult.Error(response.errorBody()?.string() ?: "OTP sending failed")
                 }
 
 
