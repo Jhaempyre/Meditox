@@ -1,12 +1,17 @@
 package com.example.meditox.screens
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -16,79 +21,75 @@ import com.example.meditox.utils.PermissionUtils
 
 @Composable
 fun PermissionsScreen(navController: NavController) {
+    val context = LocalContext.current
     val viewModel: SplashViewModel = viewModel()
     val isLoggedIn = viewModel.isLoggedIn.collectAsState().value
     val isRegistered = viewModel.isRegistered.collectAsState().value
 
-    // Get permissions from centralized utils
-    val permissions = remember { PermissionUtils.getRequiredPermissions() }
+    val regularPermissions = remember { PermissionUtils.getRegularPermissions() }
 
-    // State to show denied dialog
     var showPermissionDeniedDialog by remember { mutableStateOf(false) }
-    var deniedPermissions by remember { mutableStateOf(listOf<String>()) }
+    var showStoragePermissionDialog by remember { mutableStateOf(false) }
+    var deniedPermissions by remember { mutableStateOf(emptyList<String>()) }
 
-    val launcher = rememberLauncherForActivityResult(
+    val regularPermissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        val allGranted = result.values.all { it }
+        val denied = result.filterValues { !it }.keys.toList()
+        deniedPermissions = denied
 
-        if (allGranted) {
-            // All permissions granted
-            when {
-                isLoggedIn == true && isRegistered == false -> {
-                    navController.navigate(Routes.REGISTER_USER) {
-                        popUpTo(Routes.PERMISSIONS) { inclusive = true }
-                    }
-                }
-
-                isLoggedIn == true && isRegistered == true -> {
-                    navController.navigate(Routes.DASHBOARD) {
-                        popUpTo(Routes.PERMISSIONS) { inclusive = true }
-                    }
-                }
-
-                isLoggedIn == false -> {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.PERMISSIONS) { inclusive = true }
-                    }
-                }
+        if (denied.isEmpty()) {
+            // All runtime permissions granted
+            if (PermissionUtils.needsStorageManagementPermission()) {
+                showStoragePermissionDialog = true
+            } else {
+                navigateToNext(navController, isLoggedIn, isRegistered)
             }
         } else {
-            // Not all permissions granted
-            deniedPermissions = result.filterValues { !it }.keys.toList()
             showPermissionDeniedDialog = true
+        }
+    }
+
+    val storagePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (PermissionUtils.isStorageManagementGranted()) {
+            navigateToNext(navController, isLoggedIn, isRegistered)
+        } else {
+            showStoragePermissionDialog = true
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (PermissionUtils.allPermissionsGranted(context)) {
+            navigateToNext(navController, isLoggedIn, isRegistered)
         }
     }
 
     // UI
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
-            verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .padding(24.dp)
-                .fillMaxSize()
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center
         ) {
             Text("We need your permissions", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("To provide you with full functionality, please grant these permissions:")
+            Text("To provide full functionality, please grant the following permissions.")
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Show what permissions we're asking for
-            Column {
-                permissions.forEach { permission ->
-                    Text(
-                        "• ${getPermissionDisplayName(permission)}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 2.dp)
-                    )
-                }
+            regularPermissions.forEach {
+                Text("• ${PermissionUtils.getPermissionDisplayName(it)}")
+            }
+            if (PermissionUtils.needsStorageManagementPermission()) {
+                Text("• Complete Storage Access")
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
             Button(
                 onClick = {
-                    launcher.launch(permissions.toTypedArray())
+                    regularPermissionsLauncher.launch(regularPermissions.toTypedArray())
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -97,14 +98,14 @@ fun PermissionsScreen(navController: NavController) {
         }
     }
 
-    // Show dialog if permissions denied
+    // Regular Permission Denied Dialog
     if (showPermissionDeniedDialog) {
         AlertDialog(
             onDismissRequest = { showPermissionDeniedDialog = false },
             confirmButton = {
                 Button(onClick = {
                     showPermissionDeniedDialog = false
-                    launcher.launch(permissions.toTypedArray()) // Retry
+                    regularPermissionsLauncher.launch(regularPermissions.toTypedArray())
                 }) {
                     Text("Try Again")
                 }
@@ -112,38 +113,73 @@ fun PermissionsScreen(navController: NavController) {
             dismissButton = {
                 Button(onClick = {
                     showPermissionDeniedDialog = false
-                    // Optionally navigate to next screen or close app
                 }) {
                     Text("Cancel")
                 }
             },
-            title = {
-                Text("Permissions Required")
-            },
+            title = { Text("Permissions Required") },
             text = {
                 Column {
-                    Text("The following permissions are needed to proceed:")
+                    Text("The following permissions were denied:")
                     Spacer(modifier = Modifier.height(8.dp))
                     deniedPermissions.forEach {
-                        Text("• ${getPermissionDisplayName(it)}")
+                        Text("• ${PermissionUtils.getPermissionDisplayName(it)}")
                     }
                 }
             }
         )
     }
+
+    // Storage Permission Dialog
+    if (showStoragePermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showStoragePermissionDialog = false },
+            confirmButton = {
+                Button(onClick = {
+                    showStoragePermissionDialog = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                            data = Uri.parse("package:${context.packageName}")
+                        }
+                        storagePermissionLauncher.launch(intent)
+                    }
+                }) {
+                    Text("Grant Access")
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    showStoragePermissionDialog = false
+                    // You can choose to skip storage or re-prompt
+                }) {
+                    Text("Skip")
+                }
+            },
+            title = { Text("Storage Access Needed") },
+            text = {
+                Text("Please grant 'Manage All Files' access from system settings.")
+            }
+        )
+    }
 }
 
-// Helper function to convert permission names to user-friendly names
-private fun getPermissionDisplayName(permission: String): String {
-    return when (permission) {
-        android.Manifest.permission.CAMERA -> "Camera"
-        android.Manifest.permission.RECORD_AUDIO -> "Microphone"
-        android.Manifest.permission.ACCESS_FINE_LOCATION -> "Location (Fine)"
-        android.Manifest.permission.ACCESS_COARSE_LOCATION -> "Location (Coarse)"
-        android.Manifest.permission.READ_EXTERNAL_STORAGE -> "Read Storage"
-        android.Manifest.permission.MANAGE_EXTERNAL_STORAGE -> "Manage Storage"
-        android.Manifest.permission.POST_NOTIFICATIONS -> "Notifications"
-        android.Manifest.permission.CALL_PHONE -> "Phone Calls"
-        else -> permission.substringAfterLast(".")
+// Navigation Logic
+private fun navigateToNext(navController: NavController, isLoggedIn: Boolean?, isRegistered: Boolean?) {
+    when {
+        isLoggedIn == true && isRegistered == true -> {
+            navController.navigate(Routes.DASHBOARD) {
+                popUpTo(Routes.PERMISSIONS) { inclusive = true }
+            }
+        }
+        isLoggedIn == true && isRegistered == false -> {
+            navController.navigate(Routes.REGISTER_USER) {
+                popUpTo(Routes.PERMISSIONS) { inclusive = true }
+            }
+        }
+        else -> {
+            navController.navigate(Routes.LOGIN) {
+                popUpTo(Routes.PERMISSIONS) { inclusive = true }
+            }
+        }
     }
 }

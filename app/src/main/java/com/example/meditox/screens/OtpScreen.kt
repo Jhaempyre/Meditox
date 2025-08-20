@@ -40,14 +40,13 @@ import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.PermissionUtils
 
 @Composable
-fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpViewModel){
+fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpViewModel) {
     val context = LocalContext.current
     var otp by remember { mutableStateOf("") }
     val backgroundColor = Color(0xFFE8F5E9)
     val GreenDark = Color(0xFF005005)
     val phoneNumber = viewModel.phoneNumber.collectAsState().value
     val otpResult = viewModel.otpResult.collectAsState().value
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -68,7 +67,6 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-
             OutlinedTextField(
                 value = otp,
                 onValueChange = { otp = it.take(6) }, // OTP limit
@@ -80,24 +78,21 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
                     textAlign = TextAlign.Center
                 ),
                 singleLine = true,
-
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "We've sent an OTP to your whatsapp.Only valid for 2 minutes",
+                text = "We've sent an OTP to your whatsapp. Only valid for 2 minutes",
                 style = MaterialTheme.typography.labelSmall,
                 color = GreenDark.copy(alpha = 0.8f)
             )
             Spacer(modifier = Modifier.height(22.dp))
             Button(
                 onClick = {
-                    // TODO: Verify OTP logic
                     if (otp.length == 6) {
                         viewModel.verifyOtp(otp)
                     } else {
                         Toast.makeText(context, "Invalid OTP", Toast.LENGTH_SHORT).show()
                     }
-
                 },
                 colors = ButtonDefaults.buttonColors(),
                 modifier = Modifier
@@ -112,35 +107,44 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
             LaunchedEffect(otpResult) {
                 when (val result = otpResult) {
                     is ApiResult.Success -> {
-                            viewModel.resetOtpVerificationState()
-                            Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
-                            val hasPermission = PermissionUtils.allPermissionsGranted(context)
-                            if (!hasPermission) {
-                                // Navigate to permission screen
-                                navController.navigate(Routes.PERMISSIONS) {
+                        viewModel.resetOtpVerificationState()
+
+                        // ✅ First, mark user as logged in before permission check
+                        DataStoreManager.setIsLoggedIn(context, true)
+
+                        // ✅ Then check for permissions
+                        val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
+                        if (!hasAllPermissions) {
+                            navController.navigate(Routes.PERMISSIONS) {
+                                popUpTo(Routes.OTP) { inclusive = true }
+                            }
+                            return@LaunchedEffect
+
+
+                            // If all permissions are granted, proceed with your existing logic
+                            if (result.data.data == null) {
+                                // User not registered
+                                Toast.makeText(
+                                    context,
+                                    "OTP verified. Please register.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                DataStoreManager.setIsLoggedIn(context, true)
+                                navController.navigate(Routes.REGISTER_USER) {
                                     popUpTo(Routes.OTP) { inclusive = true }
+                                    launchSingleTop = true
                                 }
-                                return@LaunchedEffect
-                            }
-                        if (result.data.data == null) {
-                            // User not registered
-                            Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
-                            DataStoreManager.setIsLoggedIn(context,true)
-                            navController.navigate(Routes.REGISTER_USER) {
-                                popUpTo(Routes.OTP) { inclusive = true }
-                                launchSingleTop = true
-                            }
-                        } else {
-                            // User is registered
-                            Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                            DataStoreManager.setIsLoggedIn(context,true)
-                            //yaha register bhi dalenge
-                            navController.navigate(Routes.DASHBOARD) {
-                                popUpTo(Routes.OTP) { inclusive = true }
-                                launchSingleTop = true
+                            } else {
+                                // User is registered
+                                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                                DataStoreManager.setIsLoggedIn(context, true)
+                                // Set registered status if needed
+                                navController.navigate(Routes.DASHBOARD) {
+                                    popUpTo(Routes.OTP) { inclusive = true }
+                                    launchSingleTop = true
+                                }
                             }
                         }
-                        viewModel.resetOtpVerificationState()
                     }
 
                     is ApiResult.Error -> {
@@ -151,7 +155,6 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
                     else -> {} // Loading or null - no action
                 }
             }
-
-        }
         }
     }
+}
