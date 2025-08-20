@@ -37,6 +37,7 @@ import com.example.meditox.Routes
 import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.utils.PermissionUtils
 
 @Composable
 fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpViewModel){
@@ -111,6 +112,16 @@ fun OtpScreen(modifier: Modifier,navController: NavController,viewModel: OtpView
             LaunchedEffect(otpResult) {
                 when (val result = otpResult) {
                     is ApiResult.Success -> {
+                            viewModel.resetOtpVerificationState()
+                            Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
+                            val hasPermission = PermissionUtils.allPermissionsGranted(context)
+                            if (!hasPermission) {
+                                // Navigate to permission screen
+                                navController.navigate(Routes.PERMISSIONS) {
+                                    popUpTo(Routes.OTP) { inclusive = true }
+                                }
+                                return@LaunchedEffect
+                            }
                         if (result.data.data == null) {
                             // User not registered
                             Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
