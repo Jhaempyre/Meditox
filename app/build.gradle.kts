@@ -63,6 +63,8 @@ dependencies {
     // For LifecycleScope (if you want to launch coroutines in ViewModel/Activity)
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
 
+    implementation ("androidx.activity:activity-compose:1.9.0")
+
     //For calling HTTP server
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")

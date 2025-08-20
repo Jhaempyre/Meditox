@@ -16,10 +16,15 @@ object PermissionUtils {
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.CALL_PHONE
         )
 
+        // Add READ_EXTERNAL_STORAGE only for Android 12 and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        // Add POST_NOTIFICATIONS for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -39,8 +44,8 @@ object PermissionUtils {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
         } else {
-            // For Android 10 and below, check READ_EXTERNAL_STORAGE
-            true // Already checked in regular permissions
+            // For Android 10 and below, rely on READ_EXTERNAL_STORAGE
+            true
         }
     }
 
