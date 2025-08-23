@@ -73,6 +73,9 @@ dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
     implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
 
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.33.0-alpha")
+
+
 
 
 

@@ -19,8 +19,9 @@ import com.example.meditox.screens.Dashboard
 import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
 import com.example.meditox.screens.PermissionsScreen
-import com.example.meditox.screens.RegisterUser
+
 import com.example.meditox.screens.SplashScreen
+import com.example.meditox.ui.screens.RegisterUserScreen
 import com.example.meditox.ui.theme.MeditoxTheme
 
 
@@ -58,7 +59,7 @@ fun AppNavigation() {
             Dashboard(modifier = Modifier, navController)
         }
         composable(Routes.REGISTER_USER) {
-            RegisterUser(modifier = Modifier, navController)
+            RegisterUserScreen(modifier = Modifier, navController)
         }
         composable(Routes.PERMISSIONS) {
             PermissionsScreen(navController)
