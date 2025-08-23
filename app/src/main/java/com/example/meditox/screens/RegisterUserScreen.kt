@@ -1,6 +1,7 @@
 package com.example.meditox.ui.screens
 
 import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.BorderStroke
@@ -321,14 +322,16 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                     Button(
                         onClick = {
 
-                            val localDate = org.threeten.bp.LocalDate.parse(dob)
-                            val dobDateTime = localDate.atStartOfDay()
+
+                            val localDateTime = org.threeten.bp.LocalDate.parse(dob)
+                                .atStartOfDay()
+                            val dobFormatted = "${dob}T00:00:00"
                             viewModel.registerUser(
                                 UserRegistrationRequest(
                                     abhaId="",
                                     phone = "1234",
                                     name = name,
-                                    dob = dobDateTime,
+                                    dob = dobFormatted,
                                     gender = gender,
                                     bloodGroup = bloodGroup,
                                     allergies = allergies,
@@ -373,6 +376,7 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                     when(val result = registrationResult) {
                         is ApiResult.Success -> {
                             // Handle success
+                            Log.d("API_RESPONSE", "Success: ${result.data}")
                             Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
                             navController.navigate(Routes.DASHBOARD) {
                                 popUpTo("register") { inclusive = true }
@@ -382,6 +386,7 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
 
                         is ApiResult.Error -> {
                             // Handle error
+                            Log.e("API_RESPONSE", "Error: ${result.message}")
                             Toast.makeText(
                                 context,
                                 result.message ?: "Something went wrong",
@@ -389,7 +394,9 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                             ).show()
                             viewModel.resetRegistrationState()
                         }
-                        else -> {}
+                        else -> {
+                            Log.d("API_RESPONSE", "Loading or idle state: $result")
+                        }
                     }
                 }
 
