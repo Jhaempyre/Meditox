@@ -48,8 +48,12 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
 
                 val response = ApiClient.userApiService.registerUser(userDetails)
                 if(response.isSuccessful){
-                    registerResult.value = ApiResult.Success(response.body()!!)
-                    _isRegistered.value = true
+                    val body = response.body()
+
+                    if (body != null && body.success) {
+                        registerResult.value = ApiResult.Success(body.data)
+                        _isRegistered.value = true
+                    }
                 }else{
                     registerResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Registration failed")
 

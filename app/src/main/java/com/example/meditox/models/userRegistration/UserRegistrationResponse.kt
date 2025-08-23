@@ -9,7 +9,7 @@ data class UserRegistrationResponse(
     val abhaId : String,
     val phone :String ,
     val name : String,
-    val dob :LocalDateTime,
+    val dob : List<Int>?,
     val gender : String,
     val bloodGroup : String,
     val allergies : String,

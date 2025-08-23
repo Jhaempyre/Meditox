@@ -1,5 +1,6 @@
 package com.example.meditox.services
 
+import com.example.meditox.models.ApiResponse
 import com.example.meditox.models.auth.AuthRequest
 import com.example.meditox.models.auth.AuthResponse
 import com.example.meditox.models.otpVerication.VerifyOtpRequest
@@ -18,5 +19,5 @@ interface AuthApiService {
     suspend fun verifyOtp(@Body verifyOtpRequest: VerifyOtpRequest): Response<VerifyOtpResponse>
 
     @POST("/api/v1/register")
-    suspend fun registerUser(@Body userRegistrationRequest: UserRegistrationRequest): Response<UserRegistrationResponse>
+    suspend fun registerUser(@Body userRegistrationRequest: UserRegistrationRequest): Response<ApiResponse<UserRegistrationResponse>>
 }
