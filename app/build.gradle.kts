@@ -32,6 +32,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -74,7 +76,8 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
 
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.33.0-alpha")
-
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    implementation ("com.jakewharton.threetenabp:threetenabp:1.4.6")
 
 
 

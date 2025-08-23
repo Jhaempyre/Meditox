@@ -1,6 +1,7 @@
 package com.example.meditox.ui.screens
 
 import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -28,7 +29,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.meditox.Routes
+import com.example.meditox.models.EmergencyContact
+import com.example.meditox.models.userRegistration.UserRegistrationRequest
+import com.example.meditox.models.viewModel.RegistrationViewModel
+import com.example.meditox.utils.ApiResult
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +50,8 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
     val greenGradient = Brush.horizontalGradient(listOf(greenLight, greenPrimary))
     val backgroundGrey = Color(0xFFF8F9FA)
 
+    val viewModel: RegistrationViewModel = viewModel()
+    val registrationResult by viewModel.registrationResult.collectAsState()
     var phone by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
@@ -53,6 +64,7 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
     var relationship by remember { mutableStateOf("") }
     var role by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+
 
     val genderOptions = listOf("Male", "Female", "Other")
     val bloodGroupOptions = listOf("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
@@ -99,7 +111,7 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                     brush = greenGradient,
                     shape = RoundedCornerShape(12.dp)
                 )
-                .padding(16.dp),
+                .padding(10.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Column {
@@ -140,16 +152,6 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                     color = greenDark,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-
-                CustomOutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = "Phone Number",
-                    leadingIcon = Icons.Default.Phone,
-                    keyboardType = KeyboardType.Phone
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 CustomOutlinedTextField(
                     value = name,
@@ -309,39 +311,87 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                         .padding(8.dp)
                 )
                 Spacer(modifier = Modifier.height(14.dp))
+            when(registrationResult) {
+                is ApiResult.Loading -> {
+                    CircularProgressIndicator(color = greenDark)
+                }
+                else -> {
 
-                // Register Button
-                Button(
-                    onClick = {
-                        isLoading = true
-                        // Simulate registration process
-                        // In real app, call your viewmodel/register logic here
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = greenPrimary,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    enabled = !isLoading
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text(
-                            "Create Account",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                    // Register Button
+                    Button(
+                        onClick = {
+
+                            val localDate = org.threeten.bp.LocalDate.parse(dob)
+                            val dobDateTime = localDate.atStartOfDay()
+                            viewModel.registerUser(
+                                UserRegistrationRequest(
+                                    abhaId="",
+                                    phone = "1234",
+                                    name = name,
+                                    dob = dobDateTime,
+                                    gender = gender,
+                                    bloodGroup = bloodGroup,
+                                    allergies = allergies,
+                                    chronicConditions = chronicConditions,
+                                    emergencyContact = EmergencyContact(
+                                        name = emergencyContactName,
+                                        phone = emergencyContactPhone,
+                                        relationship = relationship
+                                    ),
+                                    role = role
+
+                                )
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = greenPrimary,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        enabled = !isLoading
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                "Create Account",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
+            }
+                LaunchedEffect(registrationResult) {
+                    when(val result = registrationResult) {
+                        is ApiResult.Success -> {
+                            // Handle success
+                            Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+                            navController.navigate(Routes.DASHBOARD) {
+                                popUpTo("register") { inclusive = true }
+                            }
+                            viewModel.resetRegistrationState()
+                        }
 
+                        is ApiResult.Error -> {
+                            // Handle error
+                            Toast.makeText(
+                                context,
+                                result.message ?: "Something went wrong",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            viewModel.resetRegistrationState()
+                        }
+                        else -> {}
+                    }
+                }
 
             }
         }

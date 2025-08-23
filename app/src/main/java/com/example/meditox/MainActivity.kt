@@ -23,6 +23,7 @@ import com.example.meditox.screens.PermissionsScreen
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.ui.screens.RegisterUserScreen
 import com.example.meditox.ui.theme.MeditoxTheme
+import com.jakewharton.threetenabp.AndroidThreeTen
 
 
 object Routes{
@@ -69,6 +70,7 @@ fun AppNavigation() {
     class MainActivity : ComponentActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
+            AndroidThreeTen.init(this)
             enableEdgeToEdge()
             setContent {
                 MeditoxTheme {

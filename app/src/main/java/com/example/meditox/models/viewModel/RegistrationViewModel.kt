@@ -7,6 +7,7 @@ import com.example.meditox.models.userRegistration.UserRegistrationRequest
 import com.example.meditox.models.userRegistration.UserRegistrationResponse
 import com.example.meditox.services.ApiClient
 import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,12 +26,26 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    private val _phoneNumber = MutableStateFlow<String?>(null)
+    val phoneNumber: StateFlow<String?> = _phoneNumber
+
+
+    init {
+        viewModelScope.launch {
+            DataStoreManager.getPhoneNumber(application).collect {
+                _phoneNumber.value = it
+            }
+        }
+    }
+
 
     fun registerUser(userDetails: UserRegistrationRequest){
         viewModelScope.launch {
             try{
 
                 registerResult.value = ApiResult.Loading
+                userDetails.phone=phoneNumber.value!!
+
                 val response = ApiClient.userApiService.registerUser(userDetails)
                 if(response.isSuccessful){
                     registerResult.value = ApiResult.Success(response.body()!!)
@@ -46,5 +61,10 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    fun resetRegistrationState() {
+        _isRegistered.value = null
+        registerResult.value = null
+
+    }
 
 }

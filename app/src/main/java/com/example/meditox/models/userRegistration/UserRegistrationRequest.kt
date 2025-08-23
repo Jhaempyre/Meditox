@@ -4,9 +4,10 @@ import com.example.meditox.models.EmergencyContact
 import java.time.LocalDateTime
 
 data class UserRegistrationRequest(
-    val phone: String,
+    val abhaId: String,
+    var phone: String,
     val name: String,
-    val dob: LocalDateTime,
+    val dob: org.threeten.bp.LocalDateTime,
     val gender: String,
     val bloodGroup: String,
     val allergies: String,
