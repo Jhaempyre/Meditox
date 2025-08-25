@@ -1,5 +1,6 @@
 package com.example.meditox.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -117,6 +118,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                     is ApiResult.Success -> {
                         // First, mark user as logged in
                         DataStoreManager.setIsLoggedIn(context, true)
+                        Log.d("API_RESPONSE", "Success: ${result.data}")
+                        Log.d("API_RESPONSE", "Success: ${result.data.data}")
 
                         // Check if permissions are granted
                         val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
@@ -127,6 +130,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             }
                         } else {
                             // All permissions granted, proceed based on registration status
+
+
                             if (result.data.data == null) {
                                 // User not registered
                                 Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()

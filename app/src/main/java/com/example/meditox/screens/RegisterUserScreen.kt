@@ -37,6 +37,7 @@ import com.example.meditox.models.EmergencyContact
 import com.example.meditox.models.userRegistration.UserRegistrationRequest
 import com.example.meditox.models.viewModel.RegistrationViewModel
 import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.DataStoreManager
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -323,8 +324,7 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                         onClick = {
 
 
-                            val localDateTime = org.threeten.bp.LocalDate.parse(dob)
-                                .atStartOfDay()
+
                             val dobFormatted = "${dob}T00:00:00"
                             viewModel.registerUser(
                                 UserRegistrationRequest(
@@ -378,6 +378,7 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                             // Handle success
                             Log.d("API_RESPONSE", "Success: ${result.data}")
                             Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+                            DataStoreManager.setIsRegistered(context,true)
                             navController.navigate(Routes.DASHBOARD) {
                                 popUpTo("register") { inclusive = true }
                             }
