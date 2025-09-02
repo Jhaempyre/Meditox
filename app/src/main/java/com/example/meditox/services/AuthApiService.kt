@@ -19,5 +19,5 @@ interface AuthApiService {
     suspend fun verifyOtp(@Body verifyOtpRequest: VerifyOtpRequest): Response<VerifyOtpResponse>
 
     @POST("/api/v1/register")
-    suspend fun registerUser(@Body userRegistrationRequest: UserRegistrationRequest): Response<ApiResponse<UserRegistrationResponse>>
+    suspend fun registerUser(@Body userRegistrationRequest: UserRegistrationRequest): Response<UserRegistrationResponse>
 }

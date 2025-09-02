@@ -376,7 +376,12 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                     when(val result = registrationResult) {
                         is ApiResult.Success -> {
                             // Handle success
-                            Log.d("API_RESPONSE", "Success: ${result.data}")
+                            Log.d("From_registera", "Success: $result")
+                            Log.d("From_REGISTRATION", "Success: ${result.data}")
+                            val user = result.data.data
+                            if(user!==null){
+                            DataStoreManager.saveUserData(context,user)
+                            }
                             Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
                             DataStoreManager.setIsRegistered(context,true)
                             navController.navigate(Routes.DASHBOARD) {

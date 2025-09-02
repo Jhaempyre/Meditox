@@ -51,7 +51,7 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
                     val body = response.body()
 
                     if (body != null && body.success) {
-                        registerResult.value = ApiResult.Success(body.data)
+                        registerResult.value = ApiResult.Success(body)
                         _isRegistered.value = true
                     }
                 }else{
