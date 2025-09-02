@@ -21,6 +21,7 @@ import com.example.meditox.screens.OtpScreen
 import com.example.meditox.screens.PermissionsScreen
 
 import com.example.meditox.screens.SplashScreen
+import com.example.meditox.services.ApiClient
 import com.example.meditox.ui.screens.RegisterUserScreen
 import com.example.meditox.ui.theme.MeditoxTheme
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -71,6 +72,7 @@ fun AppNavigation() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             AndroidThreeTen.init(this)
+            ApiClient.init(applicationContext)
             enableEdgeToEdge()
             setContent {
                 MeditoxTheme {
