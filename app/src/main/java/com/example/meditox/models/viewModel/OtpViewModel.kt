@@ -15,6 +15,8 @@ import com.example.meditox.utils.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Response
+
 
 class OtpViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -30,8 +32,10 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private val _otpResult = MutableStateFlow<ApiResult<VerifyOtpResponse>?>(null)
-    val otpResult: StateFlow<ApiResult<VerifyOtpResponse>?> = _otpResult
+    private val _otpResult = MutableStateFlow<ApiResult<Response<VerifyOtpResponse>>?>(null)
+    val otpResult: StateFlow<ApiResult<Response<VerifyOtpResponse>>?> = _otpResult
+
+
 
     fun verifyOtp(otp: String) {
         viewModelScope.launch {
@@ -40,7 +44,7 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
                 val response =
                     ApiClient.userApiService.verifyOtp(VerifyOtpRequest(_phoneNumber.value!!, otp))
                 if (response.isSuccessful) {
-                    _otpResult.value = ApiResult.Success(response.body()!!)
+                    _otpResult.value = ApiResult.Success(response)
                 } else {
                     _otpResult.value =
                         ApiResult.Error(response.errorBody()?.string() ?: "Login failed")

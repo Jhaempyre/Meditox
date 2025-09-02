@@ -119,13 +119,17 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                         // First, mark user as logged in
                         DataStoreManager.setIsLoggedIn(context, true)
 
-                        Log.d("API_RESPONSE", "Success: ${result.data}")
-                        Log.d("API_RESPONSE", "Success: ${result.data.data}")
+                        val response = result.data
+                        val body = response.body()
+
+                        Log.d("API_RESPONSE", "Success: $response")
+                        Log.d("API_RESPONSE", "Body: $body")
+                        Log.d("API_RESPONSE", "Data field: ${body?.data}")
 
                         // Check if permissions are granted
                         // All permissions granted, proceed based on registration status
 
-                        if (result.data.data == null) {
+                        if (body?.data == null) {
                             // User not registered
                             DataStoreManager.setIsRegistered(context, false)
                             Toast.makeText(
@@ -149,10 +153,18 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             Log.d("API_RESPONSE", " have landed here")
                             DataStoreManager.setIsRegistered(context, true)
                             Log.d("API_RESPONSE", " have also landed here")
-                            val user = result.data.data
+                            val user = body.data
                             Log.d("inOtp", " starting to save")
                             DataStoreManager.saveUserData(context, user)
                             Log.d("inOtp", " i guess saving succeded")
+
+
+                            val accessToken = response.headers()["Authorization"]
+                            val refreshToken = response.headers()["X-Refresh-Token"]
+
+                            if(accessToken != null && refreshToken != null){
+                                Log.d("TOKEN_DEBUG", "Access: $accessToken, Refresh: $refreshToken")
+                            }
 
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
                             val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
