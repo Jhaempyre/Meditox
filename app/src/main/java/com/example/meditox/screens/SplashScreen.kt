@@ -45,19 +45,37 @@ fun SplashScreen(navController: NavController) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF005005).copy(alpha = 0.8f)
                 )
+                Text("is looged in is $isLoggedIn")
+                Text("is registerd is $isRegistered")
             }
         }
     }
 
-    // Logic
+    // Logic - Fixed navigation flow
     LaunchedEffect(isLoggedIn, isRegistered) {
         if (isLoggedIn == null || isRegistered == null) return@LaunchedEffect
 
-        delay(1500) // Optional: give a little time to show the splash screen
+        delay(2500) // Optional splash delay
 
         when {
+            isLoggedIn == false -> {
+                // Not logged in → go to login screen directly
+                navController.navigate(Routes.LOGIN) {
+                    popUpTo(Routes.SPLASH) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+
             isLoggedIn == true -> {
-                if (PermissionUtils.allPermissionsGranted(context)) {
+                // Logged in → now check permissions
+                if (!PermissionUtils.allPermissionsGranted(context)) {
+                    // Not all permissions → go to permissions screen
+                    navController.navigate(Routes.PERMISSIONS) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else {
+                    // Permissions already granted → check registration
                     if (isRegistered == true) {
                         navController.navigate(Routes.DASHBOARD) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
@@ -69,19 +87,9 @@ fun SplashScreen(navController: NavController) {
                             launchSingleTop = true
                         }
                     }
-                } else {
-                    navController.navigate(Routes.PERMISSIONS) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-            }
-            else -> {
-                navController.navigate(Routes.LOGIN) {
-                    popUpTo(Routes.SPLASH) { inclusive = true }
-                    launchSingleTop = true
                 }
             }
         }
     }
+
 }

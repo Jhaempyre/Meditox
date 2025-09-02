@@ -59,7 +59,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("yeh number tha bhdve $phoneNumber")
+
 
             Text(
                 text = "Enter the OTP",
@@ -118,41 +118,59 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                     is ApiResult.Success -> {
                         // First, mark user as logged in
                         DataStoreManager.setIsLoggedIn(context, true)
+
                         Log.d("API_RESPONSE", "Success: ${result.data}")
                         Log.d("API_RESPONSE", "Success: ${result.data.data}")
 
                         // Check if permissions are granted
-                        val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
-                        if (!hasAllPermissions) {
-                            // Navigate to permission screen first
-                            navController.navigate(Routes.PERMISSIONS) {
+                        // All permissions granted, proceed based on registration status
+
+                        if (result.data.data == null) {
+                            // User not registered
+                            DataStoreManager.setIsRegistered(context, false)
+                            Toast.makeText(
+                                context,
+                                "OTP verified. Please register.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
+                            if (!hasAllPermissions) {
+                                // Navigate to permission screen first
+                                navController.navigate(Routes.PERMISSIONS) {
+                                    popUpTo(Routes.OTP) { inclusive = true }
+                                }
+                            }
+                            navController.navigate(Routes.REGISTER_USER) {
                                 popUpTo(Routes.OTP) { inclusive = true }
+                                launchSingleTop = true
                             }
                         } else {
-                            // All permissions granted, proceed based on registration status
-
-
-                            if (result.data.data == null) {
-                                // User not registered
-                                Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
-                                navController.navigate(Routes.REGISTER_USER) {
+                            // User is registered
+                            Log.d("API_RESPONSE", " have landed here")
+                            DataStoreManager.setIsRegistered(context, true)
+                            Log.d("API_RESPONSE", " have also landed here")
+                            Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                            val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
+                            Log.d("permissionresponse", "$hasAllPermissions")
+                            if (!hasAllPermissions) {
+                                Log.d("API_RESPONSE", "checking permission... about to navigate")
+                                navController.navigate(Routes.PERMISSIONS) {
                                     popUpTo(Routes.OTP) { inclusive = true }
-                                    launchSingleTop = true
                                 }
-                            } else {
-                                // User is registered
-                                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                                navController.navigate(Routes.DASHBOARD) {
-                                    popUpTo(Routes.OTP) { inclusive = true }
-                                    launchSingleTop = true
-                                }
+                                Log.d("API_RESPONSE", "this won't be printed") // Likely won't show
+                                return@LaunchedEffect
+                            }
+                            navController.navigate(Routes.DASHBOARD) {
+                                popUpTo(Routes.OTP) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
 
+
                         // Reset state after navigation
                         viewModel.resetOtpVerificationState()
-                    }
 
+                    }
                     is ApiResult.Error -> {
                         Toast.makeText(
                             context,
