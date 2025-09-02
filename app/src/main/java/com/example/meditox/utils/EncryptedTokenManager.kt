@@ -2,6 +2,7 @@ package com.example.meditox.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
@@ -27,11 +28,14 @@ object EncryptedTokenManager {
     }
 
     fun saveAccessAndRefreshToken(context: Context,accessToken: String, refreshToken: String){
+        Log.d("TokenCame", "Access: $accessToken, Refresh: $refreshToken")
+        Log.d("operation", "start saving")
         val pref = getEncryptedSharedPreferences(context)
         pref.edit()
             .putString(ACCESS_TOKEN_KEY,accessToken)
             .putString(REFRESH_TOKEN_KEY,refreshToken)
             .apply()
+        Log.d("operation", "saving done")
     }
 
     fun saveAccessToken(context: Context,accessToken: String){

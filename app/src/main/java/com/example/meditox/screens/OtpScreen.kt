@@ -37,6 +37,7 @@ import com.example.meditox.Routes
 import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.utils.EncryptedTokenManager
 import com.example.meditox.utils.PermissionUtils
 
 @Composable
@@ -159,11 +160,14 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             Log.d("inOtp", " i guess saving succeded")
 
 
-                            val accessToken = response.headers()["Authorization"]
+                            val accessToken = response.headers()["Authorization"]?.removePrefix("Bearer ")?.trim()
                             val refreshToken = response.headers()["X-Refresh-Token"]
 
                             if(accessToken != null && refreshToken != null){
                                 Log.d("TOKEN_DEBUG", "Access: $accessToken, Refresh: $refreshToken")
+                                EncryptedTokenManager.saveAccessAndRefreshToken(context, accessToken, refreshToken)
+                            }else{
+                                Toast.makeText(context,"tokens not available",Toast.LENGTH_SHORT).show()
                             }
 
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
