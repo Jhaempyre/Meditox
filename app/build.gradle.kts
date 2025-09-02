@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    //for serilization
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
 
 }
@@ -75,12 +76,23 @@ dependencies {
 
 
     implementation("androidx.multidex:multidex:2.0.1")
+
+    //for getting permissions
     implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
 
+    //for showing ui control things on screen
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.33.0-alpha")
+    // For image loading
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    //for date time
     implementation ("com.jakewharton.threetenabp:threetenabp:1.4.6")
+
+    //for serilization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    // for encryptedSharedPrefrences
+    implementation("androidx.security:security-crypto:1.1.0")
+
 
 
 
