@@ -1,19 +1,13 @@
 package com.example.meditox.models.userRegistration
 
 import com.example.meditox.models.EmergencyContact
+import com.example.meditox.models.User
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 import java.util.UUID
-
+@Serializable
 data class UserRegistrationResponse(
-    val id : UUID,
-    val abhaId : String,
-    val phone :String ,
-    val name : String,
-    val dob : List<Int>?,
-    val gender : String,
-    val bloodGroup : String,
-    val allergies : String,
-    val chronicConditions : String,
-    val emergencyContact : EmergencyContact,
-    val role : String,
+    val success: Boolean,
+    val message: String,
+    val user: User? = null
 )

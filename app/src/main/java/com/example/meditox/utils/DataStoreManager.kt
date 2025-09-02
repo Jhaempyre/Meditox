@@ -6,8 +6,13 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.meditox.models.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+
 
 object DataStoreManager {
     private const val PREFERENCE_NAME = "Meditox_prefs"
@@ -15,6 +20,12 @@ object DataStoreManager {
     private val Phone = stringPreferencesKey("phone")
     private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
     private val IS_REGISTERED = booleanPreferencesKey("is_registered")
+    private val USER_DATA = stringPreferencesKey("user_data")
+    val jsonFormatter = Json {
+        ignoreUnknownKeys = true // prevents crash if extra fields exist
+        encodeDefaults = true
+    }
+
 
     suspend fun savePhoneNumber(context: Context, phone: String) {
         context.datastore.edit { preferences ->
@@ -57,6 +68,47 @@ object DataStoreManager {
             value
         }
     }
+
+
+    //save user data
+    suspend fun saveUserData(context: Context,user:User){
+        val json = jsonFormatter.encodeToString(User.serializer(), user)
+        Log.d("DataStore", "Saving user data: $json")
+        context.datastore.edit { prefs ->
+            prefs[USER_DATA] = json
+        }
+        Log.d("DataStore", "Data saved:")
+    }
+
+    fun getUserData(context: Context):Flow<User?>{
+        return context.datastore.data.map { prefs ->
+            prefs[USER_DATA]?.let{
+                json->try{
+                jsonFormatter.decodeFromString<User>(User.serializer(), json)
+            }catch (e: Exception) {
+                Log.e("DataStore", "Error decoding user data: ${e.message}")
+                null
+            }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Add this function to clear all data for testing
     suspend fun clearAll(context: Context) {

@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+
 }
 
 android {
@@ -78,6 +80,7 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.33.0-alpha")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation ("com.jakewharton.threetenabp:threetenabp:1.4.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
 
 

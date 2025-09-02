@@ -9,4 +9,7 @@ import androidx.navigation.NavController
 fun Dashboard(modifier: Modifier = Modifier, navController: NavController){
     Text(text = "Dashboard")
 
+
+
+
 }

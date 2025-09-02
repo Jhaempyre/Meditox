@@ -149,6 +149,11 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             Log.d("API_RESPONSE", " have landed here")
                             DataStoreManager.setIsRegistered(context, true)
                             Log.d("API_RESPONSE", " have also landed here")
+                            val user = result.data.data
+                            Log.d("inOtp", " starting to save")
+                            DataStoreManager.saveUserData(context, user)
+                            Log.d("inOtp", " i guess saving succeded")
+
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
                             val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
                             Log.d("permissionresponse", "$hasAllPermissions")

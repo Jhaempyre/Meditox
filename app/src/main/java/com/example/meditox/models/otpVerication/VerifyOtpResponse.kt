@@ -6,6 +6,4 @@ data class VerifyOtpResponse(
     val success: Boolean,
     val message: String,
     val data: User? = null
-){
-
-}
+)
