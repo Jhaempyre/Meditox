@@ -13,6 +13,8 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
         //getting the accestokens
         val accessToken = EncryptedTokenManager.getAccessToken(context)
 
+        // here we will add the automatic accestoken refresh when we get 401 for authorization thing  interceptor
+
         if (!accessToken.isNullOrEmpty()) {
             builder.addHeader("Authorization", "Bearer $accessToken")
         }

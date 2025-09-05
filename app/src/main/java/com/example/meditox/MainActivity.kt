@@ -22,6 +22,7 @@ import com.example.meditox.screens.PermissionsScreen
 
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.services.ApiClient
+import com.example.meditox.services.AuthApiService
 import com.example.meditox.ui.screens.RegisterUserScreen
 import com.example.meditox.ui.theme.MeditoxTheme
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -69,10 +70,11 @@ fun AppNavigation() {
     }
 }
     class MainActivity : ComponentActivity() {
+        private lateinit var apiService: AuthApiService
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             AndroidThreeTen.init(this)
-            ApiClient.init(applicationContext)
+            apiService = ApiClient.createUserApiService(this)
             enableEdgeToEdge()
             setContent {
                 MeditoxTheme {
