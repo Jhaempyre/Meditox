@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.meditox.Routes
 import com.example.meditox.models.viewModel.SplashViewModel
+import com.example.meditox.utils.DataStoreManager.isBusinessRegistered
 import com.example.meditox.utils.PermissionUtils
 import kotlinx.coroutines.delay
 
@@ -21,6 +22,7 @@ fun SplashScreen(navController: NavController) {
     val viewModel: SplashViewModel = viewModel()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val isRegistered by viewModel.isRegistered.collectAsState()
+    val isBusinessRegistered by viewModel.isBusinessRegistered.collectAsState()
 
     // UI (with background and centered content)
     Surface(
@@ -47,6 +49,7 @@ fun SplashScreen(navController: NavController) {
                 )
                 Text("is looged in is $isLoggedIn")
                 Text("is registerd is $isRegistered")
+                Text("is business registered is $isBusinessRegistered")
             }
         }
     }

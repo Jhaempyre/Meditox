@@ -17,6 +17,9 @@ class SplashViewModel(application: Application) : AndroidViewModel(application) 
     private val _isRegistered = MutableStateFlow<Boolean?>(null)
     val isRegistered: StateFlow<Boolean?> = _isRegistered
 
+    private val _isBusinessRegistered = MutableStateFlow<Boolean?>(null)
+    val isBusinessRegistered: StateFlow<Boolean?> = _isBusinessRegistered
+
     init {
         Log.d("SplashViewModel", "Initializing SplashViewModel")
 
@@ -33,6 +36,14 @@ class SplashViewModel(application: Application) : AndroidViewModel(application) 
             DataStoreManager.isRegistered(application).collect { value ->
                 Log.d("SplashViewModel", "isRegistered collected: $value")
                 _isRegistered.value = value
+            }
+        }
+
+        viewModelScope.launch {
+            Log.d("SplashViewModel", "Starting to collect isBusinessRegistered")
+            DataStoreManager.isBusinessRegistered(application).collect { value ->
+                Log.d("SplashViewModel", "isBusinessRegistered collected: $value")
+                _isBusinessRegistered.value = value
             }
         }
     }
