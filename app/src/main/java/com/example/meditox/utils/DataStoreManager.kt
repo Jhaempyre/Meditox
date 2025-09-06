@@ -20,6 +20,7 @@ object DataStoreManager {
     private val Phone = stringPreferencesKey("phone")
     private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
     private val IS_REGISTERED = booleanPreferencesKey("is_registered")
+    private val IS_BUSINESS_REGISTERED = booleanPreferencesKey("is_business_registered")
     private val USER_DATA = stringPreferencesKey("user_data")
     val jsonFormatter = Json {
         ignoreUnknownKeys = true // prevents crash if extra fields exist
@@ -53,6 +54,13 @@ object DataStoreManager {
         }
     }
 
+    suspend fun setIsBusinessRegistered(context: Context, value: Boolean) {
+        Log.d("DataStore", "Setting Business registered to: $value")
+        context.datastore.edit { prefs ->
+            prefs[IS_BUSINESS_REGISTERED] = value
+        }
+    }
+
     fun isLoggedIn(context: Context): Flow<Boolean> {
         return context.datastore.data.map { prefs ->
             val value = prefs[IS_LOGGED_IN] ?: false
@@ -69,6 +77,13 @@ object DataStoreManager {
         }
     }
 
+    fun isBusinessRegistered(context: Context): Flow<Boolean> {
+        return context.datastore.data.map { prefs ->
+            val value = prefs[IS_BUSINESS_REGISTERED] ?: false
+            Log.d("DataStore", "Reading isBusinessRegistered: $value (key exists: ${prefs.contains(IS_REGISTERED)})")
+            value
+        }
+    }
 
     //save user data
     suspend fun saveUserData(context: Context,user:User){

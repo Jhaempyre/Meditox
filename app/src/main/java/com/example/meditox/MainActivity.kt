@@ -19,6 +19,7 @@ import com.example.meditox.screens.Dashboard
 import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
 import com.example.meditox.screens.PermissionsScreen
+import com.example.meditox.screens.ShopRegisterScreen
 
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.services.ApiClient
@@ -66,6 +67,9 @@ fun AppNavigation() {
         }
         composable(Routes.PERMISSIONS) {
             PermissionsScreen(navController)
+        }
+        composable(Routes.REGISTER_SHOP){
+            ShopRegisterScreen(modifier = Modifier,navController)
         }
     }
 }

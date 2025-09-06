@@ -6,6 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
 @Composable
-fun ShopRegister(modifier: Modifier = Modifier, navController: NavController){
+fun ShopRegisterScreen(modifier: Modifier = Modifier, navController: NavController){
     Text(text = "Shop Register")
 }
