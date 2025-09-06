@@ -22,6 +22,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val loginResult: StateFlow<ApiResult<AuthResponse>?> = _loginResult.asStateFlow()
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber.asStateFlow()
+    private val apiService = ApiClient.createUserApiService(application)
 
     init {
         viewModelScope.launch {
@@ -35,7 +36,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch{
             try {
                 _loginResult.value = ApiResult.Loading
-                val response = ApiClient.userApiService.sendOtp(AuthRequest(phone))
+                val response = apiService.sendOtp(AuthRequest(phone))
                 if(response.isSuccessful){
                     _loginResult.value = ApiResult.Success(response.body()!!)
                 }else{

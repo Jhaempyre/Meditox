@@ -22,6 +22,7 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber
+    private val apiService = ApiClient.createUserApiService(application)
 
 
     init {
@@ -42,7 +43,7 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 _otpResult.value = ApiResult.Loading
                 val response =
-                    ApiClient.userApiService.verifyOtp(VerifyOtpRequest(_phoneNumber.value!!, otp))
+                    apiService.verifyOtp(VerifyOtpRequest(_phoneNumber.value!!, otp))
                 if (response.isSuccessful) {
                     _otpResult.value = ApiResult.Success(response)
                 } else {

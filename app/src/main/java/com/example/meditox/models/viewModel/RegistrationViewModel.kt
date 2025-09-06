@@ -29,6 +29,8 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber
 
+    private val apiService = ApiClient.createUserApiService(application)
+
 
     init {
         viewModelScope.launch {
@@ -46,7 +48,7 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
                 registerResult.value = ApiResult.Loading
                 userDetails.phone=phoneNumber.value!!
 
-                val response = ApiClient.userApiService.registerUser(userDetails)
+                val response = apiService.registerUser(userDetails)
                 if(response.isSuccessful){
                     val body = response.body()
 
