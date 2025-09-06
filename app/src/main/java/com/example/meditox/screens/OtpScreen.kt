@@ -155,6 +155,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             DataStoreManager.setIsRegistered(context, true)
                             Log.d("API_RESPONSE", " have also landed here")
                             val user = body.data
+                            val isBusinessRegistered= user.isBusinessRegistered
                             Log.d("inOtp", " starting to save")
                             DataStoreManager.saveUserData(context, user)
                             Log.d("inOtp", " i guess saving succeded")
@@ -169,7 +170,13 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             }else{
                                 Toast.makeText(context,"tokens not available",Toast.LENGTH_SHORT).show()
                             }
-
+                            if(!isBusinessRegistered){
+                                Toast.makeText(context, "Please Register your Shop Now", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Routes.REGISTER_SHOP) {
+                                    popUpTo(Routes.OTP) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
                             val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
                             Log.d("permissionresponse", "$hasAllPermissions")
@@ -193,6 +200,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
 
                     }
                     is ApiResult.Error -> {
+                        //SPECIFIC Error messgage dena hae aur fir sab screen mae jaa jaa kr dekhna hae aur dena hae jo bhi erro hae
                         Toast.makeText(
                             context,
                             result.message ?: "Something went wrong",

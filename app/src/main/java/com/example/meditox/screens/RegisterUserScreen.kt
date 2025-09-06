@@ -382,9 +382,10 @@ fun RegisterUserScreen(modifier: Modifier, navController: NavController) {
                             if(user!==null){
                             DataStoreManager.saveUserData(context,user)
                             }
+// work is here to chek permission and optionally send to paermissionscreen .
                             Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
                             DataStoreManager.setIsRegistered(context,true)
-                            navController.navigate(Routes.DASHBOARD) {
+                            navController.navigate(Routes.REGISTER_SHOP) {
                                 popUpTo("register") { inclusive = true }
                             }
                             viewModel.resetRegistrationState()
