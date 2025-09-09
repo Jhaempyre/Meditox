@@ -27,6 +27,7 @@ fun PermissionsScreen(navController: NavController) {
     val viewModel: SplashViewModel = viewModel()
     val isLoggedIn = viewModel.isLoggedIn.collectAsState().value
     val isRegistered = viewModel.isRegistered.collectAsState().value
+    val isBusinessRegistered = viewModel.isBusinessRegistered.collectAsState().value
 
     // Get regular permissions
     val regularPermissions = remember { PermissionUtils.getRegularPermissions() }
@@ -40,13 +41,21 @@ fun PermissionsScreen(navController: NavController) {
     // Navigation function
     fun navigateToNext() {
         when {
-            isLoggedIn == true && isRegistered == true -> {
-                navController.navigate(Routes.DASHBOARD) {
+
+            isLoggedIn == true && isRegistered == false -> {
+                navController.navigate(Routes.REGISTER_USER) {
                     popUpTo(Routes.PERMISSIONS) { inclusive = true }
                 }
             }
-            isLoggedIn == true && isRegistered == false -> {
-                navController.navigate(Routes.REGISTER_USER) {
+
+            isLoggedIn==true && isRegistered == true && isBusinessRegistered == false -> {
+                navController.navigate(Routes.REGISTER_SHOP) {
+                    popUpTo(Routes.PERMISSIONS) { inclusive = true }
+                }
+            }
+
+            isLoggedIn==true && isBusinessRegistered == true && isRegistered == true -> {
+                navController.navigate(Routes.DASHBOARD) {
                     popUpTo(Routes.PERMISSIONS) { inclusive = true }
                 }
             }

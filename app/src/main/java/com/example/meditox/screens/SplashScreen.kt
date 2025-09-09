@@ -55,10 +55,9 @@ fun SplashScreen(navController: NavController) {
     }
 
     // Logic - Fixed navigation flow
-    LaunchedEffect(isLoggedIn, isRegistered) {
-        if (isLoggedIn == null || isRegistered == null) return@LaunchedEffect
-
-        delay(2500) // Optional splash delay
+    LaunchedEffect(isLoggedIn, isRegistered,isBusinessRegistered ) {
+        if (isLoggedIn == null || isRegistered == null || isBusinessRegistered == null) return@LaunchedEffect
+        delay(1500) // Optional splash delay
 
         when {
             isLoggedIn == false -> {
@@ -79,12 +78,17 @@ fun SplashScreen(navController: NavController) {
                     }
                 } else {
                     // Permissions already granted → check registration
-                    if (isRegistered == true) {
+                    if (isRegistered == true && isBusinessRegistered==true) {
                         navController.navigate(Routes.DASHBOARD) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
                             launchSingleTop = true
                         }
-                    } else {
+                    } else if (isRegistered == true && isBusinessRegistered==false) {
+                        navController.navigate(Routes.REGISTER_SHOP) {
+                            popUpTo(Routes.SPLASH) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }else{
                         navController.navigate(Routes.REGISTER_USER) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
                             launchSingleTop = true

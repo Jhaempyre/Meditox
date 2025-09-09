@@ -159,6 +159,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             Log.d("inOtp", " starting to save")
                             DataStoreManager.saveUserData(context, user)
                             Log.d("inOtp", " i guess saving succeded")
+                            val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
+                            Log.d("permissionresponse", "$hasAllPermissions")
 
 
                             val accessToken = response.headers()["Authorization"]?.removePrefix("Bearer ")?.trim()
@@ -171,6 +173,15 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                 Toast.makeText(context,"tokens not available",Toast.LENGTH_SHORT).show()
                             }
                             if(!isBusinessRegistered){
+                                if (!hasAllPermissions) {
+                                    Log.d(
+                                        "API_RESPONSE",
+                                        "checking permission... about to navigate"
+                                    )
+                                    navController.navigate(Routes.PERMISSIONS) {
+                                        popUpTo(Routes.OTP) { inclusive = true }
+                                    }
+                                }
                                 Toast.makeText(context, "Please Register your Shop Now", Toast.LENGTH_SHORT).show()
                                 navController.navigate(Routes.REGISTER_SHOP) {
                                     popUpTo(Routes.OTP) { inclusive = true }
@@ -178,8 +189,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                 }
                             }
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                            val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
-                            Log.d("permissionresponse", "$hasAllPermissions")
+
                             if (!hasAllPermissions) {
                                 Log.d("API_RESPONSE", "checking permission... about to navigate")
                                 navController.navigate(Routes.PERMISSIONS) {
@@ -188,6 +198,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                 Log.d("API_RESPONSE", "this won't be printed") // Likely won't show
                                 return@LaunchedEffect
                             }
+                            DataStoreManager.setIsBusinessRegistered(context,true);
+                            Log.d("API_RESPONSE", "this will be printed") // Likely will show
                             navController.navigate(Routes.DASHBOARD) {
                                 popUpTo(Routes.OTP) { inclusive = true }
                                 launchSingleTop = true
