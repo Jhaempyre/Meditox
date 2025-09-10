@@ -93,6 +93,9 @@ dependencies {
     // for encryptedSharedPrefrences
     implementation("androidx.security:security-crypto:1.1.0")
 
+    // WorkManager for background location tracking
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
 
 
 

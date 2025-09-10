@@ -20,7 +20,7 @@ import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
 import com.example.meditox.screens.PermissionsScreen
 import com.example.meditox.screens.ShopRegisterScreen
-
+import com.example.meditox.screens.LocationTrackingScreen
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.services.ApiClient
 import com.example.meditox.services.AuthApiService
@@ -37,6 +37,7 @@ object Routes{
     const val REGISTER_USER = "register_user"
     const val REGISTER_SHOP = "register_shop"
     const val PERMISSIONS="permissions"
+    const val LOCATION_TRACKING = "location_tracking"
 
 }
 
@@ -70,6 +71,9 @@ fun AppNavigation() {
         }
         composable(Routes.REGISTER_SHOP){
             ShopRegisterScreen(modifier = Modifier,navController)
+        }
+        composable(Routes.LOCATION_TRACKING) {
+            LocationTrackingScreen(navController = navController)
         }
     }
 }

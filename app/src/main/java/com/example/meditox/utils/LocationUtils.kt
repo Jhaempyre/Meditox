@@ -150,8 +150,8 @@ object LocationUtils {
             override fun onLocationChanged(location: Location) {
                 Log.d(TAG, "Native GPS location received: ${location.latitude}, ${location.longitude}, accuracy: ${location.accuracy}m")
                 
-                // Only accept locations with good accuracy (< 20 meters for business registration)
-                if (location.accuracy <= 20f) {
+                // Only accept locations with good accuracy (< 10 meters for business registration)
+                if (location.accuracy <= 10f) {
                     if (!locationReceived) {
                         locationReceived = true
                         locationManager.removeUpdates(this)
