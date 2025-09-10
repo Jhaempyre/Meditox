@@ -2,13 +2,17 @@ package com.example.meditox.utils
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.*
-import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -65,8 +69,39 @@ object LocationUtils {
     }
     
     /**
-     * Get current location using FusedLocationProviderClient
-     * This method uses the most recent location first, then requests a fresh location if needed
+     * Check if location services (GPS) are enabled on the device
+     */
+    fun isLocationServicesEnabled(context: Context): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+    
+    /**
+     * Check if GPS provider specifically is enabled
+     */
+    fun isGpsEnabled(context: Context): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+    
+    /**
+     * Create intent to open location settings
+     */
+    fun createLocationSettingsIntent(): Intent {
+        return Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    }
+    
+    /**
+     * Check if device has all location requirements (permissions + services)
+     */
+    fun hasAllLocationRequirements(context: Context): Boolean {
+        return hasLocationPermissions(context) && isLocationServicesEnabled(context)
+    }
+    
+    /**
+     * Get current location using Android's native LocationManager API
+     * This method prioritizes GPS for high accuracy business registration
      */
     suspend fun getCurrentLocation(context: Context): LocationResponse {
         if (!hasLocationPermissions(context)) {
@@ -74,187 +109,323 @@ object LocationUtils {
             return LocationResponse.PermissionDenied
         }
         
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        if (!isLocationServicesEnabled(context)) {
+            Log.w(TAG, "Location services are disabled")
+            return LocationResponse.LocationDisabled
+        }
         
         return try {
-            // First try to get the last known location (faster)
-            val lastLocation = getLastKnownLocation(context, fusedLocationClient)
-            if (lastLocation != null) {
-                Log.d(TAG, "Using last known location: ${lastLocation.latitude}, ${lastLocation.longitude}")
-                return LocationResponse.Success(
-                    LocationResult(
-                        latitude = lastLocation.latitude,
-                        longitude = lastLocation.longitude,
-                        accuracy = lastLocation.accuracy
-                    )
-                )
-            }
-            
-            // If no last known location, request a fresh one
-            Log.d(TAG, "No last known location, requesting fresh location")
-            getFreshLocation(context, fusedLocationClient)
-            
+            Log.d(TAG, "Requesting high-accuracy GPS location using native Android API")
+            getNativeGpsLocation(context)
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting location", e)
+            Log.e(TAG, "Error getting native location", e)
             LocationResponse.Error("Failed to get location: ${e.message}")
         }
     }
     
     /**
-     * Get the last known location
+     * Get high-accuracy location using native Android LocationManager
+     * Prioritizes GPS provider for maximum accuracy
      */
-    private suspend fun getLastKnownLocation(
-        context: Context,
-        fusedLocationClient: FusedLocationProviderClient
-    ): Location? = suspendCancellableCoroutine { continuation ->
-        
-        if (!hasLocationPermissions(context)) {
-            continuation.resume(null)
-            return@suspendCancellableCoroutine
-        }
-        
-        try {
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    continuation.resume(location)
-                }
-                .addOnFailureListener { exception ->
-                    Log.e(TAG, "Failed to get last known location", exception)
-                    continuation.resume(null)
-                }
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Security exception getting last location", e)
-            continuation.resume(null)
-        }
-    }
-    
-    /**
-     * Request a fresh location update
-     */
-    private suspend fun getFreshLocation(
-        context: Context,
-        fusedLocationClient: FusedLocationProviderClient
-    ): LocationResponse = suspendCancellableCoroutine { continuation ->
+    private suspend fun getNativeGpsLocation(context: Context): LocationResponse = suspendCancellableCoroutine { continuation ->
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         
         if (!hasLocationPermissions(context)) {
             continuation.resume(LocationResponse.PermissionDenied)
             return@suspendCancellableCoroutine
         }
         
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            10000L // 10 seconds
-        ).apply {
-            setMinUpdateDistanceMeters(0f)
-            setGranularity(Granularity.GRANULARITY_PERMISSION_LEVEL)
-            setWaitForAccurateLocation(true)
-        }.build()
+        // Check if GPS provider is available
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.w(TAG, "GPS provider is not enabled")
+            continuation.resume(LocationResponse.LocationDisabled)
+            return@suspendCancellableCoroutine
+        }
         
-        val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: com.google.android.gms.location.LocationResult) {
-                super.onLocationResult(locationResult)
+        var bestLocation: Location? = null
+        var locationReceived = false
+        val handler = Handler(Looper.getMainLooper())
+        
+        val locationListener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                Log.d(TAG, "Native GPS location received: ${location.latitude}, ${location.longitude}, accuracy: ${location.accuracy}m")
                 
-                val location = locationResult.lastLocation
-                if (location != null) {
-                    Log.d(TAG, "Fresh location received: ${location.latitude}, ${location.longitude}")
-                    
-                    val result = LocationResponse.Success(
-                        LocationResult(
-                            latitude = location.latitude,
-                            longitude = location.longitude,
-                            accuracy = location.accuracy
+                // Only accept locations with good accuracy (< 20 meters for business registration)
+                if (location.accuracy <= 20f) {
+                    if (!locationReceived) {
+                        locationReceived = true
+                        locationManager.removeUpdates(this)
+                        
+                        val result = LocationResponse.Success(
+                            LocationResult(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                accuracy = location.accuracy
+                            )
                         )
-                    )
-                    
-                    // Stop location updates
-                    fusedLocationClient.removeLocationUpdates(this)
-                    continuation.resume(result)
+                        
+                        if (continuation.isActive) {
+                            continuation.resume(result)
+                        }
+                    }
                 } else {
-                    Log.w(TAG, "Received null location in callback")
+                    Log.d(TAG, "Location accuracy too low: ${location.accuracy}m, waiting for better accuracy...")
+                    bestLocation = if (bestLocation == null || location.accuracy < bestLocation!!.accuracy) {
+                        location
+                    } else {
+                        bestLocation
+                    }
                 }
             }
             
-            override fun onLocationAvailability(availability: LocationAvailability) {
-                super.onLocationAvailability(availability)
-                if (!availability.isLocationAvailable) {
-                    Log.w(TAG, "Location not available")
-                    fusedLocationClient.removeLocationUpdates(this)
-                    continuation.resume(LocationResponse.LocationDisabled)
+            override fun onProviderEnabled(provider: String) {
+                Log.d(TAG, "Location provider enabled: $provider")
+            }
+            
+            override fun onProviderDisabled(provider: String) {
+                Log.w(TAG, "Location provider disabled: $provider")
+                if (provider == LocationManager.GPS_PROVIDER && !locationReceived) {
+                    locationManager.removeUpdates(this)
+                    if (continuation.isActive) {
+                        continuation.resume(LocationResponse.LocationDisabled)
+                    }
+                }
+            }
+            
+            @Deprecated("Deprecated in API level 29")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+                Log.d(TAG, "Location provider status changed: $provider, status: $status")
+            }
+        }
+        
+        // Set up timeout (45 seconds for high accuracy GPS)
+        val timeoutRunnable = Runnable {
+            Log.w(TAG, "GPS location request timed out")
+            locationManager.removeUpdates(locationListener)
+            
+            if (!locationReceived && continuation.isActive) {
+                if (bestLocation != null) {
+                    Log.d(TAG, "Using best available location: accuracy ${bestLocation!!.accuracy}m")
+                    continuation.resume(
+                        LocationResponse.Success(
+                            LocationResult(
+                                latitude = bestLocation!!.latitude,
+                                longitude = bestLocation!!.longitude,
+                                accuracy = bestLocation!!.accuracy
+                            )
+                        )
+                    )
+                } else {
+                    continuation.resume(LocationResponse.Error("GPS timeout: Could not get accurate location. Please ensure you're outdoors with clear sky view."))
                 }
             }
         }
         
         try {
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
+            // Request location updates from GPS provider
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                1000L, // 1 second interval
+                0f,    // No minimum distance
+                locationListener,
                 Looper.getMainLooper()
             )
             
+            // Start timeout timer
+            handler.postDelayed(timeoutRunnable, 45000L) // 45 seconds
+            
             // Set up cancellation
             continuation.invokeOnCancellation {
-                fusedLocationClient.removeLocationUpdates(locationCallback)
+                handler.removeCallbacks(timeoutRunnable)
+                locationManager.removeUpdates(locationListener)
             }
             
         } catch (e: SecurityException) {
-            Log.e(TAG, "Security exception requesting location updates", e)
+            Log.e(TAG, "Security exception requesting GPS location", e)
             continuation.resume(LocationResponse.PermissionDenied)
         } catch (e: Exception) {
-            Log.e(TAG, "Exception requesting location updates", e)
-            continuation.resume(LocationResponse.Error("Failed to request location: ${e.message}"))
+            Log.e(TAG, "Exception requesting GPS location", e)
+            continuation.resume(LocationResponse.Error("Failed to request GPS location: ${e.message}"))
         }
     }
     
     /**
-     * Get current location with high accuracy using getCurrentLocation API
-     * This is an alternative method that uses the newer getCurrentLocation API
+     * Get last known location from native LocationManager
+     */
+    private fun getLastKnownNativeLocation(context: Context): Location? {
+        if (!hasLocationPermissions(context)) {
+            return null
+        }
+        
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        
+        return try {
+            var bestLocation: Location? = null
+            
+            // Try GPS provider first
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                val gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if (gpsLocation != null) {
+                    bestLocation = gpsLocation
+                    Log.d(TAG, "Last known GPS location: ${gpsLocation.latitude}, ${gpsLocation.longitude}, accuracy: ${gpsLocation.accuracy}m")
+                }
+            }
+            
+            // Try Network provider as fallback
+            if (bestLocation == null && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                val networkLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                if (networkLocation != null) {
+                    bestLocation = networkLocation
+                    Log.d(TAG, "Last known Network location: ${networkLocation.latitude}, ${networkLocation.longitude}, accuracy: ${networkLocation.accuracy}m")
+                }
+            }
+            
+            bestLocation
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security exception getting last known location", e)
+            null
+        }
+    }
+    
+    /**
+     * Get current location with high accuracy using native Android API
+     * This method is optimized for business registration requiring < 10m accuracy
      */
     suspend fun getCurrentLocationHighAccuracy(context: Context): LocationResponse {
         if (!hasLocationPermissions(context)) {
             return LocationResponse.PermissionDenied
         }
         
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        val cancellationTokenSource = CancellationTokenSource()
+        if (!isLocationServicesEnabled(context)) {
+            Log.w(TAG, "Location services are disabled for high accuracy request")
+            return LocationResponse.LocationDisabled
+        }
         
-        return suspendCancellableCoroutine { continuation ->
-            
-            continuation.invokeOnCancellation {
-                cancellationTokenSource.cancel()
-            }
-            
-            try {
-                fusedLocationClient.getCurrentLocation(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    cancellationTokenSource.token
-                ).addOnSuccessListener { location ->
-                    if (location != null) {
-                        Log.d(TAG, "High accuracy location: ${location.latitude}, ${location.longitude}")
-                        continuation.resume(
-                            LocationResponse.Success(
-                                LocationResult(
-                                    latitude = location.latitude,
-                                    longitude = location.longitude,
-                                    accuracy = location.accuracy
-                                )
+        return try {
+            Log.d(TAG, "Requesting ultra-high accuracy GPS location (< 10m) using native Android API")
+            getNativeUltraHighAccuracyLocation(context)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting ultra-high accuracy location", e)
+            LocationResponse.Error("Failed to get high accuracy location: ${e.message}")
+        }
+    }
+    
+    /**
+     * Get ultra-high accuracy location (< 10 meters) using native GPS
+     */
+    private suspend fun getNativeUltraHighAccuracyLocation(context: Context): LocationResponse = suspendCancellableCoroutine { continuation ->
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.w(TAG, "GPS provider is not enabled for ultra-high accuracy")
+            continuation.resume(LocationResponse.LocationDisabled)
+            return@suspendCancellableCoroutine
+        }
+        
+        var bestLocation: Location? = null
+        var locationReceived = false
+        val handler = Handler(Looper.getMainLooper())
+        
+        val locationListener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                Log.d(TAG, "Ultra-high accuracy GPS location: ${location.latitude}, ${location.longitude}, accuracy: ${location.accuracy}m")
+                
+                // Only accept locations with ultra-high accuracy (< 10 meters for critical business registration)
+                if (location.accuracy <= 10f) {
+                    if (!locationReceived) {
+                        locationReceived = true
+                        locationManager.removeUpdates(this)
+                        
+                        val result = LocationResponse.Success(
+                            LocationResult(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                accuracy = location.accuracy
                             )
                         )
-                    } else {
-                        Log.w(TAG, "High accuracy location returned null")
-                        continuation.resume(LocationResponse.Error("Unable to get current location"))
+                        
+                        if (continuation.isActive) {
+                            continuation.resume(result)
+                        }
                     }
-                }.addOnFailureListener { exception ->
-                    Log.e(TAG, "Failed to get high accuracy location", exception)
-                    continuation.resume(LocationResponse.Error("Location request failed: ${exception.message}"))
+                } else {
+                    Log.d(TAG, "Location accuracy not sufficient: ${location.accuracy}m, need < 10m...")
+                    bestLocation = if (bestLocation == null || location.accuracy < bestLocation!!.accuracy) {
+                        location
+                    } else {
+                        bestLocation
+                    }
                 }
-                
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Security exception getting high accuracy location", e)
-                continuation.resume(LocationResponse.PermissionDenied)
-            } catch (e: Exception) {
-                Log.e(TAG, "Exception getting high accuracy location", e)
-                continuation.resume(LocationResponse.Error("Failed to get location: ${e.message}"))
             }
+            
+            override fun onProviderEnabled(provider: String) {
+                Log.d(TAG, "Ultra-high accuracy provider enabled: $provider")
+            }
+            
+            override fun onProviderDisabled(provider: String) {
+                Log.w(TAG, "Ultra-high accuracy provider disabled: $provider")
+                if (provider == LocationManager.GPS_PROVIDER && !locationReceived) {
+                    locationManager.removeUpdates(this)
+                    if (continuation.isActive) {
+                        continuation.resume(LocationResponse.LocationDisabled)
+                    }
+                }
+            }
+            
+            @Deprecated("Deprecated in API level 29")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+                Log.d(TAG, "Ultra-high accuracy provider status changed: $provider, status: $status")
+            }
+        }
+        
+        // Extended timeout for ultra-high accuracy (60 seconds)
+        val timeoutRunnable = Runnable {
+            Log.w(TAG, "Ultra-high accuracy GPS request timed out")
+            locationManager.removeUpdates(locationListener)
+            
+            if (!locationReceived && continuation.isActive) {
+                if (bestLocation != null) {
+                    Log.d(TAG, "Using best available ultra-high accuracy location: ${bestLocation!!.accuracy}m")
+                    continuation.resume(
+                        LocationResponse.Success(
+                            LocationResult(
+                                latitude = bestLocation!!.latitude,
+                                longitude = bestLocation!!.longitude,
+                                accuracy = bestLocation!!.accuracy
+                            )
+                        )
+                    )
+                } else {
+                    continuation.resume(LocationResponse.Error("Ultra-high accuracy GPS timeout: Could not achieve < 10m accuracy. Please ensure you're outdoors with clear sky view and wait for GPS to stabilize."))
+                }
+            }
+        }
+        
+        try {
+            // Request very frequent updates for ultra-high accuracy
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                500L, // 0.5 second interval for rapid updates
+                0f,   // No minimum distance
+                locationListener,
+                Looper.getMainLooper()
+            )
+            
+            // Extended timeout for ultra-high accuracy
+            handler.postDelayed(timeoutRunnable, 60000L) // 60 seconds
+            
+            // Set up cancellation
+            continuation.invokeOnCancellation {
+                handler.removeCallbacks(timeoutRunnable)
+                locationManager.removeUpdates(locationListener)
+            }
+            
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security exception requesting ultra-high accuracy GPS", e)
+            continuation.resume(LocationResponse.PermissionDenied)
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception requesting ultra-high accuracy GPS", e)
+            continuation.resume(LocationResponse.Error("Failed to request ultra-high accuracy GPS: ${e.message}"))
         }
     }
     
