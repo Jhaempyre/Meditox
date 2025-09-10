@@ -23,6 +23,6 @@ interface AuthApiService {
     @POST("/api/v1/register")
     suspend fun registerUser(@Body userRegistrationRequest: UserRegistrationRequest): Response<UserRegistrationResponse>
 
-    @POST("/api/v1/business/register")
+    @POST("/api/v2/registerShop")
     suspend fun registerBusiness(@Body businessRegistrationRequest: BusinessRegistrationRequest): Response<BusinessRegistrationResponse>
 }

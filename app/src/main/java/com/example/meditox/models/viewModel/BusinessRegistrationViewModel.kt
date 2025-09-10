@@ -63,6 +63,8 @@ class BusinessRegistrationViewModel(application: Application) : AndroidViewModel
                 
                 if (response.isSuccessful) {
                     val body = response.body()
+                    Log.d("yaha hu","aa gya")
+
                     if (body != null && body.success) {
                         _registrationResult.value = ApiResult.Success(body)
                         // Update business registration status in DataStore

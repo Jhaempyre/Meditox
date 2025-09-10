@@ -1,6 +1,7 @@
 package com.example.meditox.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -28,9 +29,11 @@ import com.example.meditox.Routes
 import com.example.meditox.models.businessRegistration.BusinessRegistrationRequest
 import com.example.meditox.models.viewModel.BusinessRegistrationViewModel
 import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.LocationUtils
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.util.UUID
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -60,6 +63,14 @@ fun ShopRegisterScreen(
     val locationError by viewModel.locationError.collectAsState()
     val isLocationLoading by viewModel.isLocationLoading.collectAsState()
     val user by viewModel.user.collectAsState()
+
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = true // Makes icons like battery/time black for visibility
+        )
+    }
 
     // Location permissions
     val locationPermissions = rememberMultiplePermissionsState(
@@ -512,46 +523,76 @@ fun ShopRegisterScreen(
                         Text("Register Business")
                     }
                 }
+
+                LaunchedEffect(registrationResult) {
+                   when(val result = registrationResult) {
+                       is ApiResult.Success -> {
+                           val responseShop = result.data.data
+                           if (responseShop != null) {
+                               DataStoreManager.saveShopDetails(context, responseShop)
+                               DataStoreManager.setIsBusinessRegistered(context, true)
+                               Log.d("From_business", "Success: $responseShop")
+                           }
+                           navController.navigate(Routes.DASHBOARD) {
+                               popUpTo(Routes.REGISTER_SHOP) { inclusive = true }
+                               launchSingleTop = true
+                           }
+                       }
+                       is ApiResult.Error->{
+                           Log.d("From_business", "Error: ${result.message}")
+                           Toast.makeText(
+                               context,
+                               result.message ?: "Something went wrong",
+                               Toast.LENGTH_SHORT
+                           ).show()
+                           viewModel.resetRegistrationState()
+                       }
+                       else -> {}
+                   }
+
+                }
             }
 
-            // Preview Button
-            OutlinedButton(
-                onClick = {
-                    val previewRequest = BusinessRegistrationRequest(
-                        user_id = user?.id ?: UUID.randomUUID(),
-                        shopName = shopName.takeIf { it.isNotBlank() },
-                        licenseNumber = licenseNumber.takeIf { it.isNotBlank() },
-                        gstNumber = gstNumber.takeIf { it.isNotBlank() },
-                        address = address.takeIf { it.isNotBlank() },
-                        city = city.takeIf { it.isNotBlank() },
-                        state = state.takeIf { it.isNotBlank() },
-                        pinCode = pinCode.takeIf { it.isNotBlank() },
-                        contactPhone = contactPhone.takeIf { it.isNotBlank() },
-                        contactEmail = contactEmail.takeIf { it.isNotBlank() },
-                        latitude = currentLocation?.latitude?.toString(),
-                        longitude = currentLocation?.longitude?.toString(),
-                        shopStatus = true
-                    )
-                    Log.d(TAG, "BusinessRequest Preview: $previewRequest")
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = primaryGreen
-                ),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    width = 1.dp,
-                    brush = SolidColor(primaryGreen)
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "Preview",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Preview Business Data")
-            }
+//            // Preview Button
+//            OutlinedButton(
+//                onClick = {
+//                    val previewRequest = BusinessRegistrationRequest(
+//                        user_id = user?.id ?: UUID.randomUUID(),
+//                        shopName = shopName.takeIf { it.isNotBlank() },
+//                        licenseNumber = licenseNumber.takeIf { it.isNotBlank() },
+//                        gstNumber = gstNumber.takeIf { it.isNotBlank() },
+//                        address = address.takeIf { it.isNotBlank() },
+//                        city = city.takeIf { it.isNotBlank() },
+//                        state = state.takeIf { it.isNotBlank() },
+//                        pinCode = pinCode.takeIf { it.isNotBlank() },
+//                        contactPhone = contactPhone.takeIf { it.isNotBlank() },
+//                        contactEmail = contactEmail.takeIf { it.isNotBlank() },
+//                        latitude = currentLocation?.latitude?.toString(),
+//                        longitude = currentLocation?.longitude?.toString(),
+//                        shopStatus = true
+//                    )
+//                    viewModel.registerBusinessWithLocation(previewRequest)
+//
+//                    Log.d(TAG, "BusinessRequest Preview: $previewRequest")
+//                },
+//                modifier = Modifier.fillMaxWidth(),
+//                colors = ButtonDefaults.outlinedButtonColors(
+//                    containerColor = Color.Transparent,
+//                    contentColor = primaryGreen
+//                ),
+//                border = ButtonDefaults.outlinedButtonBorder.copy(
+//                    width = 1.dp,
+//                    brush = SolidColor(primaryGreen)
+//                )
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.Info,
+//                    contentDescription = "Preview",
+//                    modifier = Modifier.size(18.dp)
+//                )
+//                Spacer(modifier = Modifier.width(8.dp))
+//                Text("Preview Business Data")
+//            }
         }
 
         // Error Display

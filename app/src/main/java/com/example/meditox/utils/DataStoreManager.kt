@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.meditox.models.ShopDetails
 import com.example.meditox.models.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,6 +23,7 @@ object DataStoreManager {
     private val IS_REGISTERED = booleanPreferencesKey("is_registered")
     private val IS_BUSINESS_REGISTERED = booleanPreferencesKey("is_business_registered")
     private val USER_DATA = stringPreferencesKey("user_data")
+    private val SHOP_DETAILS = stringPreferencesKey("shop_details")
     val jsonFormatter = Json {
         ignoreUnknownKeys = true // prevents crash if extra fields exist
         encodeDefaults = true
@@ -108,6 +110,27 @@ object DataStoreManager {
         }
     }
 
+    suspend fun saveShopDetails(context: Context,shopDetails:ShopDetails){
+        val json = jsonFormatter.encodeToString(ShopDetails.serializer(), shopDetails)
+        Log.d("DataStore", "Saving Shop data: $json")
+        context.datastore.edit { prefs ->
+            prefs[SHOP_DETAILS] = json
+        }
+        Log.d("DataStore", "Data saved:")
+    }
+
+    fun getShopDetails(context: Context):Flow<ShopDetails?>{
+        return context.datastore.data.map { prefs ->
+            prefs[SHOP_DETAILS]?.let{
+                    json->try{
+                jsonFormatter.decodeFromString<ShopDetails>(ShopDetails.serializer(), json)
+            }catch (e: Exception) {
+                Log.e("DataStore", "Error decoding Shop details: ${e.message}")
+                null
+            }
+            }
+        }
+    }
 
 
 
