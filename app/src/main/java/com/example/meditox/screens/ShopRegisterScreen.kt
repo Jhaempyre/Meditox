@@ -1,13 +1,26 @@
 package com.example.meditox.screens
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -28,6 +41,7 @@ fun ShopRegisterScreen(
     viewModel: BusinessRegistrationViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val TAG = "BusinessFormDebug"
 
     // State variables for form fields
     var shopName by remember { mutableStateOf("") }
@@ -59,7 +73,6 @@ fun ShopRegisterScreen(
     LaunchedEffect(registrationResult) {
         when (registrationResult) {
             is ApiResult.Success -> {
-                // Navigate to dashboard after successful business registration
                 navController.navigate(Routes.DASHBOARD) {
                     popUpTo(Routes.REGISTER_SHOP) { inclusive = true }
                     launchSingleTop = true
@@ -69,59 +82,309 @@ fun ShopRegisterScreen(
         }
     }
 
+    // Custom green color palette
+    val primaryGreen = Color(0xFF2E7D32)
+    val lightGreen = Color(0xFF4CAF50)
+    val lighterGreen = Color(0xFFE8F5E9)
+    val darkGreen = Color(0xFF1B5E20)
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(20.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-
+        // Header
         Text(
             text = "Business Registration",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = primaryGreen,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
 
-        // Location Section
+        // Business Details Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            colors = CardDefaults.cardColors(containerColor = lighterGreen),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Location Information",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    text = "Business Information",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = darkGreen
+                    )
                 )
 
-                if (currentLocation != null) {
-                    Text(
-                        text = "Current Location: ${LocationUtils.formatLocation(currentLocation!!)}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                OutlinedTextField(
+                    value = shopName,
+                    onValueChange = { shopName = it },
+                    label = { Text("Shop Name *", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = licenseNumber,
+                    onValueChange = { licenseNumber = it },
+                    label = { Text("Drug License Number", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = gstNumber,
+                    onValueChange = { gstNumber = it },
+                    label = { Text("GST Number", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+            }
+        }
+
+        // Address Details Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = lighterGreen),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Address Details",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = darkGreen
+                    )
+                )
+
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = { address = it },
+                    label = { Text("Address *", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = city,
+                        onValueChange = { city = it },
+                        label = { Text("City *", color = primaryGreen) },
+                        modifier = Modifier.weight(1f),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = primaryGreen,
+                            focusedLabelColor = primaryGreen,
+                            focusedTextColor = Color(0xFF2E7D32),
+                            unfocusedTextColor = Color(0xFF2E7D32)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = state,
+                        onValueChange = { state = it },
+                        label = { Text("State *", color = primaryGreen) },
+                        modifier = Modifier.weight(1f),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = primaryGreen,
+                            focusedLabelColor = primaryGreen,
+                            focusedTextColor = Color(0xFF2E7D32),
+                            unfocusedTextColor = Color(0xFF2E7D32)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
                     )
                 }
 
-                if (locationError != null) {
-                    Text(
-                        text = locationError!!,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
+                OutlinedTextField(
+                    value = pinCode,
+                    onValueChange = { pinCode = it },
+                    label = { Text("Pin Code *", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    shape = RoundedCornerShape(10.dp)
+                )
+            }
+        }
+
+        // Contact Details Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = lighterGreen),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Contact Information",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = darkGreen
                     )
-                    
-                    // Show location settings button if location services are disabled
-                    if (locationError!!.contains("Location services disabled") || 
+                )
+
+                OutlinedTextField(
+                    value = contactPhone,
+                    onValueChange = { contactPhone = it },
+                    label = { Text("Contact Phone", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = contactEmail,
+                    onValueChange = { contactEmail = it },
+                    label = { Text("Contact Email", color = primaryGreen) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedIndicatorColor = primaryGreen,
+                        focusedLabelColor = primaryGreen,
+                        focusedTextColor = Color(0xFF2E7D32),
+                        unfocusedTextColor = Color(0xFF2E7D32)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+            }
+        }
+
+        // Location Section (Moved to after contact details)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = lighterGreen),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Location Information",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = darkGreen
+                    )
+                )
+
+                if (currentLocation != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(primaryGreen.copy(alpha = 0.1f))
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = "Current Location: ${LocationUtils.formatLocation(currentLocation!!)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = darkGreen
+                        )
+                    }
+                }
+
+                if (locationError != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.errorContainer)
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = locationError!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+
+                    if (locationError!!.contains("Location services disabled") ||
                         locationError!!.contains("location services")) {
-                        Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(
                             onClick = {
                                 val intent = LocationUtils.createLocationSettingsIntent()
                                 context.startActivity(intent)
-                            }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = primaryGreen
+                            ),
+                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                width = 1.dp,
+                                brush = SolidColor(primaryGreen)
+                            )
                         ) {
                             Text("Open Location Settings")
                         }
@@ -129,7 +392,8 @@ fun ShopRegisterScreen(
                 }
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = {
@@ -138,156 +402,155 @@ fun ShopRegisterScreen(
                                     locationPermissions.launchMultiplePermissionRequest()
                                 }
                                 !LocationUtils.isLocationServicesEnabled(context) -> {
-                                    // Show error message, button to open settings is already shown above
                                     viewModel.resetLocationState()
-                                    // This will trigger the error message to show
                                 }
                                 else -> {
                                     viewModel.fetchCurrentLocation()
                                 }
                             }
                         },
-                        enabled = !isLocationLoading
+                        enabled = !isLocationLoading,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = primaryGreen,
+                            contentColor = Color.White
+                        )
                     ) {
                         if (isLocationLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp
+                                strokeWidth = 2.dp,
+                                color = Color.White
                             )
-                        } else {
-                            Text(
-                                when {
-                                    !locationPermissions.allPermissionsGranted -> "Grant Location Permission"
-                                    !LocationUtils.isLocationServicesEnabled(context) -> "Enable Location Services"
-                                    else -> "Get Location"
-                                }
-                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "Location",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            when {
+                                !locationPermissions.allPermissionsGranted -> "Grant Location Permission"
+                                !LocationUtils.isLocationServicesEnabled(context) -> "Enable Location Services"
+                                else -> "Get Current Location"
+                            }
+                        )
                     }
 
                     if (currentLocation != null) {
                         OutlinedButton(
-                            onClick = { viewModel.resetLocationState() }
+                            onClick = { viewModel.resetLocationState() },
+                            modifier = Modifier.weight(0.5f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = primaryGreen
+                            ),
+                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                width = 1.dp,
+                                brush = SolidColor(primaryGreen)
+
+                            )
                         ) {
-                            Text("Clear Location")
+                            Text("Clear")
                         }
                     }
                 }
             }
         }
 
-        // Business Details Form
-        OutlinedTextField(
-            value = shopName,
-            onValueChange = { shopName = it },
-            label = { Text("Shop Name *") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = licenseNumber,
-            onValueChange = { licenseNumber = it },
-            label = { Text("Drug License Number") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = gstNumber,
-            onValueChange = { gstNumber = it },
-            label = { Text("GST Number") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = address,
-            onValueChange = { address = it },
-            label = { Text("Address *") },
+        // Action Buttons
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            minLines = 2
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                value = city,
-                onValueChange = { city = it },
-                label = { Text("City *") },
-                modifier = Modifier.weight(1f)
-            )
-
-            OutlinedTextField(
-                value = state,
-                onValueChange = { state = it },
-                label = { Text("State *") },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        OutlinedTextField(
-            value = pinCode,
-            onValueChange = { pinCode = it },
-            label = { Text("Pin Code *") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = contactPhone,
-            onValueChange = { contactPhone = it },
-            label = { Text("Contact Phone") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = contactEmail,
-            onValueChange = { contactEmail = it },
-            label = { Text("Contact Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        // Registration Button
-        Button(
-            onClick = {
-                val businessRequest = BusinessRegistrationRequest(
-                    user_id = user?.id ?: UUID.randomUUID(), // This will be set by ViewModel
-                    shopName = shopName.takeIf { it.isNotBlank() },
-                    licenseNumber = licenseNumber.takeIf { it.isNotBlank() },
-                    gstNumber = gstNumber.takeIf { it.isNotBlank() },
-                    address = address.takeIf { it.isNotBlank() },
-                    city = city.takeIf { it.isNotBlank() },
-                    state = state.takeIf { it.isNotBlank() },
-                    pinCode = pinCode.takeIf { it.isNotBlank() },
-                    contactPhone = contactPhone.takeIf { it.isNotBlank() },
-                    contactEmail = contactEmail.takeIf { it.isNotBlank() },
-                    latitude = currentLocation?.latitude?.toString(),
-                    longitude = currentLocation?.longitude?.toString(),
-                    shopStatus = true
-                )
-
-                // Use the new method that automatically fetches location if needed
-                viewModel.registerBusinessWithLocation(businessRequest)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = registrationResult !is ApiResult.Loading &&
-                    shopName.isNotBlank() &&
-                    address.isNotBlank() &&
-                    city.isNotBlank() &&
-                    state.isNotBlank() &&
-                    pinCode.isNotBlank()
-        ) {
-            when (registrationResult) {
-                is ApiResult.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
+            // Registration Button
+            Button(
+                onClick = {
+                    val businessRequest = BusinessRegistrationRequest(
+                        user_id = user?.id ?: UUID.randomUUID(),
+                        shopName = shopName.takeIf { it.isNotBlank() },
+                        licenseNumber = licenseNumber.takeIf { it.isNotBlank() },
+                        gstNumber = gstNumber.takeIf { it.isNotBlank() },
+                        address = address.takeIf { it.isNotBlank() },
+                        city = city.takeIf { it.isNotBlank() },
+                        state = state.takeIf { it.isNotBlank() },
+                        pinCode = pinCode.takeIf { it.isNotBlank() },
+                        contactPhone = contactPhone.takeIf { it.isNotBlank() },
+                        contactEmail = contactEmail.takeIf { it.isNotBlank() },
+                        latitude = currentLocation?.latitude?.toString(),
+                        longitude = currentLocation?.longitude?.toString(),
+                        shopStatus = true
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Registering...")
+
+                    viewModel.registerBusinessWithLocation(businessRequest)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = registrationResult !is ApiResult.Loading &&
+                        shopName.isNotBlank() &&
+                        address.isNotBlank() &&
+                        city.isNotBlank() &&
+                        state.isNotBlank() &&
+                        pinCode.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryGreen,
+                    contentColor = Color.White
+                )
+            ) {
+                when (registrationResult) {
+                    is ApiResult.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Registering...")
+                    }
+                    else -> {
+                        Text("Register Business")
+                    }
                 }
-                else -> {
-                    Text("Register Business")
-                }
+            }
+
+            // Preview Button
+            OutlinedButton(
+                onClick = {
+                    val previewRequest = BusinessRegistrationRequest(
+                        user_id = user?.id ?: UUID.randomUUID(),
+                        shopName = shopName.takeIf { it.isNotBlank() },
+                        licenseNumber = licenseNumber.takeIf { it.isNotBlank() },
+                        gstNumber = gstNumber.takeIf { it.isNotBlank() },
+                        address = address.takeIf { it.isNotBlank() },
+                        city = city.takeIf { it.isNotBlank() },
+                        state = state.takeIf { it.isNotBlank() },
+                        pinCode = pinCode.takeIf { it.isNotBlank() },
+                        contactPhone = contactPhone.takeIf { it.isNotBlank() },
+                        contactEmail = contactEmail.takeIf { it.isNotBlank() },
+                        latitude = currentLocation?.latitude?.toString(),
+                        longitude = currentLocation?.longitude?.toString(),
+                        shopStatus = true
+                    )
+                    Log.d(TAG, "BusinessRequest Preview: $previewRequest")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = primaryGreen
+                ),
+                border = ButtonDefaults.outlinedButtonBorder.copy(
+                    width = 1.dp,
+                    brush = SolidColor(primaryGreen)
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Preview",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Preview Business Data")
             }
         }
 
@@ -298,12 +561,14 @@ fun ShopRegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = result.message,
                         modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
