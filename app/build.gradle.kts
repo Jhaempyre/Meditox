@@ -79,6 +79,9 @@ dependencies {
 
     //for getting permissions
     implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
+    
+    //for location services
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
 
     //for showing ui control things on screen
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.33.0-alpha")
