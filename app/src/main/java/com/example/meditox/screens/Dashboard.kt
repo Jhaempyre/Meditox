@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.meditox.Routes
 import kotlinx.coroutines.launch
 import com.example.meditox.screens.sell.SellMedicineScreen
 import com.example.meditox.screens.report.ReportsScreen
@@ -132,6 +134,29 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                             onClick = {
                                 showDropdownMenu = false
                                 navController.navigate("edit_shop")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "Pay the fees",
+                                        tint = Color(0xFF128C7E)
+                                    )
+                                    Text(
+                                        text = "Subscription",
+                                        color = Color.Black,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            },
+                            onClick = {
+                                showDropdownMenu = false
+                                navController.navigate(Routes.SUBSCRIPTION)
                             }
                         )
                         DropdownMenuItem(
