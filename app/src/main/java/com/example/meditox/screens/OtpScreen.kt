@@ -189,7 +189,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                 }
                             }
                             Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-
+                            DataStoreManager.setIsBusinessRegistered(context,true);
+                            Log.d("API_RESPONSE", "this will be printed") // Likely will show
                             if (!hasAllPermissions) {
                                 Log.d("API_RESPONSE", "checking permission... about to navigate")
                                 navController.navigate(Routes.PERMISSIONS) {
@@ -198,8 +199,6 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                 Log.d("API_RESPONSE", "this won't be printed") // Likely won't show
                                 return@LaunchedEffect
                             }
-                            DataStoreManager.setIsBusinessRegistered(context,true);
-                            Log.d("API_RESPONSE", "this will be printed") // Likely will show
                             navController.navigate(Routes.DASHBOARD) {
                                 popUpTo(Routes.OTP) { inclusive = true }
                                 launchSingleTop = true
