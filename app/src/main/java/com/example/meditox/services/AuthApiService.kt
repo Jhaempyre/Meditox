@@ -9,6 +9,8 @@ import com.example.meditox.models.businessRegistration.BusinessRegistrationReque
 import com.example.meditox.models.businessRegistration.BusinessRegistrationResponse
 import com.example.meditox.models.userRegistration.UserRegistrationRequest
 import com.example.meditox.models.userRegistration.UserRegistrationResponse
+import com.example.meditox.models.subscription.SubscriptionRequest
+import com.example.meditox.models.subscription.SubscriptionResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -25,4 +27,7 @@ interface AuthApiService {
 
     @POST("/api/v2/registerShop")
     suspend fun registerBusiness(@Body businessRegistrationRequest: BusinessRegistrationRequest): Response<BusinessRegistrationResponse>
+    
+    @POST("/api/rzp/subscription/create")
+    suspend fun createSubscription(@Body subscriptionRequest: SubscriptionRequest): Response<SubscriptionResponse>
 }

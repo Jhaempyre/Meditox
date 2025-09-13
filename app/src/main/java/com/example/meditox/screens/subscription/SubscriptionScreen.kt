@@ -1,5 +1,6 @@
 package com.example.meditox.screens.subscription
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -24,6 +25,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import com.example.meditox.models.viewModel.SubscriptionViewModel
+import com.example.meditox.utils.ApiResult
 
 // Updated Color Palette
 val primaryGreen = Color(0xFF2E7D32)
@@ -49,12 +55,61 @@ data class PlanFeature(
 @Composable
 fun SubscriptionScreen(navController: NavController) {
     val context = LocalContext.current
-    var selectedPlan by remember { mutableStateOf("premium") }
+    val subscriptionViewModel: SubscriptionViewModel = viewModel()
+    var selectedPlan by remember { mutableStateOf("plan_RH7icw3pPxMSSk") }
     var expandedPlan by remember { mutableStateOf<String?>(null) }
+    
+    val subscriptionResult = subscriptionViewModel.subscriptionResult.collectAsState()
+    
+    // Set initial plan ID
+    LaunchedEffect(Unit) {
+        subscriptionViewModel.setPlanId(selectedPlan)
+    }
+    
+    // Handle subscription result
+    LaunchedEffect(subscriptionResult) {
+        val result = subscriptionResult.value
+        Log.d("SubscriptionScreen", "LaunchedEffect triggered. Result type: ${result?.javaClass?.simpleName}")
+        when (result) {
+            is ApiResult.Success -> {
+                val response = result.data
+                Log.d("SubscriptionScreen", "Subscription response: $response")
+                Log.d("SubscriptionScreen", "Subscription status: ${response.status}")
+                Toast.makeText(
+                    context,
+                    "Subscription created successfully! Status: ${response.status}",
+                    Toast.LENGTH_LONG
+                ).show()
+                // Navigate to payment screen if needed
+                if (response.shortUrl.isNotEmpty()) {
+                    Toast.makeText(
+                        context,
+                        "Payment URL: ${response.shortUrl}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    // Here you can launch browser intent or handle payment flow
+                }
+            }
+            is ApiResult.Error -> {
+                Log.e("SubscriptionScreen", "Subscription error: ${result.message}")
+                Toast.makeText(
+                    context,
+                    "Subscription failed: ${result.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            is ApiResult.Loading -> {
+                // Loading state is handled in the button
+            }
+            null -> {
+                // Initial state
+            }
+        }
+    }
 
     val plans = listOf(
         SubscriptionPlan(
-            id = "basic",
+            id = "plan_RH7fGQrO7VcWse",
             name = "Starter",
             price = "₹199",
             duration = "month",
@@ -67,7 +122,7 @@ fun SubscriptionScreen(navController: NavController) {
             )
         ),
         SubscriptionPlan(
-            id = "premium",
+            id = "plan_RH7icw3pPxMSSk",
             name = "Business",
             price = "₹299",
             duration = "month",
@@ -82,7 +137,7 @@ fun SubscriptionScreen(navController: NavController) {
             )
         ),
         SubscriptionPlan(
-            id = "pro",
+            id = "plan_RH7jzqh5c5Chgn",
             name = "Enterprise",
             price = "₹399",
             duration = "month",
@@ -221,7 +276,10 @@ fun SubscriptionScreen(navController: NavController) {
                         plan = plan,
                         isSelected = selectedPlan == plan.id,
                         isExpanded = expandedPlan == plan.id,
-                        onSelect = { selectedPlan = plan.id },
+                        onSelect = { 
+                            selectedPlan = plan.id
+                            subscriptionViewModel.setPlanId(plan.id)
+                        },
                         onToggleExpand = {
                             expandedPlan = if (expandedPlan == plan.id) null else plan.id
                         }
@@ -234,14 +292,10 @@ fun SubscriptionScreen(navController: NavController) {
             // Payment Button
             Button(
                 onClick = {
-                    val selectedPlanName = plans.find { it.id == selectedPlan }?.name ?: "Unknown"
-                    val selectedPlanPrice = plans.find { it.id == selectedPlan }?.price ?: "₹0"
-                    Toast.makeText(
-                        context,
-                        "$selectedPlanName Plan Selected - $selectedPlanPrice",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Log.d("SubscriptionScreen", "Subscribe button clicked for plan: $selectedPlan")
+                    subscriptionViewModel.createSubscription(selectedPlan)
                 },
+                enabled = subscriptionResult.value !is ApiResult.Loading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -250,15 +304,26 @@ fun SubscriptionScreen(navController: NavController) {
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Payment",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
+                if (subscriptionResult.value is ApiResult.Loading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Payment",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Start ${plans.find { it.id == selectedPlan }?.name} Plan",
+                    text = if (subscriptionResult.value is ApiResult.Loading) 
+                        "Creating Subscription..." 
+                    else 
+                        "Start ${plans.find { it.id == selectedPlan }?.name} Plan",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White
