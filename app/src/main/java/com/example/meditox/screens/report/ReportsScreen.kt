@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.meditox.ui.theme.primaryGreen
 
 @Composable
 fun ReportsScreen(navController: NavController) {
@@ -37,7 +38,7 @@ fun ReportsScreen(navController: NavController) {
                     text = "Sales Reports",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF128C7E)
+                    color = primaryGreen
                 )
 
                 IconButton(
@@ -46,7 +47,7 @@ fun ReportsScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = "Filter Reports",
-                        tint = Color(0xFF128C7E)
+                        tint = primaryGreen
                     )
                 }
             }
@@ -109,7 +110,7 @@ fun ReportsScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { navController.navigate("analytics") },
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF128C7E)),
+                colors = CardDefaults.cardColors(containerColor = primaryGreen),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
@@ -159,7 +160,7 @@ fun QuickStatCard(
                 text = value,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF128C7E)
+                color = primaryGreen
             )
         }
     }
@@ -197,7 +198,7 @@ fun ReportCard(
                     text = value,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF128C7E)
+                    color = primaryGreen
                 )
                 Text(
                     text = subtitle,
@@ -209,7 +210,7 @@ fun ReportCard(
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = Color(0xFF128C7E),
+                tint = primaryGreen,
                 modifier = Modifier.size(36.dp)
             )
         }

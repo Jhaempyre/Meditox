@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import com.example.meditox.screens.sell.SellMedicineScreen
 import com.example.meditox.screens.report.ReportsScreen
 import com.example.meditox.screens.addrelease.AddReleaseScreen
+import com.example.meditox.ui.theme.primaryGreen
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -99,7 +100,7 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
                                         contentDescription = "Edit Profile",
-                                        tint = Color(0xFF128C7E)
+                                        tint = primaryGreen
                                     )
                                     Text(
                                         text = "Edit Profile",
@@ -122,7 +123,7 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                                     Icon(
                                         imageVector = Icons.Default.AddCircle,
                                         contentDescription = "Edit Shop",
-                                        tint = Color(0xFF128C7E)
+                                        tint = primaryGreen
                                     )
                                     Text(
                                         text = "Edit Shop Details",
@@ -145,7 +146,7 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
                                         contentDescription = "Pay the fees",
-                                        tint = Color(0xFF128C7E)
+                                        tint = primaryGreen
                                     )
                                     Text(
                                         text = "Subscription",
@@ -188,7 +189,7 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFF128C7E)
+                containerColor = primaryGreen
             )
         )
 
@@ -238,11 +239,11 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF128C7E),
-                        selectedTextColor = Color(0xFF128C7E),
+                        selectedIconColor = primaryGreen,
+                        selectedTextColor = primaryGreen,
                         unselectedIconColor = Color.Gray,
                         unselectedTextColor = Color.Gray,
-                        indicatorColor = Color(0xFF128C7E).copy(alpha = 0.1f)
+                        indicatorColor = primaryGreen.copy(alpha = 0.1f)
                     )
                 )
             }

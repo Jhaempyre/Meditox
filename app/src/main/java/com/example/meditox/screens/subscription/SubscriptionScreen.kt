@@ -1,9 +1,13 @@
 package com.example.meditox.screens.subscription
 
 import android.widget.Toast
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -22,273 +25,432 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
+// Updated Color Palette
+val primaryGreen = Color(0xFF2E7D32)
+val lightGreen = Color(0xFF4CAF50)
+val lighterGreen = Color(0xFFE8F5E9)
+val darkGreen = Color(0xFF1B5E20)
+
+data class SubscriptionPlan(
+    val id: String,
+    val name: String,
+    val price: String,
+    val duration: String,
+    val isPopular: Boolean,
+    val features: List<PlanFeature>
+)
+
+data class PlanFeature(
+    val text: String,
+    val icon: ImageVector
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionScreen(navController: NavController) {
     val context = LocalContext.current
+    var selectedPlan by remember { mutableStateOf("premium") }
+    var expandedPlan by remember { mutableStateOf<String?>(null) }
 
-    LazyColumn(
+    val plans = listOf(
+        SubscriptionPlan(
+            id = "basic",
+            name = "Starter",
+            price = "₹199",
+            duration = "month",
+            isPopular = false,
+            features = listOf(
+                PlanFeature("Up to 500 medicines", Icons.Default.Lock),
+                PlanFeature("Basic reports", Icons.Default.Lock),
+                PlanFeature("Email support", Icons.Default.Email),
+                PlanFeature("Stock alerts", Icons.Default.Notifications)
+            )
+        ),
+        SubscriptionPlan(
+            id = "premium",
+            name = "Business",
+            price = "₹299",
+            duration = "month",
+            isPopular = true,
+            features = listOf(
+                PlanFeature("Unlimited medicines", Icons.Default.Lock),
+                PlanFeature("Advanced analytics", Icons.Default.Lock),
+                PlanFeature("Priority support", Icons.Default.Lock),
+                PlanFeature("Real-time insights", Icons.Default.Lock),
+                PlanFeature("Batch management", Icons.Default.Lock),
+                PlanFeature("Multi-location support", Icons.Default.LocationOn)
+            )
+        ),
+        SubscriptionPlan(
+            id = "pro",
+            name = "Enterprise",
+            price = "₹399",
+            duration = "month",
+            isPopular = false,
+            features = listOf(
+                PlanFeature("Everything in Business", Icons.Default.CheckCircle),
+                PlanFeature("API integrations", Icons.Default.Lock),
+                PlanFeature("24/7 dedicated support", Icons.Default.Phone),
+                PlanFeature("Custom automations", Icons.Default.Lock),
+                PlanFeature("Advanced reporting", Icons.Default.Lock),
+                PlanFeature("Team management", Icons.Default.Lock),
+                PlanFeature("White-label solution", Icons.Default.Lock)
+            )
+        )
+    )
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .background(Color.White)
     ) {
-        item {
-            // Header Section
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Choose Your Plan",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF128C7E),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Unlock premium features to grow your medicine business",
-                    fontSize = 16.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-        }
-
-        item {
-            // Basic Plan - ₹199
-            PricingCard(
-                title = "Basic",
-                price = "₹199",
-                duration = "/month",
-                features = listOf(
-                    PlanFeature("Up to 500 medicines", Icons.Default.CheckCircle),//inventoru
-                    PlanFeature("Basic reports", Icons.Default.Create),  //Assessment
-                    PlanFeature("Email support", Icons.Default.Email),
-                    PlanFeature("Stock alerts", Icons.Default.Notifications),
-                    PlanFeature("Basic analytics", Icons.Default.Star)//barchart
-                ),
-                isPopular = false,
-                buttonColor = Color(0xFF128C7E),
-                onClick = {
-                    Toast.makeText(context, "Basic Plan Selected - ₹199", Toast.LENGTH_SHORT).show()
+        // Top App Bar with Business Context
+        TopAppBar(
+            title = {
+                Column {
+                    Text(
+                        text = "Meditox Pro",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Scale your medicine business",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
                 }
-            )
-        }
-
-        item {
-            // Premium Plan - ₹299 (Best Seller)
-            PricingCard(
-                title = "Premium",
-                price = "₹299",
-                duration = "/month",
-                features = listOf(
-                    PlanFeature("Unlimited medicines", Icons.Default.CheckCircle),
-                    PlanFeature("Advanced reports", Icons.Default.CheckCircle),
-                    PlanFeature("Priority support", Icons.Default.CheckCircle),
-                    PlanFeature("Real-time analytics", Icons.Default.CheckCircle),
-                    PlanFeature("Batch management", Icons.Default.CheckCircle),
-                    PlanFeature("Multi-location support", Icons.Default.LocationOn),
-                    PlanFeature("Custom branding", Icons.Default.CheckCircle)
-                ),
-                isPopular = true,
-                buttonColor = Color(0xFF128C7E),
-                onClick = {
-                    Toast.makeText(context, "Premium Plan Selected - ₹299 (Best Seller!)", Toast.LENGTH_SHORT).show()
+            },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
                 }
-            )
-        }
-
-        item {
-            // Pro Plan - ₹399
-            PricingCard(
-                title = "Professional",
-                price = "₹399",
-                duration = "/month",
-                features = listOf(
-                    PlanFeature("Everything in Premium", Icons.Default.CheckCircle),
-                    PlanFeature("24/7 phone support", Icons.Default.Phone),
-                    PlanFeature("Advanced automations", Icons.Default.CheckCircle),
-                    PlanFeature("Custom reports", Icons.Default.CheckCircle),
-                    PlanFeature("Team management", Icons.Default.CheckCircle),
-                    PlanFeature("White-label solution", Icons.Default.CheckCircle),
-                    PlanFeature("Priority feature requests", Icons.Default.Star)
-                ),
-                isPopular = false,
-                buttonColor = Color(0xFF128C7E),
-                onClick = {
-                    Toast.makeText(context, "Professional Plan Selected - ₹399", Toast.LENGTH_SHORT).show()
-                }
-            )
-        }
-
-        item {
-            // Bottom Info
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF128C7E).copy(alpha = 0.1f)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            },
+            actions = {
+                IconButton(onClick = { /* Help */ }) {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Secure",
-                        tint = Color(0xFF128C7E),
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "All plans include free trial • Cancel anytime • Secure payments",
-                        fontSize = 14.sp,
-                        color = Color(0xFF128C7E),
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Medium
+                        contentDescription = "Help",
+                        tint = Color.White
                     )
                 }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = primaryGreen
+            )
+        )
+
+        Column(
+            modifier = Modifier.padding(24.dp)
+        ) {
+            // Business Header with Context
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = lighterGreen),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(lightGreen, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Business",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Join 10,000+ pharmacy owners",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = darkGreen
+                        )
+                        Text(
+                            text = "Choose a plan that grows with your business needs",
+                            fontSize = 14.sp,
+                            color = primaryGreen,
+                            lineHeight = 20.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = "Choose Your Plan",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = darkGreen,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Unlock powerful features to manage inventory, boost sales, and grow your pharmacy business efficiently.",
+                fontSize = 16.sp,
+                color = Color(0xFF666666),
+                lineHeight = 22.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Plans
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                items(plans.size) { index ->
+                    val plan = plans[index]
+                    PlanCard(
+                        plan = plan,
+                        isSelected = selectedPlan == plan.id,
+                        isExpanded = expandedPlan == plan.id,
+                        onSelect = { selectedPlan = plan.id },
+                        onToggleExpand = {
+                            expandedPlan = if (expandedPlan == plan.id) null else plan.id
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Payment Button
+            Button(
+                onClick = {
+                    val selectedPlanName = plans.find { it.id == selectedPlan }?.name ?: "Unknown"
+                    val selectedPlanPrice = plans.find { it.id == selectedPlan }?.price ?: "₹0"
+                    Toast.makeText(
+                        context,
+                        "$selectedPlanName Plan Selected - $selectedPlanPrice",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = lightGreen
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Payment",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Start ${plans.find { it.id == selectedPlan }?.name} Plan",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Trust indicators
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Verified",
+                    tint = lightGreen,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "30-day money back guarantee",
+                    fontSize = 14.sp,
+                    color = Color(0xFF666666),
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
 }
 
 @Composable
-fun PricingCard(
-    title: String,
-    price: String,
-    duration: String,
-    features: List<PlanFeature>,
-    isPopular: Boolean,
-    buttonColor: Color,
-    onClick: () -> Unit
+fun PlanCard(
+    plan: SubscriptionPlan,
+    isSelected: Boolean,
+    isExpanded: Boolean,
+    onSelect: () -> Unit,
+    onToggleExpand: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isPopular) 8.dp else 4.dp
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelect() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) lighterGreen else Color(0xFFFAFAFA)
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        border = if (isSelected) {
+            androidx.compose.foundation.BorderStroke(2.dp, lightGreen)
+        } else {
+            androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0))
+        }
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Popular Badge
-            if (isPopular) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF128C7E),
-                                    Color(0xFF075E54)
-                                )
-                            )
-                        )
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Main card content
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Radio button and plan info
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    // Custom Radio Button
+                    Box(
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) lightGreen else Color.Transparent
+                            )
+                            .clickable { onSelect() },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Best Seller",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = "BEST SELLER",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            letterSpacing = 1.sp
-                        )
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Best Seller",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        if (isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White)
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Color.Transparent,
+                                        CircleShape
+                                    )
+                                    .then(
+                                        Modifier.background(
+                                            Color(0xFFE0E0E0),
+                                            CircleShape
+                                        )
+                                    )
+                            )
+                        }
                     }
+
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = plan.name,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) darkGreen else Color(0xFF333333)
+                            )
+                            if (plan.isPopular) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            lightGreen,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "Most Popular",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                }
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text(
+                                text = plan.price,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = primaryGreen
+                            )
+                            Text(
+                                text = "/${plan.duration}",
+                                fontSize = 16.sp,
+                                color = Color(0xFF666666),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
+                // Dropdown button
+                IconButton(
+                    onClick = onToggleExpand,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.ArrowDropDown,
+                        contentDescription = "Expand",
+                        tint = lightGreen,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
 
-            Column(
-                modifier = Modifier.padding(20.dp)
+            // Animated features dropdown
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(
+                    animationSpec = tween(200),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(200)),
+                exit = shrinkVertically(
+                    animationSpec = tween(200),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(200))
             ) {
-                // Plan Title
-                Text(
-                    text = title,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Price
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.Bottom
+                Column(
+                    modifier = Modifier.padding(top =16.dp)
                 ) {
-                    Text(
-                        text = price,
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF128C7E)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        thickness = 1.dp,
+                        color = lightGreen.copy(alpha = 0.2f)
                     )
-                    Text(
-                        text = duration,
-                        fontSize = 16.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Features List
-                features.forEach { feature ->
-                    FeatureRow(feature = feature)
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Subscribe Button
-                Button(
-                    onClick = onClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isPopular) {
-                            Color(0xFF128C7E)
-                        } else {
-                            Color(0xFF128C7E).copy(alpha = 0.9f)
-                        }
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = if (isPopular) 4.dp else 2.dp
-                    )
-                ) {
-                    Text(
-                        text = if (isPopular) "Get Premium" else "Choose Plan",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    plan.features.forEach { feature ->
+                        FeatureRow(feature = feature)
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
                 }
             }
         }
@@ -304,19 +466,14 @@ fun FeatureRow(feature: PlanFeature) {
         Icon(
             imageVector = feature.icon,
             contentDescription = feature.text,
-            tint = Color(0xFF128C7E),
-            modifier = Modifier.size(20.dp)
+            tint = lightGreen,
+            modifier = Modifier.size(18.dp)
         )
         Text(
             text = feature.text,
             fontSize = 15.sp,
-            color = Color.Black.copy(alpha = 0.8f),
-            modifier = Modifier.weight(1f)
+            color = Color(0xFF444444),
+            fontWeight = FontWeight.Normal
         )
     }
 }
-
-data class PlanFeature(
-    val text: String,
-    val icon: ImageVector
-)

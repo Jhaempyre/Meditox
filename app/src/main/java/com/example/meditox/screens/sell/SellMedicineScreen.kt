@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.meditox.ui.theme.primaryGreen
 
 @Composable
 fun SellMedicineScreen(navController: NavController) {
@@ -37,7 +38,7 @@ fun SellMedicineScreen(navController: NavController) {
                     text = "Medicine Inventory",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF128C7E),
+                    color = primaryGreen,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -47,7 +48,7 @@ fun SellMedicineScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Medicine",
-                        tint = Color(0xFF128C7E),
+                        tint = primaryGreen,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -68,8 +69,8 @@ fun SellMedicineScreen(navController: NavController) {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF128C7E),
-                    focusedLabelColor = Color(0xFF128C7E)
+                    focusedBorderColor = primaryGreen,
+                    focusedLabelColor = primaryGreen
                 )
             )
         }
@@ -119,8 +120,8 @@ fun QuickActionChip(
         onClick = onClick,
         label = { Text(text, fontSize = 12.sp) },
         colors = AssistChipDefaults.assistChipColors(
-            containerColor = Color(0xFF128C7E).copy(alpha = 0.1f),
-            labelColor = Color(0xFF128C7E)
+            containerColor = primaryGreen.copy(alpha = 0.1f),
+            labelColor = primaryGreen
         ),
         modifier = modifier
     )
@@ -162,7 +163,7 @@ fun MedicineCard(
                 Text(
                     text = "₹$price per unit",
                     fontSize = 16.sp,
-                    color = Color(0xFF128C7E),
+                    color = primaryGreen,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -170,7 +171,7 @@ fun MedicineCard(
             Icon(
                 imageVector = Icons.Default.Favorite,
                 contentDescription = "Medicine",
-                tint = Color(0xFF128C7E),
+                tint = primaryGreen,
                 modifier = Modifier.size(32.dp)
             )
         }

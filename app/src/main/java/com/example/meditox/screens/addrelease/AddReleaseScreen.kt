@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.meditox.ui.theme.primaryGreen
 
 @Composable
 fun AddReleaseScreen(navController: NavController) {
@@ -41,7 +42,7 @@ fun AddReleaseScreen(navController: NavController) {
                     text = "Inventory Management",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF128C7E)
+                    color = primaryGreen
                 )
 
                 IconButton(
@@ -50,7 +51,7 @@ fun AddReleaseScreen(navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.AccountBox,
                         contentDescription = "History",
-                        tint = Color(0xFF128C7E)
+                        tint = primaryGreen
                     )
                 }
             }
@@ -146,8 +147,8 @@ fun QuickActionButton(
         onClick = onClick,
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF128C7E).copy(alpha = 0.1f),
-            contentColor = Color(0xFF128C7E)
+            containerColor = primaryGreen.copy(alpha = 0.1f),
+            contentColor = primaryGreen
         )
     ) {
         Row(
@@ -193,7 +194,7 @@ fun ActionCard(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        color = Color(0xFF128C7E).copy(alpha = 0.1f),
+                        color = primaryGreen.copy(alpha = 0.1f),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -201,7 +202,7 @@ fun ActionCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    tint = Color(0xFF128C7E),
+                    tint = primaryGreen,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -260,7 +261,7 @@ fun RecentActivityItem(
                 text = quantity,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (action == "Added") Color.Green else Color(0xFF128C7E)
+                color = if (action == "Added") Color.Green else primaryGreen
             )
         }
     }
