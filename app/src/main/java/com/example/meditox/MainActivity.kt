@@ -33,7 +33,9 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
 import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.utils.SubscriptionDataHolder
 import com.example.meditox.models.subscription.SubscriptionDetails
+import com.example.meditox.models.subscription.SubscriptionResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -108,38 +110,87 @@ fun AppNavigation() {
         override fun onPaymentSuccess(razorpayPaymentID: String?) {
             Log.d("MainActivity", "Payment successful: $razorpayPaymentID")
             
-            // Save subscription details to DataStore
+            // Save subscription details to DataStore using real-time data
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    // Get the subscription data that was stored during the subscription creation
-                    // For now, we'll create a basic subscription details object
-                    // In a real app, you might want to fetch this from your server or pass it through intent
-                    
-                    val currentTime = System.currentTimeMillis()
-                    val subscriptionDetails = SubscriptionDetails(
-                        subscriptionId = "sub_temp_${currentTime}", // You should store this from the API response
-                        planId = "plan_RH7icw3pPxMSSk", // This should come from the selected plan
-                        planName = "Business", // This should come from the selected plan
-                        amount = "₹299", // This should come from the selected plan
-                        currency = "INR",
-                        status = "active",
-                        startDate = currentTime,
-                        endDate = currentTime + (30L * 24 * 60 * 60 * 1000), // 30 days from now
-                        razorpayPaymentId = razorpayPaymentID ?: "",
-                        isActive = true,
-                        autoRenew = true,
-                        createdAt = currentTime,
-                        lastUpdated = currentTime
-                    )
-                    
-                    // Save to DataStore
-                    DataStoreManager.saveSubscriptionDetails(this@MainActivity, subscriptionDetails)
-                    
-                    Log.d("MainActivity", "Subscription details saved to DataStore")
-                    Log.d("MainActivity", "Subscription ID: ${subscriptionDetails.subscriptionId}")
-                    Log.d("MainActivity", "Plan: ${subscriptionDetails.planName}")
-                    Log.d("MainActivity", "Amount: ${subscriptionDetails.amount}")
-                    Log.d("MainActivity", "Start Date: ${subscriptionDetails.startDate}")
+                    // Get the actual subscription data from the holder
+                    if (SubscriptionDataHolder.hasValidData()) {
+                        val subscriptionResponse = SubscriptionDataHolder.getSubscriptionResponse()!!
+                        val planId = SubscriptionDataHolder.getPlanId()!!
+                        val planName = SubscriptionDataHolder.getPlanName()!!
+                        val planPrice = SubscriptionDataHolder.getPlanPrice()!!
+                        val planDuration = SubscriptionDataHolder.getPlanDuration()!!
+                        
+                        Log.d("MainActivity", "Using real subscription data:")
+                        Log.d("MainActivity", "- Subscription ID: ${subscriptionResponse.id}")
+                        Log.d("MainActivity", "- Plan ID: $planId")
+                        Log.d("MainActivity", "- Plan Name: $planName")
+                        Log.d("MainActivity", "- Plan Price: $planPrice")
+                        Log.d("MainActivity", "- Plan Duration: $planDuration")
+                        
+                        val currentTime = System.currentTimeMillis()
+                        
+                        // Calculate end date based on plan duration
+                        val endDate = when (planDuration.lowercase()) {
+                            "month" -> currentTime + (30L * 24 * 60 * 60 * 1000) // 30 days
+                            "year" -> currentTime + (365L * 24 * 60 * 60 * 1000) // 365 days
+                            "week" -> currentTime + (7L * 24 * 60 * 60 * 1000) // 7 days
+                            else -> currentTime + (30L * 24 * 60 * 60 * 1000) // Default to 30 days
+                        }
+                        
+                        val subscriptionDetails = SubscriptionDetails(
+                            subscriptionId = subscriptionResponse.id,
+                            planId = planId,
+                            planName = planName,
+                            amount = planPrice,
+                            currency = "INR",
+                            status = "active",
+                            startDate = currentTime,
+                            endDate = endDate,
+                            razorpayPaymentId = razorpayPaymentID ?: "",
+                            isActive = true,
+                            autoRenew = true,
+                            createdAt = subscriptionResponse.createdAt * 1000, // Convert to milliseconds
+                            lastUpdated = currentTime
+                        )
+                        
+                        // Save to DataStore
+                        DataStoreManager.saveSubscriptionDetails(this@MainActivity, subscriptionDetails)
+                        
+                        Log.d("MainActivity", "Real subscription details saved to DataStore:")
+                        Log.d("MainActivity", "- Subscription ID: ${subscriptionDetails.subscriptionId}")
+                        Log.d("MainActivity", "- Plan: ${subscriptionDetails.planName}")
+                        Log.d("MainActivity", "- Amount: ${subscriptionDetails.amount}")
+                        Log.d("MainActivity", "- Start Date: ${subscriptionDetails.startDate}")
+                        Log.d("MainActivity", "- End Date: ${subscriptionDetails.endDate}")
+                        Log.d("MainActivity", "- Payment ID: ${subscriptionDetails.razorpayPaymentId}")
+                        
+                        // Clear the temporary data after successful save
+                        SubscriptionDataHolder.clearData()
+                        Log.d("MainActivity", "Cleared temporary subscription data")
+                        
+                    } else {
+                        Log.e("MainActivity", "No valid subscription data found in holder")
+                        // Fallback: Create minimal subscription record with payment ID
+                        val currentTime = System.currentTimeMillis()
+                        val fallbackDetails = SubscriptionDetails(
+                            subscriptionId = "payment_${razorpayPaymentID}",
+                            planId = "unknown",
+                            planName = "Premium Plan",
+                            amount = "₹299",
+                            currency = "INR",
+                            status = "active",
+                            startDate = currentTime,
+                            endDate = currentTime + (30L * 24 * 60 * 60 * 1000),
+                            razorpayPaymentId = razorpayPaymentID ?: "",
+                            isActive = true,
+                            autoRenew = true,
+                            createdAt = currentTime,
+                            lastUpdated = currentTime
+                        )
+                        DataStoreManager.saveSubscriptionDetails(this@MainActivity, fallbackDetails)
+                        Log.d("MainActivity", "Saved fallback subscription details")
+                    }
                     
                 } catch (e: Exception) {
                     Log.e("MainActivity", "Error saving subscription details: ${e.message}", e)

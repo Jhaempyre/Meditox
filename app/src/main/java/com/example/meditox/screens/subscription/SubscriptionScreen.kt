@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.meditox.models.viewModel.SubscriptionViewModel
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.RazorpayConfig
+import com.example.meditox.utils.SubscriptionDataHolder
 import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
 import org.json.JSONObject
@@ -101,7 +102,7 @@ fun SubscriptionScreen(navController: NavController) {
         SubscriptionPlan(
             id = "plan_RH7jzqh5c5Chgn",
             name = "Enterprise",
-            price = "₹499",
+            price = "₹399",
             duration = "month",
             isPopular = false,
             features = listOf(
@@ -227,6 +228,20 @@ fun SubscriptionScreen(navController: NavController) {
                 Log.d("SubscriptionScreen", "Found plan details: $selectedPlanDetails")
                 
                 if (selectedPlanDetails != null) {
+                    // Store subscription and plan data for payment success handling
+                    SubscriptionDataHolder.storeSubscriptionData(
+                        subscriptionResponse = response,
+                        planId = selectedPlanDetails.id,
+                        planName = selectedPlanDetails.name,
+                        planPrice = selectedPlanDetails.price,
+                        planDuration = selectedPlanDetails.duration
+                    )
+                    
+                    Log.d("SubscriptionScreen", "Stored subscription data in holder:")
+                    Log.d("SubscriptionScreen", "- Subscription ID: ${response.id}")
+                    Log.d("SubscriptionScreen", "- Plan: ${selectedPlanDetails.name}")
+                    Log.d("SubscriptionScreen", "- Price: ${selectedPlanDetails.price}")
+                    
                     Toast.makeText(
                         context,
                         "Subscription created! Launching payment...",
