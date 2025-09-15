@@ -66,16 +66,9 @@ object SubscriptionSyncManager {
             // Get API service
             val apiService = ApiClient.createSubscriptionApiService(context)
             
-            // Get auth token (you might need to implement this based on your auth system)
-            val authToken = getAuthToken(context)
-            if (authToken == null) {
-                Log.e("SubscriptionSync", "No auth token available")
-                return false
-            }
-            
-            // Make API call
+            // Make API call (token will be added automatically by HTTPsTokenInterceptor)
             Log.d("SubscriptionSync", "Making API call to sync subscription")
-            val response = apiService.syncSubscriptionDetails("Bearer $authToken", syncRequest)
+            val response = apiService.syncSubscriptionDetails(syncRequest)
             
             Log.d("SubscriptionSync", "API Response:")
             Log.d("SubscriptionSync", "- Response code: ${response.code()}")
@@ -109,33 +102,6 @@ object SubscriptionSyncManager {
         }
     }
     
-    /**
-     * Get auth token for API calls
-     * TODO: Implement based on your authentication system
-     */
-    private suspend fun getAuthToken(context: Context): String? {
-        return try {
-            // Get token from your auth system
-            // This could be from DataStore, SharedPreferences, or another source
-            // For now, returning a placeholder - you need to implement this
-            
-            // Example implementations:
-            // 1. From DataStore: DataStoreManager.getAuthToken(context).first()
-            // 2. From user data: DataStoreManager.getUserData(context).first()?.authToken
-            // 3. From a separate auth manager: AuthManager.getToken()
-            
-            val userData = DataStoreManager.getUserData(context).first()
-            val phoneNumber = DataStoreManager.getPhoneNumber(context).first()
-            
-            // For now, using phone number as a basic identifier
-            // You should replace this with your actual auth token logic
-            phoneNumber?.let { "auth_token_for_$it" }
-            
-        } catch (e: Exception) {
-            Log.e("SubscriptionSync", "Error getting auth token: ${e.message}")
-            null
-        }
-    }
     
     /**
      * Update local subscription with backend subscription ID

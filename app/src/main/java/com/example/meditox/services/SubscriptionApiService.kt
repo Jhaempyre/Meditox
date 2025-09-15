@@ -11,19 +11,16 @@ interface SubscriptionApiService {
     
     @POST("api/subscription/sync")
     suspend fun syncSubscriptionDetails(
-        @Header("Authorization") token: String,
         @Body request: SubscriptionSyncRequest
     ): Response<SubscriptionSyncResponse>
     
     @POST("api/subscription/update-status")
     suspend fun updateSubscriptionStatus(
-        @Header("Authorization") token: String,
         @Body request: Map<String, Any>
     ): Response<SubscriptionSyncResponse>
     
     @POST("api/subscription/cancel")
     suspend fun cancelSubscription(
-        @Header("Authorization") token: String,
         @Body request: Map<String, String>
     ): Response<SubscriptionSyncResponse>
 }
