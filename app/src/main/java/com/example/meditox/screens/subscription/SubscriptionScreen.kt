@@ -1,5 +1,6 @@
 package com.example.meditox.screens.subscription
 
+import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -30,6 +31,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import com.example.meditox.models.viewModel.SubscriptionViewModel
 import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.RazorpayConfig
+import com.razorpay.Checkout
+import com.razorpay.PaymentResultListener
+import org.json.JSONObject
 
 // Updated Color Palette
 val primaryGreen = Color(0xFF2E7D32)
@@ -55,58 +60,15 @@ data class PlanFeature(
 @Composable
 fun SubscriptionScreen(navController: NavController) {
     val context = LocalContext.current
+    val activity = context as Activity
     val subscriptionViewModel: SubscriptionViewModel = viewModel()
     var selectedPlan by remember { mutableStateOf("plan_RH7icw3pPxMSSk") }
     var expandedPlan by remember { mutableStateOf<String?>(null) }
     
     val subscriptionResult = subscriptionViewModel.subscriptionResult.collectAsState()
-    
-    // Set initial plan ID
-    LaunchedEffect(Unit) {
-        subscriptionViewModel.setPlanId(selectedPlan)
-    }
-    
-    // Handle subscription result
-    LaunchedEffect(subscriptionResult) {
-        val result = subscriptionResult.value
-        Log.d("SubscriptionScreen", "LaunchedEffect triggered. Result type: ${result?.javaClass?.simpleName}")
-        when (result) {
-            is ApiResult.Success -> {
-                val response = result.data
-                Log.d("SubscriptionScreen", "Subscription response: $response")
-                Log.d("SubscriptionScreen", "Subscription status: ${response.status}")
-                Toast.makeText(
-                    context,
-                    "Subscription created successfully! Status: ${response.status}",
-                    Toast.LENGTH_LONG
-                ).show()
-                // Navigate to payment screen if needed
-                if (response.shortUrl.isNotEmpty()) {
-                    Toast.makeText(
-                        context,
-                        "Payment URL: ${response.shortUrl}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    // Here you can launch browser intent or handle payment flow
-                }
-            }
-            is ApiResult.Error -> {
-                Log.e("SubscriptionScreen", "Subscription error: ${result.message}")
-                Toast.makeText(
-                    context,
-                    "Subscription failed: ${result.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-            is ApiResult.Loading -> {
-                // Loading state is handled in the button
-            }
-            null -> {
-                // Initial state
-            }
-        }
-    }
+    val phoneNumber = subscriptionViewModel.phoneNumber.collectAsState()
 
+    // Define plans list
     val plans = listOf(
         SubscriptionPlan(
             id = "plan_RH7fGQrO7VcWse",
@@ -139,20 +101,171 @@ fun SubscriptionScreen(navController: NavController) {
         SubscriptionPlan(
             id = "plan_RH7jzqh5c5Chgn",
             name = "Enterprise",
-            price = "₹399",
+            price = "₹499",
             duration = "month",
             isPopular = false,
             features = listOf(
-                PlanFeature("Everything in Business", Icons.Default.CheckCircle),
-                PlanFeature("API integrations", Icons.Default.Lock),
-                PlanFeature("24/7 dedicated support", Icons.Default.Phone),
-                PlanFeature("Custom automations", Icons.Default.Lock),
-                PlanFeature("Advanced reporting", Icons.Default.Lock),
-                PlanFeature("Team management", Icons.Default.Lock),
-                PlanFeature("White-label solution", Icons.Default.Lock)
+                PlanFeature("Everything in Business", Icons.Default.Lock),
+                PlanFeature("Custom integrations", Icons.Default.Lock),
+                PlanFeature("24/7 phone support", Icons.Default.Lock),
+                PlanFeature("Dedicated account manager", Icons.Default.Lock),
+                PlanFeature("Advanced security", Icons.Default.Lock),
+                PlanFeature("Custom reports", Icons.Default.Lock),
+                PlanFeature("API access", Icons.Default.Lock)
             )
         )
     )
+
+    // Initialize Razorpay Checkout
+    val checkout = remember {
+        Checkout().apply {
+            setKeyID(RazorpayConfig.RAZORPAY_KEY_ID)
+            // Set the payment result listener to the activity
+            if (activity is PaymentResultListener) {
+                Log.d("RazorpayCheckout", "Setting PaymentResultListener")
+            } else {
+                Log.e("RazorpayCheckout", "Activity does not implement PaymentResultListener")
+            }
+        }
+    }
+
+    // Function to start Razorpay checkout
+    fun startRazorpayCheckout(subscriptionResponse: com.example.meditox.models.subscription.SubscriptionResponse, planName: String, planPrice: String) {
+        try {
+            Log.d("RazorpayCheckout", "Starting subscription payment for plan: $planName")
+            Log.d("RazorpayCheckout", "Subscription ID: ${subscriptionResponse.id}")
+            Log.d("RazorpayCheckout", "Subscription Status: ${subscriptionResponse.status}")
+            
+            val options = JSONObject().apply {
+                put("name", RazorpayConfig.COMPANY_NAME)
+                put("description", "$planName Subscription")
+                
+                // For subscription payments, only use subscription_id, not amount
+                put("subscription_id", subscriptionResponse.id)
+                
+                // Prefill customer details
+                val prefill = JSONObject().apply {
+                    put("email", "customer@example.com") // TODO: Get from user profile/preferences
+                    put("contact", phoneNumber.value ?: "")
+                    put("name", "Customer") // TODO: Get from user profile
+                }
+                put("prefill", prefill)
+                
+                // Theme customization
+                val theme = JSONObject().apply {
+                    put("color", RazorpayConfig.THEME_COLOR)
+                }
+                put("theme", theme)
+                
+                // Additional notes for tracking
+                val notes = JSONObject().apply {
+                    put("subscription_id", subscriptionResponse.id)
+                    put("plan_id", subscriptionResponse.planId)
+                    put("plan_name", planName)
+                    put("app_version", "1.0") // You can get this from BuildConfig
+                }
+                put("notes", notes)
+                
+                // Retry settings
+                val retry = JSONObject().apply {
+                    put("enabled", true)
+                    put("max_count", 3)
+                }
+                put("retry", retry)
+                
+                // Timeout (in seconds)
+                put("timeout", 300)
+                
+                // Modal configuration
+                val modal = JSONObject().apply {
+                    put("backdropclose", false)
+                    put("escape", false)
+                    put("handleback", true)
+                }
+                put("modal", modal)
+            }
+            
+            Log.d("RazorpayCheckout", "Payment options JSON: $options")
+            Log.d("RazorpayCheckout", "Activity type: ${activity.javaClass.simpleName}")
+            Log.d("RazorpayCheckout", "Activity implements PaymentResultListener: ${activity is PaymentResultListener}")
+            
+            // Attempt to open checkout
+            Log.d("RazorpayCheckout", "Attempting to open Razorpay checkout...")
+            checkout.open(activity, options)
+            Log.d("RazorpayCheckout", "Checkout.open() called successfully")
+            
+        } catch (e: Exception) {
+            Log.e("RazorpayCheckout", "Error in checkout", e)
+            Toast.makeText(context, "Error starting payment: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
+
+    // Set initial plan ID
+    LaunchedEffect(Unit) {
+        subscriptionViewModel.setPlanId(selectedPlan)
+    }
+    
+    // Handle subscription result
+    LaunchedEffect(subscriptionResult.value) {
+        val result = subscriptionResult.value
+        Log.d("SubscriptionScreen", "LaunchedEffect triggered. Result type: ${result?.javaClass?.simpleName}")
+        Log.d("SubscriptionScreen", "Selected plan: $selectedPlan")
+        
+        when (result) {
+            is ApiResult.Success -> {
+                val response = result.data
+                Log.d("SubscriptionScreen", "Subscription response: $response")
+                Log.d("SubscriptionScreen", "Subscription ID: ${response.id}")
+                Log.d("SubscriptionScreen", "Subscription status: ${response.status}")
+                Log.d("SubscriptionScreen", "Subscription plan ID: ${response.planId}")
+                
+                // Find the selected plan details for payment
+                val selectedPlanDetails = plans.find { it.id == selectedPlan }
+                Log.d("SubscriptionScreen", "Found plan details: $selectedPlanDetails")
+                
+                if (selectedPlanDetails != null) {
+                    Toast.makeText(
+                        context,
+                        "Subscription created! Launching payment...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    
+                    // Add a small delay to ensure UI is ready
+                    kotlinx.coroutines.delay(500)
+                    
+                    // Start Razorpay checkout
+                    Log.d("SubscriptionScreen", "About to call startRazorpayCheckout")
+                    startRazorpayCheckout(response, selectedPlanDetails.name, selectedPlanDetails.price)
+                } else {
+                    Log.e("SubscriptionScreen", "Plan details not found for selected plan: $selectedPlan")
+                    Toast.makeText(
+                        context,
+                        "Error: Plan details not found",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            is ApiResult.Error -> {
+                Log.e("SubscriptionScreen", "Subscription error: ${result.message}")
+                Toast.makeText(
+                    context,
+                    "Subscription failed: ${result.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            is ApiResult.Loading -> {
+                // Loading state is handled in the button
+            }
+            null -> {
+                // Initial state
+            }
+        }
+    }
+
+    // UI Layout starts here
 
     Column(
         modifier = Modifier

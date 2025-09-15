@@ -2,6 +2,8 @@ package com.example.meditox
 
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,6 +30,8 @@ import com.example.meditox.services.AuthApiService
 import com.example.meditox.ui.screens.RegisterUserScreen
 import com.example.meditox.ui.theme.MeditoxTheme
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.razorpay.Checkout
+import com.razorpay.PaymentResultListener
 
 
 object Routes{
@@ -81,8 +85,9 @@ fun AppNavigation() {
         }
     }
 }
-    class MainActivity : ComponentActivity() {
+    class MainActivity : ComponentActivity(), PaymentResultListener {
         private lateinit var apiService: AuthApiService
+        
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             AndroidThreeTen.init(this)
@@ -93,6 +98,50 @@ fun AppNavigation() {
                     AppNavigation()
                 }
             }
+        }
+
+        override fun onPaymentSuccess(razorpayPaymentID: String?) {
+            Log.d("MainActivity", "Payment successful: $razorpayPaymentID")
+            
+            // Show success message
+            Toast.makeText(
+                this, 
+                "🎉 Payment successful! Welcome to Premium!", 
+                Toast.LENGTH_LONG
+            ).show()
+            
+            // TODO: You can add additional success handling here:
+            // 1. Update user subscription status in local storage
+            // 2. Sync with backend to confirm payment
+            // 3. Navigate to dashboard or success screen
+            // 4. Send analytics event
+            
+            Log.d("MainActivity", "Payment ID: $razorpayPaymentID")
+            
+            // Example: Navigate to dashboard after successful payment
+            // You might want to pass payment details or refresh user subscription status
+        }
+
+        override fun onPaymentError(code: Int, response: String?) {
+            Log.e("MainActivity", "Payment failed: Code=$code, Response=$response")
+            
+            val errorMessage = when (code) {
+                Checkout.NETWORK_ERROR -> "Network error. Please check your internet connection."
+                Checkout.INVALID_OPTIONS -> "Payment configuration error. Please try again."
+                Checkout.PAYMENT_CANCELED -> "Payment was cancelled."
+                Checkout.TLS_ERROR -> "Security error. Please update your app."
+                else -> response ?: "Payment failed. Please try again."
+            }
+            
+            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            
+            // TODO: You can add additional error handling here:
+            // 1. Log error for analytics
+            // 2. Show retry option
+            // 3. Reset subscription UI state
+            // 4. Offer alternative payment methods
+            
+            Log.e("MainActivity", "Payment error details - Code: $code, Response: $response")
         }
     }
 
