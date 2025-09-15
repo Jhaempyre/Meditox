@@ -34,6 +34,7 @@ import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
 import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.SubscriptionDataHolder
+import com.example.meditox.utils.SubscriptionSyncManager
 import com.example.meditox.models.subscription.SubscriptionDetails
 import com.example.meditox.models.subscription.SubscriptionResponse
 import kotlinx.coroutines.CoroutineScope
@@ -165,7 +166,21 @@ fun AppNavigation() {
                         Log.d("MainActivity", "- End Date: ${subscriptionDetails.endDate}")
                         Log.d("MainActivity", "- Payment ID: ${subscriptionDetails.razorpayPaymentId}")
                         
-                        // Clear the temporary data after successful save
+                        // Sync subscription details to backend
+                        Log.d("MainActivity", "Starting backend sync for subscription...")
+                        val syncSuccess = SubscriptionSyncManager.syncSubscriptionToBackend(
+                            this@MainActivity,
+                            subscriptionDetails
+                        )
+                        
+                        if (syncSuccess) {
+                            Log.d("MainActivity", "✅ Subscription successfully synced to backend")
+                        } else {
+                            Log.e("MainActivity", "❌ Failed to sync subscription to backend")
+                            // You might want to implement retry logic or queue for later sync
+                        }
+                        
+                        // Clear the temporary data after successful save and sync
                         SubscriptionDataHolder.clearData()
                         Log.d("MainActivity", "Cleared temporary subscription data")
                         
@@ -190,6 +205,19 @@ fun AppNavigation() {
                         )
                         DataStoreManager.saveSubscriptionDetails(this@MainActivity, fallbackDetails)
                         Log.d("MainActivity", "Saved fallback subscription details")
+                        
+                        // Try to sync fallback details to backend as well
+                        Log.d("MainActivity", "Attempting backend sync for fallback subscription...")
+                        val fallbackSyncSuccess = SubscriptionSyncManager.syncSubscriptionToBackend(
+                            this@MainActivity,
+                            fallbackDetails
+                        )
+                        
+                        if (fallbackSyncSuccess) {
+                            Log.d("MainActivity", "✅ Fallback subscription synced to backend")
+                        } else {
+                            Log.e("MainActivity", "❌ Failed to sync fallback subscription to backend")
+                        }
                     }
                     
                 } catch (e: Exception) {

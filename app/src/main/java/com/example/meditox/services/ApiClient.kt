@@ -32,6 +32,12 @@ object ApiClient {
            .create(AuthApiService::class.java)
     }
 
+    // Create subscription API service
+    fun createSubscriptionApiService(context: Context): SubscriptionApiService {
+        return create(context.applicationContext)
+            .create(SubscriptionApiService::class.java)
+    }
+
 }
 
 
