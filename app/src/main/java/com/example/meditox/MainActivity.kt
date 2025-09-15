@@ -32,6 +32,11 @@ import com.example.meditox.ui.theme.MeditoxTheme
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
+import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.models.subscription.SubscriptionDetails
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 object Routes{
@@ -103,23 +108,58 @@ fun AppNavigation() {
         override fun onPaymentSuccess(razorpayPaymentID: String?) {
             Log.d("MainActivity", "Payment successful: $razorpayPaymentID")
             
+            // Save subscription details to DataStore
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    // Get the subscription data that was stored during the subscription creation
+                    // For now, we'll create a basic subscription details object
+                    // In a real app, you might want to fetch this from your server or pass it through intent
+                    
+                    val currentTime = System.currentTimeMillis()
+                    val subscriptionDetails = SubscriptionDetails(
+                        subscriptionId = "sub_temp_${currentTime}", // You should store this from the API response
+                        planId = "plan_RH7icw3pPxMSSk", // This should come from the selected plan
+                        planName = "Business", // This should come from the selected plan
+                        amount = "₹299", // This should come from the selected plan
+                        currency = "INR",
+                        status = "active",
+                        startDate = currentTime,
+                        endDate = currentTime + (30L * 24 * 60 * 60 * 1000), // 30 days from now
+                        razorpayPaymentId = razorpayPaymentID ?: "",
+                        isActive = true,
+                        autoRenew = true,
+                        createdAt = currentTime,
+                        lastUpdated = currentTime
+                    )
+                    
+                    // Save to DataStore
+                    DataStoreManager.saveSubscriptionDetails(this@MainActivity, subscriptionDetails)
+                    
+                    Log.d("MainActivity", "Subscription details saved to DataStore")
+                    Log.d("MainActivity", "Subscription ID: ${subscriptionDetails.subscriptionId}")
+                    Log.d("MainActivity", "Plan: ${subscriptionDetails.planName}")
+                    Log.d("MainActivity", "Amount: ${subscriptionDetails.amount}")
+                    Log.d("MainActivity", "Start Date: ${subscriptionDetails.startDate}")
+                    
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error saving subscription details: ${e.message}", e)
+                }
+            }
+            
             // Show success message
             Toast.makeText(
                 this, 
-                "🎉 Payment successful! Welcome to Premium!", 
+                "🎉 Payment successful! Welcome to Premium!",
                 Toast.LENGTH_LONG
             ).show()
             
-            // TODO: You can add additional success handling here:
-            // 1. Update user subscription status in local storage
-            // 2. Sync with backend to confirm payment
-            // 3. Navigate to dashboard or success screen
-            // 4. Send analytics event
-            
             Log.d("MainActivity", "Payment ID: $razorpayPaymentID")
             
-            // Example: Navigate to dashboard after successful payment
-            // You might want to pass payment details or refresh user subscription status
+            // TODO: Additional success handling:
+            // 1. ✅ Update user subscription status in local storage - DONE
+            // 2. Sync with backend to confirm payment
+            // 3. Navigate to dashboard or success screen  
+            // 4. Send analytics event
         }
 
         override fun onPaymentError(code: Int, response: String?) {

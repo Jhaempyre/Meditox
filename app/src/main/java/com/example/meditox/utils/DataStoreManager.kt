@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.meditox.models.ShopDetails
 import com.example.meditox.models.User
+import com.example.meditox.models.subscription.SubscriptionDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
@@ -24,6 +25,9 @@ object DataStoreManager {
     private val IS_BUSINESS_REGISTERED = booleanPreferencesKey("is_business_registered")
     private val USER_DATA = stringPreferencesKey("user_data")
     private val SHOP_DETAILS = stringPreferencesKey("shop_details")
+    // Subscription related keys
+    private val SUBSCRIPTION_DETAILS = stringPreferencesKey("subscription_details")
+    private val HAS_ACTIVE_SUBSCRIPTION = booleanPreferencesKey("has_active_subscription")
     val jsonFormatter = Json {
         ignoreUnknownKeys = true // prevents crash if extra fields exist
         encodeDefaults = true
@@ -129,6 +133,114 @@ object DataStoreManager {
                 null
             }
             }
+        }
+    }
+
+    // ===== SUBSCRIPTION MANAGEMENT FUNCTIONS =====
+    
+    /**
+     * Save subscription details after successful payment
+     */
+    suspend fun saveSubscriptionDetails(context: Context, subscriptionDetails: SubscriptionDetails) {
+        val json = jsonFormatter.encodeToString(SubscriptionDetails.serializer(), subscriptionDetails)
+        Log.d("DataStore", "Saving subscription details: $json")
+        context.datastore.edit { prefs ->
+            prefs[SUBSCRIPTION_DETAILS] = json
+            prefs[HAS_ACTIVE_SUBSCRIPTION] = subscriptionDetails.isActive
+        }
+        Log.d("DataStore", "Subscription details saved successfully")
+    }
+
+    /**
+     * Get current subscription details
+     */
+    fun getSubscriptionDetails(context: Context): Flow<SubscriptionDetails?> {
+        return context.datastore.data.map { prefs ->
+            prefs[SUBSCRIPTION_DETAILS]?.let { json ->
+                try {
+                    jsonFormatter.decodeFromString<SubscriptionDetails>(SubscriptionDetails.serializer(), json)
+                } catch (e: Exception) {
+                    Log.e("DataStore", "Error decoding subscription details: ${e.message}")
+                    null
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if user has an active subscription
+     */
+    fun hasActiveSubscription(context: Context): Flow<Boolean> {
+        return context.datastore.data.map { prefs ->
+            val hasActive = prefs[HAS_ACTIVE_SUBSCRIPTION] ?: false
+            Log.d("DataStore", "Reading hasActiveSubscription: $hasActive")
+            hasActive
+        }
+    }
+
+    /**
+     * Update subscription status (e.g., when it expires or is cancelled)
+     */
+    suspend fun updateSubscriptionStatus(context: Context, isActive: Boolean, newStatus: String? = null) {
+        Log.d("DataStore", "Updating subscription status - isActive: $isActive, newStatus: $newStatus")
+        context.datastore.edit { prefs ->
+            prefs[HAS_ACTIVE_SUBSCRIPTION] = isActive
+            
+            // If we have existing subscription details, update them
+            prefs[SUBSCRIPTION_DETAILS]?.let { json ->
+                try {
+                    val currentDetails = jsonFormatter.decodeFromString<SubscriptionDetails>(SubscriptionDetails.serializer(), json)
+                    val updatedDetails = currentDetails.copy(
+                        isActive = isActive,
+                        status = newStatus ?: currentDetails.status,
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    prefs[SUBSCRIPTION_DETAILS] = jsonFormatter.encodeToString(SubscriptionDetails.serializer(), updatedDetails)
+                } catch (e: Exception) {
+                    Log.e("DataStore", "Error updating subscription details: ${e.message}")
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear subscription data (e.g., when subscription is cancelled or expired)
+     */
+    suspend fun clearSubscriptionData(context: Context) {
+        Log.d("DataStore", "Clearing subscription data")
+        context.datastore.edit { prefs ->
+            prefs.remove(SUBSCRIPTION_DETAILS)
+            prefs[HAS_ACTIVE_SUBSCRIPTION] = false
+        }
+    }
+
+    /**
+     * Check if subscription is expired based on stored data
+     */
+    suspend fun isSubscriptionExpired(context: Context): Boolean {
+        return try {
+            val subscription = getSubscriptionDetails(context)
+            var isExpired = true
+            subscription.collect { details ->
+                if (details != null && details.endDate != null) {
+                    isExpired = System.currentTimeMillis() > details.endDate
+                } else {
+                    isExpired = false // No end date means it's ongoing
+                }
+            }
+            isExpired
+        } catch (e: Exception) {
+            Log.e("DataStore", "Error checking subscription expiry: ${e.message}")
+            true // Assume expired on error
+        }
+    }
+
+    /**
+     * Get subscription plan name if active
+     */
+    fun getActivePlanName(context: Context): Flow<String?> {
+        return getSubscriptionDetails(context).map { details ->
+            if (details?.isActive == true) details.planName else null
         }
     }
 
