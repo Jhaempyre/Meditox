@@ -26,6 +26,24 @@ object ApiClient {
             .build()
     }
 
+    private fun createWithoutInterceptor(): Retrofit {
+        val client = OkHttpClient.Builder()
+            // No interceptor here to avoid infinite recursion
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(Base_Url)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build()
+    }
+
+    // Auth API service WITHOUT interceptor (for token refresh)
+    fun createAuthApiServiceWithoutInterceptor(context: Context): AuthApiService {
+        return createWithoutInterceptor()
+            .create(AuthApiService::class.java)
+    }
+
     // Lazy initialization of the ApiService
     fun createUserApiService(context: Context): AuthApiService {
        return create(context.applicationContext)

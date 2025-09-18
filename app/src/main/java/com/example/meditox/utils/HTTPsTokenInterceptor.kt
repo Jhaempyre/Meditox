@@ -8,10 +8,13 @@ import com.example.meditox.services.AuthApiService
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
+import kotlin.getValue
 
 class HTTPsTokenInterceptor(private val context: Context): Interceptor {
 
-    private val apiService = ApiClient.createUserApiService(context)
+    private val authApiService by lazy {
+        ApiClient.createAuthApiServiceWithoutInterceptor(context)
+    }
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val builder = request.newBuilder()
@@ -55,7 +58,11 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
                         Log.e("HTTPsTokenInterceptor", "Failed to refresh token")
                         // Token refresh failed, clear stored tokens and return original response
                         EncryptedTokenManager.clearToken(context)
-                        return response
+                        // Return a new 401 response to indicate authentication failure
+                        return response.newBuilder()
+                            .code(401)
+                            .message("Authentication failed")
+                            .build()
                     }
                 } else {
                     Log.d("HTTPsTokenInterceptor", "Token already refreshed by another thread")
@@ -88,7 +95,7 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
             Log.d("HTTPsTokenInterceptor", "Attempting to refresh token...")
 
             val response = runBlocking {
-                apiService.refreshToken(RefreshTokenRequest(refreshToken))
+                authApiService.refreshToken(RefreshTokenRequest(refreshToken))
             }
 
             if (response.isSuccessful && response.body() != null) {
