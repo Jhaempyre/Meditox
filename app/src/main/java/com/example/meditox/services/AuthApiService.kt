@@ -3,6 +3,7 @@ package com.example.meditox.services
 import com.example.meditox.models.ApiResponse
 import com.example.meditox.models.auth.AuthRequest
 import com.example.meditox.models.auth.AuthResponse
+import com.example.meditox.models.auth.RefreshTokenRequest
 import com.example.meditox.models.otpVerication.VerifyOtpRequest
 import com.example.meditox.models.otpVerication.VerifyOtpResponse
 import com.example.meditox.models.businessRegistration.BusinessRegistrationRequest
@@ -30,4 +31,7 @@ interface AuthApiService {
     
     @POST("/api/rzp/subscription/create")
     suspend fun createSubscription(@Body subscriptionRequest: SubscriptionRequest): Response<SubscriptionResponse>
+
+    @POST("/api/auth/refreshToken")
+    suspend fun refreshToken(@Body refreshTokenRequest: RefreshTokenRequest): Response<ApiResponse<String>>
 }

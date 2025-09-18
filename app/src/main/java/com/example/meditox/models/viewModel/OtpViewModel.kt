@@ -22,7 +22,7 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber
-    private val apiService = ApiClient.createUserApiService(application)
+    private val apiService = ApiClient.createAuthApiService()
 
 
     init {

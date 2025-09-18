@@ -22,7 +22,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val loginResult: StateFlow<ApiResult<AuthResponse>?> = _loginResult.asStateFlow()
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber.asStateFlow()
-    private val apiService = ApiClient.createUserApiService(application)
+    private val apiService = ApiClient.createAuthApiService()
 
     init {
         viewModelScope.launch {
