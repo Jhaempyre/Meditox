@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.meditox.models.auth.RefreshTokenRequest
 import com.example.meditox.services.ApiClient
 import com.example.meditox.services.AuthApiService
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -86,7 +87,9 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
 
             Log.d("HTTPsTokenInterceptor", "Attempting to refresh token...")
 
-            val response = apiService.refreshToken(RefreshTokenRequest(refreshToken))
+            val response = runBlocking {
+                apiService.refreshToken(RefreshTokenRequest(refreshToken))
+            }
 
             if (response.isSuccessful && response.body() != null) {
                 val apiResponse = response.body()!!
