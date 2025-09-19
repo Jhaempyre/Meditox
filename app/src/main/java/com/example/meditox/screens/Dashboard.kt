@@ -26,6 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.meditox.Routes
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.meditox.models.viewModel.AuthViewModel
+import androidx.compose.ui.platform.LocalContext
+import com.example.meditox.utils.ApiResult
 import kotlinx.coroutines.launch
 import com.example.meditox.screens.sell.SellMedicineScreen
 import com.example.meditox.screens.report.ReportsScreen
@@ -35,7 +39,32 @@ import com.example.meditox.ui.theme.primaryGreen
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel()
     var showDropdownMenu by remember { mutableStateOf(false) }
+    
+    // Observe logout result
+    val logoutResult by authViewModel.logoutResult.collectAsState()
+    
+    // Handle logout result
+    LaunchedEffect(logoutResult) {
+        when (logoutResult) {
+            is ApiResult.Success -> {
+                authViewModel.resetLogoutState()
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+            is ApiResult.Error -> {
+                // Even on error, we cleared local data, so navigate to login
+                authViewModel.resetLogoutState()
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+            else -> { /* Loading or null, do nothing */ }
+        }
+    }
 
     val tabs = listOf("Sell Medicine", "Reports", "Add/Release")
     val tabIcons = listOf(
@@ -166,22 +195,30 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ExitToApp,
-                                        contentDescription = "Logout",
-                                        tint = Color.Red
-                                    )
+                                    if (logoutResult is ApiResult.Loading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp,
+                                            color = Color.Red
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.ExitToApp,
+                                            contentDescription = "Logout",
+                                            tint = Color.Red
+                                        )
+                                    }
                                     Text(
-                                        text = "Logout",
+                                        text = if (logoutResult is ApiResult.Loading) "Logging out..." else "Logout",
                                         color = Color.Red,
                                         fontSize = 16.sp
                                     )
                                 }
                             },
                             onClick = {
-                                showDropdownMenu = false
-                                navController.navigate("login") {
-                                    popUpTo("dashboard") { inclusive = true }
+                                if (logoutResult !is ApiResult.Loading) {
+                                    showDropdownMenu = false
+                                    authViewModel.logout()
                                 }
                             }
                         )

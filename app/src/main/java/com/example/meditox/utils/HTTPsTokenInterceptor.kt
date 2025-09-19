@@ -26,8 +26,7 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
         if (!accessToken.isNullOrEmpty()) {
             builder.addHeader("Authorization", "Bearer $accessToken")
         }
-
-        val response = chain.proceed(builder.build())
+       val response = chain.proceed(builder.build())
 
         // Check if we got 401 or 403 (unauthorized/forbidden)
         if (response.code() == 401 || response.code() == 403) {
@@ -117,10 +116,5 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
         }
     }
 
-
-
-
-
-    //today will implement token interceptor should refresh token anytime when gets a 403 in request
 
 }

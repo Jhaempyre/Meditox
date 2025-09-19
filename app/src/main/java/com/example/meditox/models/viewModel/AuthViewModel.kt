@@ -12,6 +12,7 @@ import com.example.meditox.models.auth.AuthResponse
 import com.example.meditox.services.ApiClient
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.utils.EncryptedTokenManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +23,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val loginResult: StateFlow<ApiResult<AuthResponse>?> = _loginResult.asStateFlow()
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber.asStateFlow()
+    private val _logoutResult = MutableStateFlow<ApiResult<String>?>(null)
+    val logoutResult: StateFlow<ApiResult<String>?> = _logoutResult.asStateFlow()
     private val apiService = ApiClient.createUserApiService(application)
 
     init {
@@ -59,5 +62,34 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetLoginState() {
         _loginResult.value = null
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            try {
+                _logoutResult.value = ApiResult.Loading
+                val response = apiService.logout()
+                if (response.isSuccessful) {
+                    // Clear all stored data after successful logout
+                    DataStoreManager.clearAll(getApplication())
+                    EncryptedTokenManager.clearToken(getApplication())
+                    _logoutResult.value = ApiResult.Success("Logout successful")
+                } else {
+                    // Even if API fails, clear local data
+                    DataStoreManager.clearAll(getApplication())
+                    EncryptedTokenManager.clearToken(getApplication())
+                    _logoutResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Logout failed, but local data cleared")
+                }
+            } catch (e: Exception) {
+                // Even if network fails, clear local data
+                DataStoreManager.clearAll(getApplication())
+                EncryptedTokenManager.clearToken(getApplication())
+                _logoutResult.value = ApiResult.Error("Network error, but local data cleared: ${e.message}")
+            }
+        }
+    }
+
+    fun resetLogoutState() {
+        _logoutResult.value = null
     }
 }
