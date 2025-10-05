@@ -1,5 +1,6 @@
 package com.example.meditox.screens
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -50,15 +51,17 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
     LaunchedEffect(logoutResult) {
         when (logoutResult) {
             is ApiResult.Success -> {
+                Log.d("Logoutse","yes i am here")
                 authViewModel.resetLogoutState()
-                navController.navigate("login") {
+                navController.navigate(Routes.LOGIN) {
                     popUpTo(0) { inclusive = true }
                 }
             }
             is ApiResult.Error -> {
                 // Even on error, we cleared local data, so navigate to login
+                Log.d("Logoutse","mae yaha bhi hu laadle")
                 authViewModel.resetLogoutState()
-                navController.navigate("login") {
+                navController.navigate(Routes.LOGIN) {
                     popUpTo(0) { inclusive = true }
                 }
             }

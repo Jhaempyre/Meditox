@@ -182,6 +182,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                         popUpTo(Routes.OTP) { inclusive = true }
                                     }
                                 }
+
                                 Toast.makeText(context, "Please Register your Shop Now", Toast.LENGTH_SHORT).show()
                                 navController.navigate(Routes.REGISTER_SHOP) {
                                     popUpTo(Routes.OTP) { inclusive = true }
@@ -196,6 +197,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                 navController.navigate(Routes.PERMISSIONS) {
                                     popUpTo(Routes.OTP) { inclusive = true }
                                 }
+                                //TODO: sINCE EVERYTHING IS DONE WE NEED TO SUPERWVISE THE FLOW OF PAYMANETS ALASO WHEN A USER IS THERE TO LOGIN THEN WE NEED TO SEND ALL DATA AND THEN KEEP THAT IN THE CORRECT DATASTORE WE NEED TO MAKE API CALLS REGARDING THAT
                                 Log.d("API_RESPONSE", "this won't be printed") // Likely won't show
                                 return@LaunchedEffect
                             }
