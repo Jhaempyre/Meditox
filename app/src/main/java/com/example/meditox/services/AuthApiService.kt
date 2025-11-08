@@ -13,10 +13,13 @@ import com.example.meditox.models.userRegistration.UserRegistrationResponse
 import com.example.meditox.models.subscription.SubscriptionRequest
 import com.example.meditox.models.subscription.SubscriptionResponse
 import com.example.meditox.models.ShopDetails
+import com.example.meditox.models.userUpdate.UpdateUserRequest
+import com.example.meditox.models.userUpdate.UpdateUserResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface AuthApiService {
@@ -43,4 +46,7 @@ interface AuthApiService {
 
     @GET("/api/v2/shop-details/user/{userId}")
     suspend fun getShopDetails(@Path("userId") userId: String): Response<ApiResponse<ShopDetails>>
+
+    @PUT("/api/user/profile/{userId}")
+    suspend fun updateUserProfile(@Path("userId") userId: String, @Body request: UpdateUserRequest): Response<ApiResponse<UpdateUserResponse>>
 }

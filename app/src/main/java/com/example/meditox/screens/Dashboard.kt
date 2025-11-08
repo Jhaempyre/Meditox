@@ -143,7 +143,7 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                             },
                             onClick = {
                                 showDropdownMenu = false
-                                navController.navigate("edit_profile")
+                                navController.navigate(Routes.EDIT_PROFILE)
                             }
                         )
                         DropdownMenuItem(

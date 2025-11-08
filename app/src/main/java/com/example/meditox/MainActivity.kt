@@ -17,7 +17,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.meditox.models.viewModel.AuthViewModel
 import com.example.meditox.models.viewModel.OtpViewModel
+import com.example.meditox.models.viewModel.EditUserProfileViewModel
 import com.example.meditox.screens.Dashboard
+import com.example.meditox.screens.EditUserProfileScreen
 import com.example.meditox.screens.LoginScreen
 import com.example.meditox.screens.OtpScreen
 import com.example.meditox.screens.PermissionsScreen
@@ -52,6 +54,7 @@ object Routes{
     const val PERMISSIONS="permissions"
     const val LOCATION_TRACKING = "location_tracking"
     const val SUBSCRIPTION = "subscription"
+    const val EDIT_PROFILE = "edit_profile"
 }
 
 
@@ -90,6 +93,14 @@ fun AppNavigation() {
         }
         composable(Routes.SUBSCRIPTION) {
             SubscriptionScreen(navController = navController)
+        }
+        composable(Routes.EDIT_PROFILE) {
+            val editUserProfileViewModel: EditUserProfileViewModel = viewModel()
+            EditUserProfileScreen(
+                modifier = Modifier,
+                navController = navController,
+                viewModel = editUserProfileViewModel
+            )
         }
     }
 }
