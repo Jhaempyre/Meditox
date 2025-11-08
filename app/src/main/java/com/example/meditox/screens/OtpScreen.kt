@@ -48,6 +48,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
     val GreenDark = Color(0xFF005005)
     val phoneNumber = viewModel.phoneNumber.collectAsState().value
     val otpResult = viewModel.otpResult.collectAsState().value
+    val shopDetailsResult = viewModel.shopDetailsResult.collectAsState().value
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -159,6 +160,13 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             Log.d("inOtp", " starting to save")
                             DataStoreManager.saveUserData(context, user)
                             Log.d("inOtp", " i guess saving succeded")
+                            
+                            // If business is registered, fetch shop details
+                            if (isBusinessRegistered) {
+                                Log.d("OtpScreen", "User has business registered, fetching shop details...")
+                                viewModel.fetchShopDetails(user.id.toString())
+                            }
+                            
                             val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
                             Log.d("permissionresponse", "$hasAllPermissions")
 
@@ -222,6 +230,38 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                         viewModel.resetOtpVerificationState()
                     }
 
+                    else -> {} // Loading or null - no action needed
+                }
+            }
+
+            // Handle shop details fetching result
+            LaunchedEffect(shopDetailsResult) {
+                when (val result = shopDetailsResult) {
+                    is ApiResult.Success -> {
+                        val response = result.data
+                        val body = response.body()
+                        
+                        Log.d("OtpScreen", "Shop details API response: $response")
+                        Log.d("OtpScreen", "Shop details body: $body")
+                        
+                        if (response.isSuccessful && body?.success == true && body.data != null) {
+                            // Save shop details to DataStore
+                            DataStoreManager.saveShopDetails(context, body.data)
+                            DataStoreManager.setIsBusinessRegistered(context,true)
+                            Log.d("OtpScreen", "Shop details saved successfully: ${body.data}")
+                        } else {
+                            Log.e("OtpScreen", "Failed to fetch shop details: ${body?.message ?: "Unknown error"}")
+                            // Don't show error to user as this is a background operation
+                        }
+                        
+                        // Reset shop details state
+                        viewModel.resetShopDetailsState()
+                    }
+                    is ApiResult.Error -> {
+                        Log.e("OtpScreen", "Error fetching shop details: ${result.message}")
+                        // Don't show error to user as this is a background operation
+                        viewModel.resetShopDetailsState()
+                    }
                     else -> {} // Loading or null - no action needed
                 }
             }

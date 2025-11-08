@@ -12,9 +12,12 @@ import com.example.meditox.models.userRegistration.UserRegistrationRequest
 import com.example.meditox.models.userRegistration.UserRegistrationResponse
 import com.example.meditox.models.subscription.SubscriptionRequest
 import com.example.meditox.models.subscription.SubscriptionResponse
+import com.example.meditox.models.ShopDetails
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface AuthApiService {
     @POST("/api/auth/sendOtp")
@@ -37,4 +40,7 @@ interface AuthApiService {
 
     @POST("/api/auth/logout")
     suspend fun logout(): Response<ApiResponse<String>>
+
+    @GET("/api/v2/shop-details/user/{userId}")
+    suspend fun getShopDetails(@Path("userId") userId: String): Response<ApiResponse<ShopDetails>>
 }
