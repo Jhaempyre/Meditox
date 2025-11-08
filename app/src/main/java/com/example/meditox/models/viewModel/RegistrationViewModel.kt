@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Response
 
 class RegistrationViewModel(application: Application) : AndroidViewModel(application)  {
     private val _isRegistered = MutableStateFlow<Boolean?>(null)
@@ -20,8 +21,8 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
 //    private val _registrationResponse = MutableStateFlow<UserRegistrationResponse?>(null)
 //    val registrationResponse: StateFlow<UserRegistrationResponse?> = _registrationResponse
 
-    private val registerResult = MutableStateFlow<ApiResult<UserRegistrationResponse>?>(null)
-    val registrationResult: StateFlow<ApiResult<UserRegistrationResponse>?> = registerResult.asStateFlow()
+    private val registerResult = MutableStateFlow<ApiResult<Response<UserRegistrationResponse>>?>(null)
+    val registrationResult: StateFlow<ApiResult<Response<UserRegistrationResponse>>?> = registerResult.asStateFlow()
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
@@ -53,7 +54,7 @@ class RegistrationViewModel(application: Application) : AndroidViewModel(applica
                     val body = response.body()
 
                     if (body != null && body.success) {
-                        registerResult.value = ApiResult.Success(body)
+                        registerResult.value = ApiResult.Success(response)
                         _isRegistered.value = true
                     }
                 }else{

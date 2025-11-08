@@ -10,6 +10,7 @@ import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
@@ -30,7 +31,7 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private val _otpResult = MutableStateFlow<ApiResult<Response<VerifyOtpResponse>>?>(null)
-    val otpResult: StateFlow<ApiResult<Response<VerifyOtpResponse>>?> = _otpResult
+    val otpResult: StateFlow<ApiResult<Response<VerifyOtpResponse>>?> = _otpResult.asStateFlow()
 
 
 
