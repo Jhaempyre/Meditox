@@ -53,6 +53,7 @@ fun EditUserProfileScreen(
     var chronicConditions by remember { mutableStateOf("") }
     var emergencyContactName by remember { mutableStateOf("") }
     var emergencyContactPhone by remember { mutableStateOf("") }
+    var emergencyContactRelationship by remember { mutableStateOf("") }
     var selectedBloodGroup by remember { mutableStateOf("") }
     var selectedGender by remember { mutableStateOf("") }
     var showBloodGroupDropdown by remember { mutableStateOf(false) }
@@ -82,6 +83,7 @@ fun EditUserProfileScreen(
             chronicConditions = user.chronicConditions
             emergencyContactName = user.emergencyContact.name
             emergencyContactPhone = user.emergencyContact.phone
+            emergencyContactRelationship = user.emergencyContact.relationship
             selectedBloodGroup = user.bloodGroup
             selectedGender = user.gender
         }
@@ -223,6 +225,14 @@ fun EditUserProfileScreen(
                             icon = Icons.Default.Phone,
                             keyboardType = KeyboardType.Phone
                         )
+
+                        StyledTextField(
+                            value = emergencyContactRelationship,
+                            onValueChange = { emergencyContactRelationship = it },
+                            label = "Relationship",
+                            icon = Icons.Default.Person,
+                            keyboardType = KeyboardType.Text
+                        )
                     }
                 }
             }
@@ -241,7 +251,8 @@ fun EditUserProfileScreen(
                             allergies = allergies,
                             chronicConditions = chronicConditions,
                             emergencyContactName = emergencyContactName,
-                            emergencyContactPhone = emergencyContactPhone
+                            emergencyContactPhone = emergencyContactPhone,
+                            emergencyContactRelationship = ""
                         )
                     },
                     isLoading = isLoading,

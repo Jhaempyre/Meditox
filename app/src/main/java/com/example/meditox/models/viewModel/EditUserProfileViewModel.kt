@@ -52,7 +52,8 @@ class EditUserProfileViewModel(application: Application) : AndroidViewModel(appl
         allergies: String,
         chronicConditions: String,
         emergencyContactName: String,
-        emergencyContactPhone: String
+        emergencyContactPhone: String,
+        emergencyContactRelationship: String
     ) {
         viewModelScope.launch {
             try {
@@ -68,7 +69,7 @@ class EditUserProfileViewModel(application: Application) : AndroidViewModel(appl
                 val emergencyContact = EmergencyContact(
                     name = emergencyContactName,
                     phone = emergencyContactPhone,
-                    relationship = "Emergency Contact"
+                    relationship = emergencyContactRelationship
                 )
 
                 val updateRequest = UpdateUserRequest(
@@ -90,23 +91,15 @@ class EditUserProfileViewModel(application: Application) : AndroidViewModel(appl
                     Log.d("EditUserProfileVM", "Update response: $responseBody")
                     
                     if (responseBody?.success == true && responseBody.data != null) {
-                        // Update local user data with new information
-                        val updatedUser = currentUser.copy(
-                            name = name,
-                            abhaId = abhaId,
-                            gender = gender,
-                            bloodGroup = bloodGroup,
-                            allergies = allergies,
-                            chronicConditions = chronicConditions,
-                            emergencyContact = emergencyContact
-                        )
+                        // Use the updated user data from the API response
+                        val updatedUser = responseBody.data.user
                         
                         // Save updated user data to DataStore
                         DataStoreManager.saveUserData(getApplication(), updatedUser)
                         _userData.value = updatedUser
                         
                         _updateResult.value = ApiResult.Success(response)
-                        Log.d("EditUserProfileVM", "User profile updated successfully")
+                        Log.d("EditUserProfileVM", "User profile updated successfully with data from API")
                     } else {
                         _updateResult.value = ApiResult.Error(responseBody?.message ?: "Update failed")
                         Log.e("EditUserProfileVM", "Update failed: ${responseBody?.message}")
