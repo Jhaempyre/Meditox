@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UpdateUserResponse(
-    val message: String,
-    val user: User,
-    val updatedAt: String
+    val message: String?,
+    val user: User?,
+    val updatedAt: String?
 )

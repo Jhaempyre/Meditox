@@ -47,6 +47,6 @@ interface AuthApiService {
     @GET("/api/v2/shop-details/user/{userId}")
     suspend fun getShopDetails(@Path("userId") userId: String): Response<ApiResponse<ShopDetails>>
 
-    @PUT("/api/user/profile/{userId}")
+    @PUT("/api/v1/user/profile/{userId}")
     suspend fun updateUserProfile(@Path("userId") userId: String, @Body request: UpdateUserRequest): Response<ApiResponse<UpdateUserResponse>>
 }

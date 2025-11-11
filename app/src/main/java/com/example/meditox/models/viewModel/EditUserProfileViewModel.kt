@@ -89,17 +89,27 @@ class EditUserProfileViewModel(application: Application) : AndroidViewModel(appl
                 if (response.isSuccessful) {
                     val responseBody = response.body()
                     Log.d("EditUserProfileVM", "Update response: $responseBody")
-                    
-                    if (responseBody?.success == true && responseBody.data != null) {
-                        // Use the updated user data from the API response
-                        val updatedUser = responseBody.data.user
+
+
+                    //TODO : this is the problem we will work on this lately.
+                    if (responseBody?.success == true) {
+                        // Create updated user data locally since API doesn't return complete user object
+                        val updatedUser = currentUser.copy(
+                            name = name,
+                            abhaId = abhaId,
+                            gender = gender,
+                            bloodGroup = bloodGroup,
+                            allergies = allergies,
+                            chronicConditions = chronicConditions,
+                            emergencyContact = emergencyContact
+                        )
                         
                         // Save updated user data to DataStore
                         DataStoreManager.saveUserData(getApplication(), updatedUser)
                         _userData.value = updatedUser
                         
                         _updateResult.value = ApiResult.Success(response)
-                        Log.d("EditUserProfileVM", "User profile updated successfully with data from API")
+                        Log.d("EditUserProfileVM", "User profile updated successfully")
                     } else {
                         _updateResult.value = ApiResult.Error(responseBody?.message ?: "Update failed")
                         Log.e("EditUserProfileVM", "Update failed: ${responseBody?.message}")
