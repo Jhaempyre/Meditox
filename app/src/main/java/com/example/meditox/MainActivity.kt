@@ -55,6 +55,7 @@ object Routes{
     const val LOCATION_TRACKING = "location_tracking"
     const val SUBSCRIPTION = "subscription"
     const val EDIT_PROFILE = "edit_profile"
+
 }
 
 
@@ -256,7 +257,7 @@ fun AppNavigation() {
             Log.e("MainActivity", "Payment failed: Code=$code, Response=$response")
             
             val errorMessage = when (code) {
-                Checkout.NETWORK_ERROR -> "Network error. Please check your internet connection."
+                com.razorpay.Checkout.NETWORK_ERROR -> "Network error. Please check your internet connection."
                 Checkout.INVALID_OPTIONS -> "Payment configuration error. Please try again."
                 Checkout.PAYMENT_CANCELED -> "Payment was cancelled."
                 Checkout.TLS_ERROR -> "Security error. Please update your app."

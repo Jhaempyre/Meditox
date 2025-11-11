@@ -96,7 +96,7 @@ dependencies {
     // WorkManager for background location tracking
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    implementation("com.razorpay:checkout:1.6.40")
+    implementation("com.razorpay:checkout:1.6.41")
 
 
 
