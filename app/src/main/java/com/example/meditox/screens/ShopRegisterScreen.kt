@@ -431,7 +431,7 @@ fun ShopRegisterScreen(
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 strokeWidth = 2.dp,
-                                color = Color.White
+                                color = Color.Magenta
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }

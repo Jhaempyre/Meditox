@@ -39,6 +39,7 @@ import com.example.meditox.utils.SubscriptionDataHolder
 import com.example.meditox.utils.SubscriptionSyncManager
 import com.example.meditox.models.subscription.SubscriptionDetails
 import com.example.meditox.models.subscription.SubscriptionResponse
+import com.example.meditox.screens.EditShopDetailsScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,6 +56,7 @@ object Routes{
     const val LOCATION_TRACKING = "location_tracking"
     const val SUBSCRIPTION = "subscription"
     const val EDIT_PROFILE = "edit_profile"
+    const val EDIT_SHOP="edit_shop"
 
 }
 
@@ -103,8 +105,13 @@ fun AppNavigation() {
                 viewModel = editUserProfileViewModel
             )
         }
+        composable(Routes.EDIT_SHOP) {
+            EditShopDetailsScreen(modifier = Modifier, navController = navController)
+        }
     }
 }
+
+//TODO: IT'S NEEDED TO TAKE CARE THE CONDITION WHEN REFRESH TOKEN GETS EXPIRED IDEAALY SHOULD BE 30 DAY CURRENTLY I GUESS 30 DAY OR CAN DO LIKE ON EACDAYSTARTUP OF APPS IN 24 HRS WE WILL AUTO REFRESH THE TOKENS : GOT THIS .
     class MainActivity : ComponentActivity(), PaymentResultListener {
         private lateinit var apiService: AuthApiService
         

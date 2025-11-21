@@ -21,5 +21,5 @@ data class ShopDetails(
     val latitude: String,
     val longitude: String,
     val shopStatus : Boolean,
-    val createdAt : List<Int?>,
+    val createdAt : List<Int?>, //TODO: //this we will change for editscreen afterward
 )

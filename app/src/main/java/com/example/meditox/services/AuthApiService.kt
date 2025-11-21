@@ -15,6 +15,8 @@ import com.example.meditox.models.subscription.SubscriptionResponse
 import com.example.meditox.models.ShopDetails
 import com.example.meditox.models.userUpdate.UpdateUserRequest
 import com.example.meditox.models.userUpdate.UpdateUserResponse
+import com.example.meditox.models.ShopDetailsEdit.UpdateShopDetailsRequest
+import com.example.meditox.models.ShopDetailsEdit.UpdateShopDetailsResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -49,4 +51,7 @@ interface AuthApiService {
 
     @PUT("/api/v1/user/profile/{userId}")
     suspend fun updateUserProfile(@Path("userId") userId: String, @Body request: UpdateUserRequest): Response<ApiResponse<UpdateUserResponse>>
+    
+    @PUT("/api/v2/shop/editDetails/{shopId}")
+    suspend fun updateShopDetails(@Path("shopId") userId: String, @Body request: UpdateShopDetailsRequest): Response<ApiResponse<UpdateShopDetailsResponse>>
 }
