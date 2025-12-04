@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.meditox.models.viewModel.AuthViewModel
 import androidx.compose.ui.platform.LocalContext
 import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.DataStoreManager
 import kotlinx.coroutines.launch
 import com.example.meditox.screens.sell.SellMedicineScreen
 import com.example.meditox.screens.report.ReportsScreen
@@ -43,6 +44,10 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
     val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
     var showDropdownMenu by remember { mutableStateOf(false) }
+    
+    // Observe subscription status and backend sync status
+    val hasActiveSubscription by DataStoreManager.hasActiveSubscription(context).collectAsState(initial = false)
+    val backendSyncStatus by DataStoreManager.getBackendSyncStatus(context).collectAsState(initial = false)
     
     // Observe logout result
     val logoutResult by authViewModel.logoutResult.collectAsState()
@@ -176,12 +181,12 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Pay the fees",
-                                        tint = primaryGreen
+                                        imageVector = if (hasActiveSubscription && backendSyncStatus) Icons.Default.CheckCircle else Icons.Default.CheckCircle,
+                                        contentDescription = if (hasActiveSubscription && backendSyncStatus) "Manage subscription" else "Subscribe",
+                                        tint = if (hasActiveSubscription && backendSyncStatus) primaryGreen else primaryGreen
                                     )
                                     Text(
-                                        text = "Subscription",
+                                        text = if (hasActiveSubscription && backendSyncStatus) "Manage Subscription" else "Subscribe",
                                         color = Color.Black,
                                         fontSize = 16.sp
                                     )
@@ -189,7 +194,11 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                             },
                             onClick = {
                                 showDropdownMenu = false
-                                navController.navigate(Routes.SUBSCRIPTION)
+                                if (hasActiveSubscription && backendSyncStatus) {
+                                    navController.navigate(Routes.SUCCEEDED_SUBSCRIPTION)
+                                } else {
+                                    navController.navigate(Routes.SUBSCRIPTION)
+                                }
                             }
                         )
                         DropdownMenuItem(

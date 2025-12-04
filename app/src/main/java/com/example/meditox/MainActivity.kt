@@ -27,6 +27,7 @@ import com.example.meditox.screens.ShopRegisterScreen
 import com.example.meditox.screens.LocationTrackingScreen
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.screens.subscription.SubscriptionScreen
+import com.example.meditox.screens.subscription.SucceededSubscriptionScreen
 import com.example.meditox.services.ApiClient
 import com.example.meditox.services.AuthApiService
 import com.example.meditox.ui.screens.RegisterUserScreen
@@ -55,6 +56,7 @@ object Routes{
     const val PERMISSIONS="permissions"
     const val LOCATION_TRACKING = "location_tracking"
     const val SUBSCRIPTION = "subscription"
+    const val SUCCEEDED_SUBSCRIPTION = "succeeded_subscription"
     const val EDIT_PROFILE = "edit_profile"
     const val EDIT_SHOP="edit_shop"
 
@@ -96,6 +98,9 @@ fun AppNavigation() {
         }
         composable(Routes.SUBSCRIPTION) {
             SubscriptionScreen(navController = navController)
+        }
+        composable(Routes.SUCCEEDED_SUBSCRIPTION) {
+            SucceededSubscriptionScreen(navController = navController)
         }
         composable(Routes.EDIT_PROFILE) {
             val editUserProfileViewModel: EditUserProfileViewModel = viewModel()
@@ -253,10 +258,15 @@ fun AppNavigation() {
             
             Log.d("MainActivity", "Payment ID: $razorpayPaymentID")
             
+            // Reset backend sync status before starting sync
+            CoroutineScope(Dispatchers.IO).launch {
+                DataStoreManager.resetBackendSyncStatus(this@MainActivity)
+            }
+            
             // TODO: Additional success handling:
             // 1. ✅ Update user subscription status in local storage - DONE
-            // 2. Sync with backend to confirm payment
-            // 3. Navigate to dashboard or success screen  
+            // 2. ✅ Sync with backend to confirm payment - DONE
+            // 3. ✅ Navigate to success screen - IMPLEMENTED (via conditional Dashboard logic)
             // 4. Send analytics event
         }
 

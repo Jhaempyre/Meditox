@@ -86,11 +86,20 @@ object SubscriptionSyncManager {
                     updateLocalSubscriptionWithBackendId(context, subscriptionDetails, backendId)
                 }
                 
+                // Set backend sync status to true for successful sync
+                DataStoreManager.setBackendSyncStatus(context, true)
+                Log.d("SubscriptionSync", "✅ Backend sync status set to true")
+                
                 true
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e("SubscriptionSync", "Sync failed with code: ${response.code()}")
                 Log.e("SubscriptionSync", "Error body: $errorBody")
+                
+                // Set backend sync status to false for failed sync
+                DataStoreManager.setBackendSyncStatus(context, false)
+                Log.e("SubscriptionSync", "❌ Backend sync status set to false")
+                
                 false
             }
             
@@ -98,6 +107,11 @@ object SubscriptionSyncManager {
             Log.e("SubscriptionSync", "Exception during subscription sync", e)
             Log.e("SubscriptionSync", "Exception type: ${e.javaClass.simpleName}")
             Log.e("SubscriptionSync", "Exception message: ${e.message}")
+            
+            // Set backend sync status to false for exception
+            DataStoreManager.setBackendSyncStatus(context, false)
+            Log.e("SubscriptionSync", "❌ Backend sync status set to false due to exception")
+            
             false
         }
     }

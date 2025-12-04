@@ -28,6 +28,7 @@ object DataStoreManager {
     // Subscription related keys
     private val SUBSCRIPTION_DETAILS = stringPreferencesKey("subscription_details")
     private val HAS_ACTIVE_SUBSCRIPTION = booleanPreferencesKey("has_active_subscription")
+    private val BACKEND_SYNC_STATUS = booleanPreferencesKey("backend_sync_status")
     val jsonFormatter = Json {
         ignoreUnknownKeys = true // prevents crash if extra fields exist
         encodeDefaults = true
@@ -241,6 +242,37 @@ object DataStoreManager {
     fun getActivePlanName(context: Context): Flow<String?> {
         return getSubscriptionDetails(context).map { details ->
             if (details?.isActive == true) details.planName else null
+        }
+    }
+
+    /**
+     * Set backend sync status
+     */
+    suspend fun setBackendSyncStatus(context: Context, isSuccessful: Boolean) {
+        Log.d("DataStore", "Setting backend sync status: $isSuccessful")
+        context.datastore.edit { prefs ->
+            prefs[BACKEND_SYNC_STATUS] = isSuccessful
+        }
+    }
+
+    /**
+     * Get backend sync status
+     */
+    fun getBackendSyncStatus(context: Context): Flow<Boolean> {
+        return context.datastore.data.map { prefs ->
+            val status = prefs[BACKEND_SYNC_STATUS] ?: false
+            Log.d("DataStore", "Reading backend sync status: $status")
+            status
+        }
+    }
+
+    /**
+     * Reset backend sync status (call before new sync attempt)
+     */
+    suspend fun resetBackendSyncStatus(context: Context) {
+        Log.d("DataStore", "Resetting backend sync status")
+        context.datastore.edit { prefs ->
+            prefs[BACKEND_SYNC_STATUS] = false
         }
     }
 

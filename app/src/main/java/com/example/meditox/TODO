@@ -1,0 +1,18 @@
+---All works in phase one is been documented here ---
+
+all works are done as per priority (descending )
+
+## The subscription screen has to be something like if user has subscribed it will show ongoing subscription page
+  --- The ongoing subscription page will have something called cancel subscription change plan like this things
+  --switch plans follows the current canecllation and getting back to subscription screen .. adn setitng issbuscribed  to false
+
+##once subsciption is done ---
+
+-- have a simple screent o show user's data directlu from datastore just view .
+
+------------------After thiss -----------------
+
+## Shop management ..........
+
+This will be decided after this ...
+

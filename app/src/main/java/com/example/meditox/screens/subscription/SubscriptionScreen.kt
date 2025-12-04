@@ -33,15 +33,15 @@ import com.example.meditox.models.viewModel.SubscriptionViewModel
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.RazorpayConfig
 import com.example.meditox.utils.SubscriptionDataHolder
+import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.Routes
 import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
 import org.json.JSONObject
-
-// Updated Color Palette
-val primaryGreen = Color(0xFF2E7D32)
-val lightGreen = Color(0xFF4CAF50)
-val lighterGreen = Color(0xFFE8F5E9)
-val darkGreen = Color(0xFF1B5E20)
+import com.example.meditox.ui.theme.primaryGreen
+import com.example.meditox.ui.theme.lightGreen
+import com.example.meditox.ui.theme.lighterGreen
+import com.example.meditox.ui.theme.darkGreen
 
 data class SubscriptionPlan(
     val id: String,
@@ -68,6 +68,28 @@ fun SubscriptionScreen(navController: NavController) {
     
     val subscriptionResult = subscriptionViewModel.subscriptionResult.collectAsState()
     val phoneNumber = subscriptionViewModel.phoneNumber.collectAsState()
+    
+    // Get user data for better Razorpay integration
+    val userData = DataStoreManager.getUserData(context).collectAsState(initial = null)
+    
+    // Monitor backend sync status instead of just local subscription status
+    val backendSyncStatus = DataStoreManager.getBackendSyncStatus(context).collectAsState(initial = false)
+    val hasActiveSubscription = DataStoreManager.hasActiveSubscription(context).collectAsState(initial = false)
+    
+    // Only navigate after successful backend sync confirmation
+    LaunchedEffect(backendSyncStatus.value, hasActiveSubscription.value) {
+        if (hasActiveSubscription.value && backendSyncStatus.value) {
+            // Small delay to ensure UI is ready
+            kotlinx.coroutines.delay(2000)
+            Log.d("SubscriptionScreen", "✅ Backend sync confirmed, navigating to success screen")
+            navController.navigate(Routes.SUCCEEDED_SUBSCRIPTION) {
+                // Remove subscription screen from back stack
+                popUpTo(Routes.SUBSCRIPTION) { inclusive = true }
+            }
+        } else if (hasActiveSubscription.value && !backendSyncStatus.value) {
+            Log.w("SubscriptionScreen", "⚠️ Local subscription active but backend sync failed - staying on subscription screen")
+        }
+    }
 
     // Define plans list
     val plans = listOf(
@@ -144,11 +166,12 @@ fun SubscriptionScreen(navController: NavController) {
                 // For subscription payments, only use subscription_id, not amount
                 put("subscription_id", subscriptionResponse.id)
                 
-                // Prefill customer details
+                // Prefill customer details with actual user data
                 val prefill = JSONObject().apply {
-                    put("email", "customer@example.com") // TODO: Get from user profile/preferences
-                    put("contact", phoneNumber.value ?: "")
-                    put("name", "Customer") // TODO: Get from user profile
+                    val user = userData.value
+                    put("email", "customer@example.com") // User model doesn't have email field
+                    put("contact", phoneNumber.value ?: user?.phone ?: "")
+                    put("name", user?.name ?: "Customer")
                 }
                 put("prefill", prefill)
                 
