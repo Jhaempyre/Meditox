@@ -156,7 +156,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             DataStoreManager.setIsRegistered(context, true)
                             Log.d("API_RESPONSE", " have also landed here")
                             val user = body.data
-                            val isBusinessRegistered= user.isBusinessRegistered
+                            val isBusinessRegistered= user.businessRegistered
                             Log.d("inOtp", " starting to save")
                             DataStoreManager.saveUserData(context, user)
                             Log.d("inOtp", " i guess saving succeded")

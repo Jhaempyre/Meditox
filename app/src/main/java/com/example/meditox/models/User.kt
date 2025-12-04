@@ -18,5 +18,5 @@ data class User(
     val chronicConditions : String,
     val emergencyContact : EmergencyContact,
     val role : String,
-    val isBusinessRegistered : Boolean,
+    val businessRegistered : Boolean,
 )
