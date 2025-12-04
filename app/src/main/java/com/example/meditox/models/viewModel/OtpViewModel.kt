@@ -70,7 +70,9 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
                 _shopDetailsResult.value = ApiResult.Loading
                 Log.d("OtpViewModel", "Fetching shop details for user: $userId")
                 val response = apiService.getShopDetails(userId)
+                Log.d("OtpViewModel", "API response may be succedded")
                 if (response.isSuccessful) {
+                    Log.d("OtpViewModel", "Tried this one ")
                     _shopDetailsResult.value = ApiResult.Success(response)
                     Log.d("OtpViewModel", "Shop details fetched successfully: ${response.body()}")
                 } else {

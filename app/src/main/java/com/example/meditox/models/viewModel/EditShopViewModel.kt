@@ -150,9 +150,31 @@ class EditShopViewModel(application: Application) : AndroidViewModel(application
 
                         _updateResult.value = ApiResult.Success(response)
                         // Update shop details in DataStore
-                        body.data.data?.let { updatedShop ->
+                        // Convert UpdateShopDetailsResponse to ShopDetails and save to DataStore
+                        body.data?.let { updateResponse ->
+                            Log.d("EditShopViewModel", "Received update response: $updateResponse")
+                            
+                            // Convert UpdateShopDetailsResponse to ShopDetails for DataStore
+                            val updatedShop = ShopDetails(
+                                id = updateResponse.id,
+                                shopName = updateResponse.shopName,
+                                licenseNumber = updateResponse.licenseNumber,
+                                gstNumber = updateResponse.gstNumber,
+                                address = updateResponse.address,
+                                city = updateResponse.city,
+                                state = updateResponse.state,
+                                pinCode = updateResponse.pinCode,
+                                contactPhone = updateResponse.contactPhone,
+                                contactEmail = updateResponse.contactEmail,
+                                latitude = updateResponse.latitude,
+                                longitude = updateResponse.longitude,
+                                shopStatus = updateResponse.shopStatus,
+                                createdAt = _shopDetails.value?.createdAt ?: listOf() // Keep existing createdAt
+                            )
+                            
                             DataStoreManager.saveShopDetails(getApplication(), updatedShop)
-                        }
+                            Log.d("EditShopViewModel", "Shop details successfully saved to DataStore: $updatedShop")
+                        } ?: Log.e("EditShopViewModel", "Response data is null")
                         Log.d("EditShopViewModel", "Shop details update successful")
                     } else {
                         _updateResult.value = ApiResult.Error(body?.message ?: "Shop details update failed")
