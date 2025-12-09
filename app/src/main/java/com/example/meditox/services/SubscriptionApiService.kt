@@ -9,7 +9,7 @@ import retrofit2.http.Header
 
 interface SubscriptionApiService {
     
-    @POST("api/subscription/sync")
+    @POST("/api/v2/subscription/sync")
     suspend fun syncSubscriptionDetails(
         @Body request: SubscriptionSyncRequest
     ): Response<SubscriptionSyncResponse>

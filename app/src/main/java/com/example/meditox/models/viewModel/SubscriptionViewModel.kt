@@ -24,12 +24,50 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber.asStateFlow()
     
+    // Add StateFlows for DataStore values
+    private val _userData = MutableStateFlow<com.example.meditox.models.User?>(null)
+    val userData: StateFlow<com.example.meditox.models.User?> = _userData.asStateFlow()
+    
+    private val _shopDetails = MutableStateFlow<com.example.meditox.models.ShopDetails?>(null)
+    val shopDetails: StateFlow<com.example.meditox.models.ShopDetails?> = _shopDetails.asStateFlow()
+    
+    private val _backendSyncStatus = MutableStateFlow(false)
+    val backendSyncStatus: StateFlow<Boolean> = _backendSyncStatus.asStateFlow()
+    
+    private val _hasActiveSubscription = MutableStateFlow(false)
+    val hasActiveSubscription: StateFlow<Boolean> = _hasActiveSubscription.asStateFlow()
+    
     private val apiService = ApiClient.createUserApiService(application)
     
     init {
+        // Collect all DataStore flows in init block
         viewModelScope.launch {
             DataStoreManager.getPhoneNumber(application).collect {
                 _phoneNumber.value = it
+            }
+        }
+        
+        viewModelScope.launch {
+            DataStoreManager.getUserData(application).collect {
+                _userData.value = it
+            }
+        }
+        
+        viewModelScope.launch {
+            DataStoreManager.getShopDetails(application).collect {
+                _shopDetails.value = it
+            }
+        }
+        
+        viewModelScope.launch {
+            DataStoreManager.getBackendSyncStatus(application).collect {
+                _backendSyncStatus.value = it
+            }
+        }
+        
+        viewModelScope.launch {
+            DataStoreManager.hasActiveSubscription(application).collect {
+                _hasActiveSubscription.value = it
             }
         }
     }

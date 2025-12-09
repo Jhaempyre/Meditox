@@ -69,13 +69,14 @@ fun SubscriptionScreen(navController: NavController) {
     val subscriptionResult = subscriptionViewModel.subscriptionResult.collectAsState()
     val phoneNumber = subscriptionViewModel.phoneNumber.collectAsState()
     
-    // Get user data for better Razorpay integration
-    val userData = DataStoreManager.getUserData(context).collectAsState(initial = null)
-    
-    // Monitor backend sync status instead of just local subscription status
-    val backendSyncStatus = DataStoreManager.getBackendSyncStatus(context).collectAsState(initial = false)
-    val hasActiveSubscription = DataStoreManager.hasActiveSubscription(context).collectAsState(initial = false)
-    
+    // Get user data from ViewModel instead of direct DataStore calls
+    val userData = subscriptionViewModel.userData.collectAsState()
+    val shopDetails = subscriptionViewModel.shopDetails.collectAsState()
+
+    // Monitor backend sync status from ViewModel instead of direct DataStore calls
+    val backendSyncStatus = subscriptionViewModel.backendSyncStatus.collectAsState()
+    val hasActiveSubscription = subscriptionViewModel.hasActiveSubscription.collectAsState()
+
     // Only navigate after successful backend sync confirmation
     LaunchedEffect(backendSyncStatus.value, hasActiveSubscription.value) {
         if (hasActiveSubscription.value && backendSyncStatus.value) {
@@ -169,7 +170,7 @@ fun SubscriptionScreen(navController: NavController) {
                 // Prefill customer details with actual user data
                 val prefill = JSONObject().apply {
                     val user = userData.value
-                    put("email", "customer@example.com") // User model doesn't have email field
+                    put("email", shopDetails.value?.contactEmail) // User model doesn't have email field
                     put("contact", phoneNumber.value ?: user?.phone ?: "")
                     put("name", user?.name ?: "Customer")
                 }
