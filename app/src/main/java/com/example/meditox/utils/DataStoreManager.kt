@@ -11,6 +11,7 @@ import com.example.meditox.models.User
 import com.example.meditox.models.subscription.SubscriptionDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -220,16 +221,12 @@ object DataStoreManager {
      */
     suspend fun isSubscriptionExpired(context: Context): Boolean {
         return try {
-            val subscription = getSubscriptionDetails(context)
-            var isExpired = true
-            subscription.collect { details ->
-                if (details != null && details.endDate != null) {
-                    isExpired = System.currentTimeMillis() > details.endDate
-                } else {
-                    isExpired = false // No end date means it's ongoing
-                }
+            val details = getSubscriptionDetails(context).first()
+            if (details != null && details.endDate != null) {
+                System.currentTimeMillis() > details.endDate
+            } else {
+                false // No end date means it's ongoing
             }
-            isExpired
         } catch (e: Exception) {
             Log.e("DataStore", "Error checking subscription expiry: ${e.message}")
             true // Assume expired on error

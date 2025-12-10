@@ -31,6 +31,7 @@ import com.example.meditox.utils.SubscriptionHelper
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import com.example.meditox.ui.theme.primaryGreen
 import com.example.meditox.ui.theme.lightGreen
 import com.example.meditox.ui.theme.lighterGreen
@@ -78,16 +79,15 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                 daysRemaining = helperSummary.daysRemaining,
                 isActive = helperSummary.isActive
             )
-            isLoading = false
             
             // Calculate refund eligibility
-            val subscriptionDetails = SubscriptionHelper.getSubscriptionDetails(context)
-            subscriptionDetails.collect { details ->
-                if (details != null) {
-                    val daysSinceStart = (System.currentTimeMillis() - details.startDate) / (24 * 60 * 60 * 1000)
-                    isRefundEligible = daysSinceStart <= 7 && details.isActive
-                }
+            val details = SubscriptionHelper.getSubscriptionDetails(context).first()
+            if (details != null) {
+                val daysSinceStart = (System.currentTimeMillis() - details.startDate) / (24 * 60 * 60 * 1000)
+                isRefundEligible = daysSinceStart <= 7 && details.isActive
             }
+            
+            isLoading = false
         } catch (e: Exception) {
             isLoading = false
             Toast.makeText(context, "Error loading subscription details", Toast.LENGTH_SHORT).show()
