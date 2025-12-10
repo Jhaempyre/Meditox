@@ -5,6 +5,8 @@ import android.util.Log
 import com.example.meditox.models.subscription.SubscriptionDetails
 import com.example.meditox.models.subscription.SubscriptionSyncRequest
 import com.example.meditox.services.ApiClient
+import com.example.meditox.utils.EncryptedTokenManager
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.flow.first
 
 /**
@@ -63,11 +65,34 @@ object SubscriptionSyncManager {
             Log.d("SubscriptionSync", "- Amount: ${syncRequest.amount}")
             Log.d("SubscriptionSync", "- Payment ID: ${syncRequest.razorpayPaymentId}")
             
+            // ===== COMPLETE REQUEST LOGGING =====
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val requestJson = gson.toJson(syncRequest)
+            
+            Log.d("SubscriptionSync", "========== COMPLETE REQUEST TO BACKEND ==========")
+            Log.d("SubscriptionSync", "🔗 ENDPOINT: POST /api/v2/subscription/sync")
+            Log.d("SubscriptionSync", "📋 HEADERS:")
+            
+            // Get token for header logging
+            try {
+                val accessToken = EncryptedTokenManager.getAccessToken(context)
+                Log.d("SubscriptionSync", "   - Content-Type: application/json")
+                Log.d("SubscriptionSync", "   - Authorization: Bearer ${accessToken?.take(20)}...${accessToken?.takeLast(20)}")
+                Log.d("SubscriptionSync", "   - Accept: application/json")
+            } catch (e: Exception) {
+                Log.d("SubscriptionSync", "   - Content-Type: application/json")
+                Log.d("SubscriptionSync", "   - Authorization: Bearer [TOKEN_ERROR: ${e.message}]")
+            }
+            
+            Log.d("SubscriptionSync", "📦 REQUEST BODY (JSON):")
+            Log.d("SubscriptionSync", requestJson)
+            Log.d("SubscriptionSync", "===========================================")
+            
             // Get API service
             val apiService = ApiClient.createSubscriptionApiService(context)
             
             // Make API call (token will be added automatically by HTTPsTokenInterceptor)
-            Log.d("SubscriptionSync", "Making API call to sync subscription")
+            Log.d("SubscriptionSync", "🚀 Making API call to sync subscription...")
             val response = apiService.syncSubscriptionDetails(syncRequest)
             
             Log.d("SubscriptionSync", "API Response:")

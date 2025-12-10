@@ -1,6 +1,8 @@
 package com.example.meditox.models.subscription
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import com.example.meditox.utils.LocalDateTimeDeserializer
 data class SubscriptionSyncRequest(
     @SerializedName("subscriptionId")
     val subscriptionId: String,
@@ -51,5 +53,6 @@ data class SubscriptionSyncResponse(
     @SerializedName("status")
     val status: String? = null,
     @SerializedName("syncedAt")
-    val syncedAt: String? = null  // Changed to String to match backend ISO date format
+    @JsonAdapter(LocalDateTimeDeserializer::class)
+    val syncedAt: String? = null  // Handles both array and string formats from backend
 )
