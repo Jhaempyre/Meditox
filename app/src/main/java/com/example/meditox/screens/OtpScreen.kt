@@ -35,10 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.meditox.Routes
 import com.example.meditox.models.viewModel.OtpViewModel
+import com.example.meditox.models.subscription.toSubscriptionDetails
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.EncryptedTokenManager
 import com.example.meditox.utils.PermissionUtils
+import kotlinx.coroutines.flow.first
+
 
 @Composable
 fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpViewModel) {
@@ -49,6 +52,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
     val phoneNumber = viewModel.phoneNumber.collectAsState().value
     val otpResult = viewModel.otpResult.collectAsState().value
     val shopDetailsResult = viewModel.shopDetailsResult.collectAsState().value
+    val subscriptionDetailResult = viewModel.subscriptionDetailResult.collectAsState().value
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -189,6 +193,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                     navController.navigate(Routes.PERMISSIONS) {
                                         popUpTo(Routes.OTP) { inclusive = true }
                                     }
+                                    return@LaunchedEffect
                                 }
 
                                 Toast.makeText(context, "Please Register your Shop Now", Toast.LENGTH_SHORT).show()
@@ -196,25 +201,26 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                     popUpTo(Routes.OTP) { inclusive = true }
                                     launchSingleTop = true
                                 }
-                            }
-                            Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                            DataStoreManager.setIsBusinessRegistered(context,true);
-                            Log.d("API_RESPONSE", "this will be printed") // Likely will show
-                            if (!hasAllPermissions) {
-                                Log.d("API_RESPONSE", "checking permission... about to navigate")
-                                navController.navigate(Routes.PERMISSIONS) {
-                                    popUpTo(Routes.OTP) { inclusive = true }
+                            } else {
+                                // Business is registered
+                                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                                DataStoreManager.setIsBusinessRegistered(context, true)
+                                Log.d("API_RESPONSE", "Business registered user logging in")
+                                
+                                if (!hasAllPermissions) {
+                                    Log.d("API_RESPONSE", "checking permission... about to navigate")
+                                    navController.navigate(Routes.PERMISSIONS) {
+                                        popUpTo(Routes.OTP) { inclusive = true }
+                                    }
+                                    //TODO: SINCE EVERYTHING IS DONE WE NEED TO SUPERVISE THE FLOW OF PAYMENTS ALSO WHEN A USER IS THERE TO LOGIN THEN WE NEED TO SEND ALL DATA AND THEN KEEP THAT IN THE CORRECT DATASTORE WE NEED TO MAKE API CALLS REGARDING THAT
+                                    return@LaunchedEffect
                                 }
-                                //TODO: sINCE EVERYTHING IS DONE WE NEED TO SUPERWVISE THE FLOW OF PAYMANETS ALASO WHEN A USER IS THERE TO LOGIN THEN WE NEED TO SEND ALL DATA AND THEN KEEP THAT IN THE CORRECT DATASTORE WE NEED TO MAKE API CALLS REGARDING THAT
-                                Log.d("API_RESPONSE", "this won't be printed") // Likely won't show
-                                return@LaunchedEffect
-                            }
-                            navController.navigate(Routes.DASHBOARD) {
-                                popUpTo(Routes.OTP) { inclusive = true }
-                                launchSingleTop = true
+                                navController.navigate(Routes.DASHBOARD) {
+                                    popUpTo(Routes.OTP) { inclusive = true }
+                                    launchSingleTop = true
+                                }
                             }
                         }
-
 
                         // Reset state after navigation
                         viewModel.resetOtpVerificationState()
@@ -249,6 +255,13 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             DataStoreManager.saveShopDetails(context, body.data)
                             DataStoreManager.setIsBusinessRegistered(context,true)
                             Log.d("OtpScreen", "Shop details saved successfully: ${body.data}")
+                            val userId = DataStoreManager.getUserData(context).first()?.id
+                            if (userId != null) {
+                                Log.d("OtpScreen", "Fetching subscription details for user: $userId")
+                                viewModel.getSubscriptionDetails(userId.toString())
+                            } else {
+                                Log.e("OtpScreen", "User ID is null, cannot fetch subscription details")
+                            }
                         } else {
                             Log.e("OtpScreen", "Failed to fetch shop details: ${body?.message ?: "Unknown error"}")
                             // Don't show error to user as this is a background operation
@@ -265,6 +278,43 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                     else -> {} // Loading or null - no action needed
                 }
             }
+
+            LaunchedEffect(subscriptionDetailResult) {
+                when (val subscriptionResult = subscriptionDetailResult){
+                    is ApiResult.Success ->{
+                        val response = subscriptionResult.data
+                        val body = response.body()
+                        Log.d("OtpScreen", "Subscription API response: $response")
+                        Log.d("OtpScreen", "Subscription body: $body")
+                        
+                        if(response.isSuccessful && body?.success == true && body.data != null){
+                            // body.data is SubscriptionApiResponse, body.data.data is SubscriptionApiData
+                            val subscriptionApiData = body.data.data
+                            
+                            if (subscriptionApiData != null) {
+                                val subscriptionData = subscriptionApiData.toSubscriptionDetails()
+                                DataStoreManager.saveSubscriptionDetails(context, subscriptionData)
+                                Log.d("OtpScreen", "Subscription details saved successfully: $subscriptionData")
+                            } else {
+                                Log.e("OtpScreen", "Subscription data is null")
+                            }
+                        } else {
+                            Log.e("OtpScreen", "Failed to fetch subscription details: ${body?.message ?: "Unknown error"}")
+                        }
+                        
+                        // Reset subscription details state
+                        viewModel.resetgetSubscriptionDetails()
+                    }
+                    is ApiResult.Error -> {
+                        Log.e("OtpScreen", "Error fetching subscription details: ${subscriptionDetailResult.message}")
+                        viewModel.resetgetSubscriptionDetails()
+                    }
+                    else -> {}
+                }
+
+
+            }
         }
     }
 }
+

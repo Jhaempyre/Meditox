@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import android.util.Log
+import com.example.meditox.models.subscription.SubscriptionApiResponse
 
 
 class OtpViewModel(application: Application) : AndroidViewModel(application) {
@@ -38,6 +39,10 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _shopDetailsResult = MutableStateFlow<ApiResult<Response<ApiResponse<ShopDetails>>>?>(null)
     val shopDetailsResult: StateFlow<ApiResult<Response<ApiResponse<ShopDetails>>>?> = _shopDetailsResult.asStateFlow()
+
+
+    private val _subscriptionDetailResult = MutableStateFlow<ApiResult<Response<ApiResponse<SubscriptionApiResponse>>>?>(null)
+    val subscriptionDetailResult: StateFlow<ApiResult<Response<ApiResponse<SubscriptionApiResponse>>>?> = _subscriptionDetailResult.asStateFlow()
 
 
 
@@ -88,6 +93,36 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetShopDetailsState() {
         _shopDetailsResult.value = null
+    }
+
+    //do good logging after each line
+    fun getSubscriptionDetails(userId: String) {
+        viewModelScope.launch {
+            try {
+                _subscriptionDetailResult.value = ApiResult.Loading
+                Log.d("OtpViewModel", "Fetching subscription details for user: $userId")
+                val response = apiService.getUserSubscription(userId)
+                Log.d("OtpViewModel", "API response may be succedded")
+                if (response.isSuccessful) {
+                    _subscriptionDetailResult.value = ApiResult.Success(response)
+                    Log.d("OtpViewModel", "Subscription details fetched successfully: ${response.body()}")
+
+                } else {
+                    _subscriptionDetailResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Failed to fetch subscription details")
+                    Log.e("OtpViewModel", "Failed to fetch subscription details: ${response.errorBody()?.string()}")
+                }
+
+                }catch (e: Exception){
+                    _subscriptionDetailResult.value = ApiResult.Error(e.message ?: "Unexpected error while fetching subscription details")
+                    Log.e("OtpViewModel", "Exception while fetching subscription details: ${e.message}", e)
+                }
+        }
+
+
+    }
+
+    fun resetgetSubscriptionDetails(){
+        _subscriptionDetailResult.value = null
     }
 
 }
