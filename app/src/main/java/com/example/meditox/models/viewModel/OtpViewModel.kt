@@ -100,11 +100,13 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 _subscriptionDetailResult.value = ApiResult.Loading
-                Log.d("OtpViewModel", "Fetching subscription details for user: $userId")
+                Log.d("OtpViewModel", "Fetching subscription details for businessid: $userId")
                 val response = apiService.getUserSubscription(userId)
                 Log.d("OtpViewModel", "API response may be succedded")
                 if (response.isSuccessful) {
                     _subscriptionDetailResult.value = ApiResult.Success(response)
+                    Log.d("OtpViewModel", "Subscription details fetched stringifying successfully: ${response.toString()}")
+
                     Log.d("OtpViewModel", "Subscription details fetched successfully: ${response.body()}")
 
                 } else {

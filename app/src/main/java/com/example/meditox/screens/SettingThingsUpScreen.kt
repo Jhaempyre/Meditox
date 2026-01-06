@@ -170,11 +170,15 @@ fun SettingThingsUpScreen(
                     try {
                         currentStep = "Saving subscription details..."
 
-                        val subscriptionApiData = body.data.data
+                        val subscriptionApiData = response.body()?.data
+
+                        Log.d("SettingThingsUp", "Subscription API data: ${subscriptionApiData.toString()}")
+
 
                         if (subscriptionApiData != null) {
                             val subscriptionData = subscriptionApiData.toSubscriptionDetails()
                             DataStoreManager.saveSubscriptionDetails(context, subscriptionData)
+                            DataStoreManager.setBackendSyncStatus(context,true)
                             Log.d("SettingThingsUp", "Subscription details saved successfully")
                         } else {
                             Log.w("SettingThingsUp", "No subscription data available")
