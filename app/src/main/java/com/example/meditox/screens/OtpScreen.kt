@@ -35,13 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.meditox.Routes
 import com.example.meditox.models.viewModel.OtpViewModel
-import com.example.meditox.models.subscription.toSubscriptionDetails
 import com.example.meditox.utils.ApiResult
 import com.example.meditox.utils.DataStoreManager
-import com.example.meditox.utils.EncryptedTokenManager
-import com.example.meditox.utils.PermissionUtils
-import kotlinx.coroutines.flow.first
-
 
 @Composable
 fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpViewModel) {
@@ -51,8 +46,6 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
     val GreenDark = Color(0xFF005005)
     val phoneNumber = viewModel.phoneNumber.collectAsState().value
     val otpResult = viewModel.otpResult.collectAsState().value
-    val shopDetailsResult = viewModel.shopDetailsResult.collectAsState().value
-    val subscriptionDetailResult = viewModel.subscriptionDetailResult.collectAsState().value
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -65,8 +58,6 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-
             Text(
                 text = "Enter the OTP",
                 style = MaterialTheme.typography.displayMedium,
@@ -76,7 +67,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
 
             OutlinedTextField(
                 value = otp,
-                onValueChange = { otp = it.take(6) }, // OTP limit
+                onValueChange = { otp = it.take(6) },
                 label = { Text("OTP") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
@@ -122,115 +113,73 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
             LaunchedEffect(otpResult) {
                 when (val result = otpResult) {
                     is ApiResult.Success -> {
-                        // First, mark user as logged in
+                        // Mark user as logged in
                         DataStoreManager.setIsLoggedIn(context, true)
 
                         val response = result.data
                         val body = response.body()
 
-                        Log.d("API_RESPONSE", "Success: $response")
-                        Log.d("API_RESPONSE", "Body: $body")
-                        Log.d("API_RESPONSE", "Data field: ${body?.data}")
+                        Log.d("OtpScreen", "OTP verification successful")
+                        Log.d("OtpScreen", "Response body: $body")
 
-                        // Check if permissions are granted
-                        // All permissions granted, proceed based on registration status
+                        // Extract tokens from headers
+                        val accessToken = response.headers()["Authorization"]?.removePrefix("Bearer ")?.trim()
+                        val refreshToken = response.headers()["X-Refresh-Token"]
+
+                        if (accessToken == null || refreshToken == null) {
+                            Toast.makeText(context, "Authentication tokens not received", Toast.LENGTH_SHORT).show()
+                            viewModel.resetOtpVerificationState()
+                            return@LaunchedEffect
+                        }
+
+                        Log.d("OtpScreen", "Tokens extracted successfully")
 
                         if (body?.data == null) {
                             // User not registered
+                            Log.d("OtpScreen", "User not registered")
                             DataStoreManager.setIsRegistered(context, false)
-                            Toast.makeText(
-                                context,
-                                "OTP verified. Please register.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
-                            if (!hasAllPermissions) {
-                                // Navigate to permission screen first
-                                navController.navigate(Routes.PERMISSIONS) {
-                                    popUpTo(Routes.OTP) { inclusive = true }
-                                }
-                            }
+                            Toast.makeText(context, "OTP verified. Please register.", Toast.LENGTH_SHORT).show()
+
                             navController.navigate(Routes.REGISTER_USER) {
                                 popUpTo(Routes.OTP) { inclusive = true }
                                 launchSingleTop = true
                             }
                         } else {
                             // User is registered
-                            Log.d("API_RESPONSE", " have landed here")
-                            DataStoreManager.setIsRegistered(context, true)
-                            Log.d("API_RESPONSE", " have also landed here")
                             val user = body.data
-                            val isBusinessRegistered= user.businessRegistered
-                            Log.d("inOtp", " starting to save")
+                            val isBusinessRegistered = user.businessRegistered
+
+                            Log.d("OtpScreen", "User registered. Business registered: $isBusinessRegistered")
+
+                            // Save user data
+                            DataStoreManager.setIsRegistered(context, true)
                             DataStoreManager.saveUserData(context, user)
-                            Log.d("inOtp", " i guess saving succeded")
-                            
-                            // If business is registered, fetch shop details
-                            if (isBusinessRegistered) {
-                                Log.d("OtpScreen", "User has business registered, fetching shop details...")
-                                viewModel.fetchShopDetails(user.id.toString())
-                            }
-                            
-                            val hasAllPermissions = PermissionUtils.allPermissionsGranted(context)
-                            Log.d("permissionresponse", "$hasAllPermissions")
+                            Log.d("OtpScreen", "User data saved")
 
-
-                            val accessToken = response.headers()["Authorization"]?.removePrefix("Bearer ")?.trim()
-                            val refreshToken = response.headers()["X-Refresh-Token"]
-
-                            if(accessToken != null && refreshToken != null){
-                                Log.d("TOKEN_DEBUG", "Access: $accessToken, Refresh: $refreshToken")
-                                EncryptedTokenManager.saveAccessAndRefreshToken(context, accessToken, refreshToken)
-                            }else{
-                                Toast.makeText(context,"tokens not available",Toast.LENGTH_SHORT).show()
-                            }
-                            if(!isBusinessRegistered){
-                                if (!hasAllPermissions) {
-                                    Log.d(
-                                        "API_RESPONSE",
-                                        "checking permission... about to navigate"
-                                    )
-                                    navController.navigate(Routes.PERMISSIONS) {
-                                        popUpTo(Routes.OTP) { inclusive = true }
-                                    }
-                                    return@LaunchedEffect
-                                }
-
-                                Toast.makeText(context, "Please Register your Shop Now", Toast.LENGTH_SHORT).show()
-                                navController.navigate(Routes.REGISTER_SHOP) {
-                                    popUpTo(Routes.OTP) { inclusive = true }
-                                    launchSingleTop = true
-                                }
-                            } else {
-                                // Business is registered
-                                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                                DataStoreManager.setIsBusinessRegistered(context, true)
-                                Log.d("API_RESPONSE", "Business registered user logging in")
-                                
-                                if (!hasAllPermissions) {
-                                    Log.d("API_RESPONSE", "checking permission... about to navigate")
-                                    navController.navigate(Routes.PERMISSIONS) {
-                                        popUpTo(Routes.OTP) { inclusive = true }
-                                    }
-                                    //TODO: SINCE EVERYTHING IS DONE WE NEED TO SUPERVISE THE FLOW OF PAYMENTS ALSO WHEN A USER IS THERE TO LOGIN THEN WE NEED TO SEND ALL DATA AND THEN KEEP THAT IN THE CORRECT DATASTORE WE NEED TO MAKE API CALLS REGARDING THAT
-                                    return@LaunchedEffect
-                                }
-                                navController.navigate(Routes.DASHBOARD) {
-                                    popUpTo(Routes.OTP) { inclusive = true }
-                                    launchSingleTop = true
-                                }
+                            // Navigate to SettingThingsUpScreen with necessary data
+                            navController.navigate(
+                                Routes.settingThingsUp(
+                                    userId = user.id.toString(),
+                                    isRegistered = true,
+                                    isBusinessRegistered = isBusinessRegistered,
+                                    accessToken = accessToken,
+                                    refreshToken = refreshToken
+                                )
+                            ) {
+                                popUpTo(Routes.OTP) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
 
                         // Reset state after navigation
                         viewModel.resetOtpVerificationState()
-
                     }
+
                     is ApiResult.Error -> {
-                        //SPECIFIC Error messgage dena hae aur fir sab screen mae jaa jaa kr dekhna hae aur dena hae jo bhi erro hae
+                        Log.e("OtpScreen", "OTP verification failed: ${result.message}")
                         Toast.makeText(
                             context,
-                            result.message ?: "Something went wrong",
+                            result.message ?: "Verification failed",
                             Toast.LENGTH_SHORT
                         ).show()
                         viewModel.resetOtpVerificationState()
@@ -239,82 +188,6 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                     else -> {} // Loading or null - no action needed
                 }
             }
-
-            // Handle shop details fetching result
-            LaunchedEffect(shopDetailsResult) {
-                when (val result = shopDetailsResult) {
-                    is ApiResult.Success -> {
-                        val response = result.data
-                        val body = response.body()
-                        
-                        Log.d("OtpScreen", "Shop details API response: $response")
-                        Log.d("OtpScreen", "Shop details body: $body")
-                        
-                        if (response.isSuccessful && body?.success == true && body.data != null) {
-                            // Save shop details to DataStore
-                            DataStoreManager.saveShopDetails(context, body.data)
-                            DataStoreManager.setIsBusinessRegistered(context,true)
-                            Log.d("OtpScreen", "Shop details saved successfully: ${body.data}")
-                            val userId = DataStoreManager.getUserData(context).first()?.id
-                            if (userId != null) {
-                                Log.d("OtpScreen", "Fetching subscription details for user: $userId")
-                                viewModel.getSubscriptionDetails(userId.toString())
-                            } else {
-                                Log.e("OtpScreen", "User ID is null, cannot fetch subscription details")
-                            }
-                        } else {
-                            Log.e("OtpScreen", "Failed to fetch shop details: ${body?.message ?: "Unknown error"}")
-                            // Don't show error to user as this is a background operation
-                        }
-                        
-                        // Reset shop details state
-                        viewModel.resetShopDetailsState()
-                    }
-                    is ApiResult.Error -> {
-                        Log.e("OtpScreen", "Error fetching shop details: ${result.message}")
-                        // Don't show error to user as this is a background operation
-                        viewModel.resetShopDetailsState()
-                    }
-                    else -> {} // Loading or null - no action needed
-                }
-            }
-
-            LaunchedEffect(subscriptionDetailResult) {
-                when (val subscriptionResult = subscriptionDetailResult){
-                    is ApiResult.Success ->{
-                        val response = subscriptionResult.data
-                        val body = response.body()
-                        Log.d("OtpScreen", "Subscription API response: $response")
-                        Log.d("OtpScreen", "Subscription body: $body")
-                        
-                        if(response.isSuccessful && body?.success == true && body.data != null){
-                            // body.data is SubscriptionApiResponse, body.data.data is SubscriptionApiData
-                            val subscriptionApiData = body.data.data
-                            
-                            if (subscriptionApiData != null) {
-                                val subscriptionData = subscriptionApiData.toSubscriptionDetails()
-                                DataStoreManager.saveSubscriptionDetails(context, subscriptionData)
-                                Log.d("OtpScreen", "Subscription details saved successfully: $subscriptionData")
-                            } else {
-                                Log.e("OtpScreen", "Subscription data is null")
-                            }
-                        } else {
-                            Log.e("OtpScreen", "Failed to fetch subscription details: ${body?.message ?: "Unknown error"}")
-                        }
-                        
-                        // Reset subscription details state
-                        viewModel.resetgetSubscriptionDetails()
-                    }
-                    is ApiResult.Error -> {
-                        Log.e("OtpScreen", "Error fetching subscription details: ${subscriptionDetailResult.message}")
-                        viewModel.resetgetSubscriptionDetails()
-                    }
-                    else -> {}
-                }
-
-
-            }
         }
     }
 }
-

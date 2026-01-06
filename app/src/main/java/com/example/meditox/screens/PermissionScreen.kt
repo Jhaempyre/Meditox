@@ -79,7 +79,7 @@ fun PermissionsScreen(navController: NavController) {
             if (PermissionUtils.needsStorageManagementPermission()) {
                 showStoragePermissionDialog = true
             } else {
-                navigateToNext()
+                navController.popBackStack()
             }
         } else {
             // Check for permanently denied permissions
@@ -95,7 +95,7 @@ fun PermissionsScreen(navController: NavController) {
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
         if (PermissionUtils.isStorageManagementGranted()) {
-            navigateToNext()
+            navController.popBackStack()
         } else {
             showStoragePermissionDialog = true
         }
@@ -106,7 +106,7 @@ fun PermissionsScreen(navController: NavController) {
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
         if (PermissionUtils.allPermissionsGranted(context)) {
-            navigateToNext()
+            navController.popBackStack()
         } else {
             // Re-check permissions
             deniedPermissions = PermissionUtils.getDeniedRegularPermissions(context)
@@ -124,7 +124,7 @@ fun PermissionsScreen(navController: NavController) {
     // Check permissions on screen load
     LaunchedEffect(Unit) {
         if (PermissionUtils.allPermissionsGranted(context)) {
-            navigateToNext()
+            navController.popBackStack()
         } else {
             regularPermissionsLauncher.launch(regularPermissions.toTypedArray())
         }
@@ -200,7 +200,7 @@ fun PermissionsScreen(navController: NavController) {
                     showPermissionDeniedDialog = false
                     // Allow skipping for non-critical permissions
                     if (!PermissionUtils.needsStorageManagementPermission()) {
-                        navigateToNext()
+                        navController.popBackStack()
                     }
                 }) {
                     Text("Skip")
@@ -243,7 +243,7 @@ fun PermissionsScreen(navController: NavController) {
             dismissButton = {
                 Button(onClick = {
                     showStoragePermissionDialog = false
-                    navigateToNext() // Allow skipping storage permission
+                    navController.popBackStack() // Allow skipping storage permission
                 }) {
                     Text("Skip")
                 }
