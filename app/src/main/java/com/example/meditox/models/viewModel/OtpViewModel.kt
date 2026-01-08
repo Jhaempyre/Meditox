@@ -47,13 +47,16 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
     private val _otpResult = MutableStateFlow<ApiResult<Response<VerifyOtpResponse>>?>(null)
     val otpResult: StateFlow<ApiResult<Response<VerifyOtpResponse>>?> = _otpResult.asStateFlow()
 
-    private val _shopDetailsResult = MutableStateFlow<ApiResult<Response<ApiResponse<ShopDetails>>>?>(null)
-    val shopDetailsResult: StateFlow<ApiResult<Response<ApiResponse<ShopDetails>>>?> = _shopDetailsResult.asStateFlow()
+    private val _shopDetailsResult =
+        MutableStateFlow<ApiResult<Response<ApiResponse<ShopDetails>>>?>(null)
+    val shopDetailsResult: StateFlow<ApiResult<Response<ApiResponse<ShopDetails>>>?> =
+        _shopDetailsResult.asStateFlow()
 
 
-    private val _subscriptionDetailResult = MutableStateFlow<ApiResult<Response<ApiResponse<SubscriptionApiResponse>>>?>(null)
-    val subscriptionDetailResult: StateFlow<ApiResult<Response<ApiResponse<SubscriptionApiResponse>>>?> = _subscriptionDetailResult.asStateFlow()
-
+    private val _subscriptionDetailResult =
+        MutableStateFlow<ApiResult<Response<ApiResponse<SubscriptionApiResponse>>>?>(null)
+    val subscriptionDetailResult: StateFlow<ApiResult<Response<ApiResponse<SubscriptionApiResponse>>>?> =
+        _subscriptionDetailResult.asStateFlow()
 
 
     fun verifyOtp(otp: String) {
@@ -68,14 +71,14 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
                     _otpResult.value =
                         ApiResult.Error(response.errorBody()?.string() ?: "Login failed")
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 _otpResult.value = ApiResult.Error(e.message ?: "Unexpected error")
             }
 
         }
     }
 
-    fun resetOtpVerificationState(){
+    fun resetOtpVerificationState() {
         _otpResult.value = null
     }
 
@@ -91,11 +94,17 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
                     _shopDetailsResult.value = ApiResult.Success(response)
                     Log.d("OtpViewModel", "Shop details fetched successfully: ${response.body()}")
                 } else {
-                    _shopDetailsResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Failed to fetch shop details")
-                    Log.e("OtpViewModel", "Failed to fetch shop details: ${response.errorBody()?.string()}")
+                    _shopDetailsResult.value = ApiResult.Error(
+                        response.errorBody()?.string() ?: "Failed to fetch shop details"
+                    )
+                    Log.e(
+                        "OtpViewModel",
+                        "Failed to fetch shop details: ${response.errorBody()?.string()}"
+                    )
                 }
             } catch (e: Exception) {
-                _shopDetailsResult.value = ApiResult.Error(e.message ?: "Unexpected error while fetching shop details")
+                _shopDetailsResult.value =
+                    ApiResult.Error(e.message ?: "Unexpected error while fetching shop details")
                 Log.e("OtpViewModel", "Exception while fetching shop details: ${e.message}", e)
             }
         }
@@ -115,25 +124,44 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d("OtpViewModel", "API response may be succedded")
                 if (response.isSuccessful) {
                     _subscriptionDetailResult.value = ApiResult.Success(response)
-                    Log.d("OtpViewModel", "Subscription details fetched stringifying successfully: ${response.body()?.toString()}")
+                    Log.d(
+                        "OtpViewModel",
+                        "Subscription details fetched stringifying successfully: ${
+                            response.body()?.toString()
+                        }"
+                    )
 
-                    Log.d("OtpViewModel", "Subscription details fetched successfully: ${response.body()}")
+                    Log.d(
+                        "OtpViewModel",
+                        "Subscription details fetched successfully: ${response.body()}"
+                    )
 
                 } else {
-                    _subscriptionDetailResult.value = ApiResult.Error(response.errorBody()?.string() ?: "Failed to fetch subscription details")
-                    Log.e("OtpViewModel", "Failed to fetch subscription details: ${response.errorBody()?.string()}")
+                    _subscriptionDetailResult.value = ApiResult.Error(
+                        response.errorBody()?.string() ?: "Failed to fetch subscription details"
+                    )
+                    Log.e(
+                        "OtpViewModel",
+                        "Failed to fetch subscription details: ${response.errorBody()?.string()}"
+                    )
                 }
 
-                }catch (e: Exception){
-                    _subscriptionDetailResult.value = ApiResult.Error(e.message ?: "Unexpected error while fetching subscription details")
-                    Log.e("OtpViewModel", "Exception while fetching subscription details: ${e.message}", e)
-                }
+            } catch (e: Exception) {
+                _subscriptionDetailResult.value = ApiResult.Error(
+                    e.message ?: "Unexpected error while fetching subscription details"
+                )
+                Log.e(
+                    "OtpViewModel",
+                    "Exception while fetching subscription details: ${e.message}",
+                    e
+                )
+            }
         }
 
 
     }
 
-    fun resetgetSubscriptionDetails(){
+    fun resetgetSubscriptionDetails() {
         _subscriptionDetailResult.value = null
     }
 

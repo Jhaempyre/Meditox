@@ -1,12 +1,8 @@
 package com.example.meditox.models.viewModel
 
 import android.app.Application
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.meditox.models.auth.AuthRequest
 import com.example.meditox.models.auth.AuthResponse
 import com.example.meditox.services.ApiClient

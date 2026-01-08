@@ -1,19 +1,58 @@
 package com.example.meditox.screens.subscription
 
 import android.widget.Toast
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -21,23 +60,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavController
 import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.models.viewModel.SubscriptionViewModel
-import com.example.meditox.utils.DataStoreManager
-import com.example.meditox.utils.SubscriptionHelper
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.first
-import com.example.meditox.ui.theme.primaryGreen
-import com.example.meditox.ui.theme.lightGreen
-import com.example.meditox.ui.theme.lighterGreen
 import com.example.meditox.ui.theme.darkGreen
+import com.example.meditox.ui.theme.lighterGreen
+import com.example.meditox.ui.theme.primaryGreen
+import com.example.meditox.utils.SubscriptionHelper
 import com.example.meditox.utils.SubscriptionManager
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 // Additional colors for subscription status
 val successGreen = Color(0xFF4CAF50)
@@ -98,6 +131,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
             isLoading = false
         } catch (e: Exception) {
             isLoading = false
+            print(e.message)
             Toast.makeText(context, "Error loading subscription details", Toast.LENGTH_SHORT).show()
         }
     }
@@ -144,6 +178,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                                 isActive = helperSummary.isActive
                             )
                         } catch (e: Exception) {
+                            print(e.message)
                             Toast.makeText(context, "Error refreshing data", Toast.LENGTH_SHORT).show()
                         } finally {
                             isLoading = false
@@ -552,6 +587,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                                     showCancelDialog = false
                                 }
                             } catch (e: Exception) {
+                                print(e.message)
                                 Toast.makeText(context, "Error cancelling subscription", Toast.LENGTH_SHORT).show()
                             }
                         }
