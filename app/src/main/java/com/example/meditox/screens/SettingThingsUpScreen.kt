@@ -177,8 +177,15 @@ fun SettingThingsUpScreen(
 
                         if (subscriptionApiData != null) {
                             val subscriptionData = subscriptionApiData.toSubscriptionDetails()
+                            val isActive = subscriptionData.isActive
+                            if(isActive){
                             DataStoreManager.saveSubscriptionDetails(context, subscriptionData)
-                            DataStoreManager.setBackendSyncStatus(context,true)
+                            DataStoreManager.setBackendSyncStatus(context,true);
+                            Log.d("SettingThingsUp", "Subscription details saved successfully")
+                            }
+                            else{
+                                DataStoreManager.setBackendSyncStatus(context,false)
+                            }
                             Log.d("SettingThingsUp", "Subscription details saved successfully")
                         } else {
                             Log.w("SettingThingsUp", "No subscription data available")
