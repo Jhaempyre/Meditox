@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 object ApiClient {
 
-    private const val Base_Url = "http://34.27.239.217:30085/"
+    private const val Base_Url = "http://api.meditox.in:30085/"
     //private const val Base_Url = "http://0.0.0.0:8080/"
 
 
