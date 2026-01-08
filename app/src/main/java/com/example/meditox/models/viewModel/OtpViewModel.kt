@@ -23,6 +23,11 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _phoneNumber = MutableStateFlow<String?>(null)
     val phoneNumber: StateFlow<String?> = _phoneNumber
+
+    //get userid from datastore
+    private val _userId = MutableStateFlow<String?>(null)
+    val userId: StateFlow<String?> = _userId
+
     private val apiService = ApiClient.createUserApiService(application)
 
 
@@ -30,6 +35,11 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             DataStoreManager.getPhoneNumber(application).collect {
                 _phoneNumber.value = it
+            }
+        }
+        viewModelScope.launch {
+            DataStoreManager.getUserData(application).collect {
+                _userId.value = it?.id.toString()
             }
         }
     }
@@ -105,7 +115,7 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d("OtpViewModel", "API response may be succedded")
                 if (response.isSuccessful) {
                     _subscriptionDetailResult.value = ApiResult.Success(response)
-                    Log.d("OtpViewModel", "Subscription details fetched stringifying successfully: ${response.toString()}")
+                    Log.d("OtpViewModel", "Subscription details fetched stringifying successfully: ${response.body()?.toString()}")
 
                     Log.d("OtpViewModel", "Subscription details fetched successfully: ${response.body()}")
 

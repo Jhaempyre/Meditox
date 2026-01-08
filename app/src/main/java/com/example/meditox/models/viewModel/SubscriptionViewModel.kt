@@ -36,6 +36,9 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     
     private val _hasActiveSubscription = MutableStateFlow(false)
     val hasActiveSubscription: StateFlow<Boolean> = _hasActiveSubscription.asStateFlow()
+
+    private val _subscriptionId = MutableStateFlow<String?>(null)
+    val subscriptionId: StateFlow<String?> = _subscriptionId.asStateFlow()
     
     private val apiService = ApiClient.createUserApiService(application)
     
@@ -68,6 +71,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch {
             DataStoreManager.hasActiveSubscription(application).collect {
                 _hasActiveSubscription.value = it
+            }
+        }
+        viewModelScope.launch {
+            DataStoreManager.getSubscriptionDetails(application).collect {
+                _subscriptionId.value = it?.subscriptionId
             }
         }
     }

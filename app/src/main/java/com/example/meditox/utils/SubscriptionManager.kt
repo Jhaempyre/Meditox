@@ -187,4 +187,30 @@ object SubscriptionManager {
     }
 
 
+     suspend fun cancelSubscriptionImmediately(context: Context, id: String): Boolean{
+        return try {
+
+            // Get API service
+             val apiService = ApiClient.createSubscriptionApiService(context)
+
+                // Make API call (token will be added automatically by HTTPsTokenInterceptor)
+                Log.d("Cancelation", "🚀 Making API call to sync subscription...")
+                val response = apiService.cancelSubscription(id)
+
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    Log.d("Cancelation", "Sync successful:")
+                    Log.d("Cancelation", "- Success: ${responseBody?.success}")
+                    true
+                }else{
+                    false
+                }
+        }catch (e: Exception){
+            Log.e("SubscriptionSync", "Error during subscription cancellation: ${e.message}")
+            false
+        }
+
+    }
+
+
 }

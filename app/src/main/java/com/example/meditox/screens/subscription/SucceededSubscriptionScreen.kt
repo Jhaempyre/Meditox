@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.models.viewModel.SubscriptionViewModel
 import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.SubscriptionHelper
@@ -36,6 +37,7 @@ import com.example.meditox.ui.theme.primaryGreen
 import com.example.meditox.ui.theme.lightGreen
 import com.example.meditox.ui.theme.lighterGreen
 import com.example.meditox.ui.theme.darkGreen
+import com.example.meditox.utils.SubscriptionManager
 
 // Additional colors for subscription status
 val successGreen = Color(0xFF4CAF50)
@@ -64,7 +66,13 @@ fun SucceededSubscriptionScreen(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var showCancelDialog by remember { mutableStateOf(false) }
     var isRefundEligible by remember { mutableStateOf(false) }
-    
+    val subscriptionViewModel: SubscriptionViewModel = viewModel()
+    val otpViewModel : OtpViewModel = viewModel()
+    val subscriptionId by subscriptionViewModel
+        .subscriptionId
+        .collectAsState(initial = null)
+
+
     // Load subscription details
     LaunchedEffect(Unit) {
         try {
@@ -93,6 +101,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
             Toast.makeText(context, "Error loading subscription details", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -519,14 +528,29 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                     onClick = {
                         scope.launch {
                             try {
-                                SubscriptionHelper.cancelSubscription(context)
-                                Toast.makeText(
-                                    context,
-                                    "Subscription cancelled. Refund will be processed within 7 business days.",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                showCancelDialog = false
-                                navController.navigate("subscription")
+                                if(subscriptionId!=null) {
+                                    val cancelResponse = SubscriptionManager.cancelSubscriptionImmediately(
+                                        context,
+                                        subscriptionId ?: ""
+                                    )
+
+                                    if(cancelResponse){
+                                        Toast.makeText(context, "Subscription cancelled", Toast.LENGTH_SHORT).show()
+                                        val response = otpViewModel.getSubscriptionDetails(otpViewModel.userId.toString())
+                                    }
+
+
+                                    Toast.makeText(
+                                        context,
+                                        "Subscription cancelled. Refund will be processed within 7 business days.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    showCancelDialog = false
+                                    navController.navigate("subscription")
+                                }else{
+                                    Toast.makeText(context, "Error cancelling subscription", Toast.LENGTH_SHORT).show()
+                                    showCancelDialog = false
+                                }
                             } catch (e: Exception) {
                                 Toast.makeText(context, "Error cancelling subscription", Toast.LENGTH_SHORT).show()
                             }
@@ -545,6 +569,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
         )
     }
 }
+
 
 @Composable
 fun DetailRow(

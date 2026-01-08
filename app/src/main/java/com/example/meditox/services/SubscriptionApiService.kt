@@ -6,6 +6,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Header
+import retrofit2.http.Path
 
 interface SubscriptionApiService {
     
@@ -19,8 +20,8 @@ interface SubscriptionApiService {
         @Body request: Map<String, Any>
     ): Response<SubscriptionSyncResponse>
     
-    @POST("api/subscription/cancel")
+    @POST("api/v2/subscription/cancel/{ID}")
     suspend fun cancelSubscription(
-        @Body request: Map<String, String>
+        @Path("ID") ID: String
     ): Response<SubscriptionSyncResponse>
 }
