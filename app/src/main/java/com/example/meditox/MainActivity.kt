@@ -39,9 +39,8 @@ import com.razorpay.Checkout
 import com.razorpay.PaymentResultListener
 import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.SubscriptionDataHolder
-import com.example.meditox.utils.SubscriptionSyncManager
+import com.example.meditox.utils.SubscriptionManager
 import com.example.meditox.models.subscription.SubscriptionDetails
-import com.example.meditox.models.subscription.SubscriptionResponse
 import com.example.meditox.screens.EditShopDetailsScreen
 import com.example.meditox.screens.SettingThingsUpScreen
 import kotlinx.coroutines.CoroutineScope
@@ -236,7 +235,7 @@ class MainActivity : ComponentActivity(), PaymentResultListener {
 
                     // Sync subscription details to backend
                     Log.d("MainActivity", "Starting backend sync for subscription...")
-                    val syncSuccess = SubscriptionSyncManager.syncSubscriptionToBackend(
+                    val syncSuccess = SubscriptionManager.syncSubscriptionToBackend(
                         this@MainActivity,
                         subscriptionDetails
                     )
@@ -276,7 +275,7 @@ class MainActivity : ComponentActivity(), PaymentResultListener {
 
                     // Try to sync fallback details to backend as well
                     Log.d("MainActivity", "Attempting backend sync for fallback subscription...")
-                    val fallbackSyncSuccess = SubscriptionSyncManager.syncSubscriptionToBackend(
+                    val fallbackSyncSuccess = SubscriptionManager.syncSubscriptionToBackend(
                         this@MainActivity,
                         fallbackDetails
                     )

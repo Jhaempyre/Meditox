@@ -5,14 +5,13 @@ import android.util.Log
 import com.example.meditox.models.subscription.SubscriptionDetails
 import com.example.meditox.models.subscription.SubscriptionSyncRequest
 import com.example.meditox.services.ApiClient
-import com.example.meditox.utils.EncryptedTokenManager
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.flow.first
 
 /**
  * Manager class for syncing subscription data with backend
  */
-object SubscriptionSyncManager {
+object SubscriptionManager {
     
     /**
      * Sync subscription details with backend after successful payment
@@ -186,4 +185,6 @@ object SubscriptionSyncManager {
             false
         }
     }
+
+
 }
