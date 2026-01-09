@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Response
 import android.util.Log
 import com.example.meditox.models.subscription.SubscriptionApiResponse
+import kotlinx.coroutines.delay
 
 
 class OtpViewModel(application: Application) : AndroidViewModel(application) {
@@ -119,6 +120,10 @@ class OtpViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 _subscriptionDetailResult.value = ApiResult.Loading
+                //delayinf deleberately for 5s
+                Log.d("OtpViewModel", "Delaying started ")
+                delay(6000)
+                Log.d("OtpViewModel", "Delaying completed ")
                 Log.d("OtpViewModel", "Fetching subscription details for businessid: $userId")
                 val response = apiService.getUserSubscription(userId)
                 Log.d("OtpViewModel", "API response may be succedded")

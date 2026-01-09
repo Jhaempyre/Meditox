@@ -20,7 +20,7 @@ interface SubscriptionApiService {
         @Body request: Map<String, Any>
     ): Response<SubscriptionSyncResponse>
     
-    @POST("api/v2/subscription/cancel/{ID}")
+    @POST("/api/rzp/subscription/cancel/{ID}")
     suspend fun cancelSubscription(
         @Path("ID") ID: String
     ): Response<SubscriptionSyncResponse>

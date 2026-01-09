@@ -1,5 +1,6 @@
 package com.example.meditox.screens.subscription
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -62,13 +63,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.meditox.Routes
+import com.example.meditox.models.subscription.toSubscriptionDetails
 import com.example.meditox.models.viewModel.OtpViewModel
 import com.example.meditox.models.viewModel.SubscriptionViewModel
 import com.example.meditox.ui.theme.darkGreen
 import com.example.meditox.ui.theme.lighterGreen
 import com.example.meditox.ui.theme.primaryGreen
+import com.example.meditox.utils.ApiResult
+import com.example.meditox.utils.DataStoreDebugger
+import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.SubscriptionHelper
 import com.example.meditox.utils.SubscriptionManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -104,6 +111,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
     val subscriptionId by subscriptionViewModel
         .subscriptionId
         .collectAsState(initial = null)
+        val subscriptionDetailResult = otpViewModel.subscriptionDetailResult.collectAsState().value
 
 
     // Load subscription details
@@ -134,6 +142,118 @@ fun SucceededSubscriptionScreen(navController: NavController) {
             print(e.message)
             Toast.makeText(context, "Error loading subscription details", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    LaunchedEffect(subscriptionDetailResult) {
+        when(val response =subscriptionDetailResult ){
+            is ApiResult.Success->{
+                val response = response.data
+                val body = response.body()
+                Log.d(this::class.java.simpleName, "Subscription details received: $body")
+                if(response.isSuccessful && body?.success == true && body.data != null){
+                    try{
+                        Log.d(this::class.java.simpleName,"The successfull response is getting here ")
+                        val subscriptionApiData = response.body()?.data
+                        Log.d(this::class.java.simpleName, "Subscription API data: ${subscriptionApiData.toString()}")
+                        if (subscriptionApiData != null) {
+                            val subscriptionData = subscriptionApiData.toSubscriptionDetails()
+                            val isActive = subscriptionData.isActive
+                            if(isActive){
+                                DataStoreManager.saveSubscriptionDetails(context, subscriptionData)
+                                DataStoreManager.setBackendSyncStatus(context,true);
+                                Log.d(this::class.java.simpleName, "Subscription details saved successfully")
+                            }
+                            else{
+                                DataStoreManager.setBackendSyncStatus(context,false)
+                            }
+                            Log.d(this::class.java.simpleName, "Subscription details saved successfully")
+                        } else {
+                            Log.w(this::class.java.simpleName, "No subscription data available")
+                        }
+                        Log.d(this::class.java.simpleName, "Setup complete, navigating to dashboard")
+
+                        // Wait a bit to ensure all DataStore writes complete
+                        delay(200)
+
+                        // Verify data is saved before navigating
+                        DataStoreDebugger.logAllStates(context, "SettingThingsUp-BeforeNavigate")
+
+                        Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+
+                        navController.navigate(Routes.DASHBOARD) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                        otpViewModel.resetgetSubscriptionDetails()
+
+
+                    }
+                    catch(e: Exception){
+                        Log.e(this::class.java.simpleName, "Error saving subscription details: ${e.message}", e)
+                        // Navigate to dashboard anyway as subscription is optional
+                        Log.d(this::class.java.simpleName, "Navigating to dashboard despite subscription error")
+
+                        // Wait a bit to ensure all DataStore writes complete
+                        delay(200)
+
+                        // Verify data is saved
+                        DataStoreDebugger.logAllStates(context, "SettingThingsUp-ErrorCase")
+
+                        Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+
+                        navController.navigate(Routes.DASHBOARD) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+
+                        otpViewModel.resetgetSubscriptionDetails()
+                    }
+                }else {
+                        Log.w(this::class.java.simpleName, "Subscription not found or failed to fetch")
+                        // Navigate to dashboard anyway as subscription might not exist yet
+                        Log.d("SettingThingsUp", "Navigating to dashboard without subscription")
+
+                        // Wait a bit to ensure all DataStore writes complete
+                        delay(200)
+                        DataStoreManager.setBackendSyncStatus(context,false)
+                        // Verify data is saved
+                        DataStoreDebugger.logAllStates(context, "SettingThingsUp-NoSubscription")
+
+                        Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+
+                        navController.navigate(Routes.DASHBOARD) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                }
+                otpViewModel.resetgetSubscriptionDetails()
+            }
+            is ApiResult.Error->{
+                Log.e(this::class.java.simpleName, "Error fetching subscription: ${response.message}")
+                // Navigate to dashboard anyway as subscription might not exist yet
+                Log.d(this::class.java.simpleName, "Navigating to dashboard despite subscription error")
+
+                // Wait a bit to ensure all DataStore writes complete
+                delay(200)
+
+                // Verify data is saved
+                DataStoreDebugger.logAllStates(context, "SettingThingsUp-SubscriptionError")
+                DataStoreManager.setBackendSyncStatus(context,false)
+                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+
+                navController.navigate(Routes.DASHBOARD) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
+
+                otpViewModel.resetgetSubscriptionDetails()
+
+            }
+            else->{}
+        }
+
+
+
     }
 
 
@@ -563,15 +683,20 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                     onClick = {
                         scope.launch {
                             try {
+                                Log.d("successcreen",subscriptionId.toString())
                                 if(subscriptionId!=null) {
+                                    Log.d("successscreen ", "trying thing inside")
                                     val cancelResponse = SubscriptionManager.cancelSubscriptionImmediately(
                                         context,
                                         subscriptionId ?: ""
                                     )
+                                    Log.d("succesceded screen ", cancelResponse.toString())
 
                                     if(cancelResponse){
                                         Toast.makeText(context, "Subscription cancelled", Toast.LENGTH_SHORT).show()
-                                        val response = otpViewModel.getSubscriptionDetails(otpViewModel.userId.toString())
+                                        Log.d("succeded screen1",otpViewModel.userId.toString())
+                                        Log.d("succeded screen2",otpViewModel.userId.value.toString())
+                                        otpViewModel.getSubscriptionDetails(otpViewModel.userId.value.toString())
                                     }
 
 
@@ -591,6 +716,8 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                                 Toast.makeText(context, "Error cancelling subscription", Toast.LENGTH_SHORT).show()
                             }
                         }
+
+
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = dangerRed)
                 ) {

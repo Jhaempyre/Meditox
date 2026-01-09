@@ -108,6 +108,8 @@ fun SettingThingsUpScreen(
                 val response = result.data
                 val body = response.body()
 
+
+
                 Log.d("SettingThingsUp", "Shop details received: $body")
 
                 if (response.isSuccessful && body?.success == true && body.data != null) {

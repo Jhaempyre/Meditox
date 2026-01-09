@@ -191,12 +191,13 @@ object SubscriptionManager {
         return try {
 
             // Get API service
-             val apiService = ApiClient.createSubscriptionApiService(context)
+                val apiService = ApiClient.createSubscriptionApiService(context)
 
                 // Make API call (token will be added automatically by HTTPsTokenInterceptor)
                 Log.d("Cancelation", "🚀 Making API call to sync subscription...")
                 val response = apiService.cancelSubscription(id)
-
+                Log.d("Cancelation", "API Response:")
+                Log.d("Cancelation ",response.toString())
                 if (response.isSuccessful) {
                     val responseBody = response.body()
                     Log.d("Cancelation", "Sync successful:")
