@@ -165,6 +165,7 @@ fun SucceededSubscriptionScreen(navController: NavController) {
                             }
                             else{
                                 DataStoreManager.setBackendSyncStatus(context,false)
+                                DataStoreManager.clearSubscriptionData(context)
                             }
                             Log.d(this::class.java.simpleName, "Subscription details saved successfully")
                         } else {
