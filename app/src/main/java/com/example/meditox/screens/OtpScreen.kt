@@ -128,8 +128,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
 
                         if (accessToken == null || refreshToken == null) {
                             Toast.makeText(context, "Authentication tokens not received", Toast.LENGTH_SHORT).show()
-                            viewModel.resetOtpVerificationState()
-                            return@LaunchedEffect
+                            //viewModel.resetOtpVerificationState()
+
                         }
 
                         Log.d("OtpScreen", "Tokens extracted successfully")
@@ -143,6 +143,7 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                             navController.navigate(Routes.REGISTER_USER) {
                                 popUpTo(Routes.OTP) { inclusive = true }
                                 launchSingleTop = true
+                                viewModel.resetOtpVerificationState()
                             }
                         } else {
                             // User is registered
@@ -162,8 +163,8 @@ fun OtpScreen(modifier: Modifier, navController: NavController, viewModel: OtpVi
                                     userId = user.id.toString(),
                                     isRegistered = true,
                                     isBusinessRegistered = isBusinessRegistered,
-                                    accessToken = accessToken,
-                                    refreshToken = refreshToken
+                                    accessToken = accessToken?:"",
+                                    refreshToken = refreshToken?:""
                                 )
                             ) {
                                 popUpTo(Routes.OTP) { inclusive = true }
