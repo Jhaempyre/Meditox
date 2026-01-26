@@ -61,6 +61,7 @@ object Routes{
     const val SUCCEEDED_SUBSCRIPTION = "succeeded_subscription"
     const val EDIT_PROFILE = "edit_profile"
     const val EDIT_SHOP="edit_shop"
+    const val SETTINGS = "settings"
     const val SETTING_THINGS_UP = "setting_things_up/{userId}/{isRegistered}/{isBusinessRegistered}/{accessToken}/{refreshToken}"
 
     // Helper function to create the route with parameters
@@ -125,6 +126,12 @@ fun AppNavigation() {
         }
         composable(Routes.EDIT_SHOP) {
             EditShopDetailsScreen(modifier = Modifier, navController = navController)
+        }
+        composable(Routes.SETTINGS) {
+            val syncViewModel: com.example.meditox.models.viewModel.SyncViewModel = viewModel(
+                factory = com.example.meditox.models.viewModel.SyncViewModel.provideFactory(LocalContext.current)
+            )
+            com.example.meditox.screens.SettingsScreen(navController = navController, syncViewModel = syncViewModel)
         }
 
         // NEW: Setting Things Up Screen with navigation arguments

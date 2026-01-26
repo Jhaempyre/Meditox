@@ -99,14 +99,122 @@ class DataSyncWorker(
                 Timber.tag(TAG).e(cosmeticsResult.exceptionOrNull(), "❌ Cosmetics sync failed")
             }
             
-            // Check overall success (if at least one succeeded or both, depending on requirements)
-            // For now, if both fail, we consider it a failure. If one succeeds, we consider success/partial.
-            if (drugsResult.isSuccess || cosmeticsResult.isSuccess) {
+            // 3. Sync Global FMCG
+            Timber.tag(TAG).d("📊 Starting Global FMCG sync")
+            setProgress(workDataOf(
+                PROGRESS_TABLE to "Global FMCG",
+                PROGRESS_STATUS to "Syncing FMCG...",
+                PROGRESS_CURRENT to 0,
+                PROGRESS_TOTAL to 0
+            ))
+            
+            val fmcgResult = repository.syncGlobalFmcg { current, total, page, totalPages ->
+                setProgress(workDataOf(
+                    PROGRESS_TABLE to "Global FMCG",
+                    PROGRESS_STATUS to "Syncing...",
+                    PROGRESS_CURRENT to current,
+                    PROGRESS_TOTAL to total,
+                    PROGRESS_PAGE to page,
+                    PROGRESS_TOTAL_PAGES to totalPages
+                ))
+            }
+            
+            if (fmcgResult.isSuccess) {
+                totalSyncedRecords += fmcgResult.getOrNull()!!.totalRecords
+                Timber.tag(TAG).d("✅ FMCG sync successful")
+            } else {
+                Timber.tag(TAG).e(fmcgResult.exceptionOrNull(), "❌ FMCG sync failed")
+            }
+
+            // 4. Sync Global Medical Devices
+            Timber.tag(TAG).d("📊 Starting Global Medical Devices sync")
+            setProgress(workDataOf(
+                PROGRESS_TABLE to "Medical Devices",
+                PROGRESS_STATUS to "Syncing Devices...",
+                PROGRESS_CURRENT to 0,
+                PROGRESS_TOTAL to 0
+            ))
+            
+            val devicesResult = repository.syncGlobalMedicalDevices { current, total, page, totalPages ->
+                setProgress(workDataOf(
+                    PROGRESS_TABLE to "Medical Devices",
+                    PROGRESS_STATUS to "Syncing...",
+                    PROGRESS_CURRENT to current,
+                    PROGRESS_TOTAL to total,
+                    PROGRESS_PAGE to page,
+                    PROGRESS_TOTAL_PAGES to totalPages
+                ))
+            }
+            
+            if (devicesResult.isSuccess) {
+                totalSyncedRecords += devicesResult.getOrNull()!!.totalRecords
+                Timber.tag(TAG).d("✅ Devices sync successful")
+            } else {
+                Timber.tag(TAG).e(devicesResult.exceptionOrNull(), "❌ Devices sync failed")
+            }
+
+            // 5. Sync Global Supplements
+            Timber.tag(TAG).d("📊 Starting Global Supplements sync")
+            setProgress(workDataOf(
+                PROGRESS_TABLE to "Supplements",
+                PROGRESS_STATUS to "Syncing Supplements...",
+                PROGRESS_CURRENT to 0,
+                PROGRESS_TOTAL to 0
+            ))
+            
+            val supplementsResult = repository.syncGlobalSupplements { current, total, page, totalPages ->
+                setProgress(workDataOf(
+                    PROGRESS_TABLE to "Supplements",
+                    PROGRESS_STATUS to "Syncing...",
+                    PROGRESS_CURRENT to current,
+                    PROGRESS_TOTAL to total,
+                    PROGRESS_PAGE to page,
+                    PROGRESS_TOTAL_PAGES to totalPages
+                ))
+            }
+            
+            if (supplementsResult.isSuccess) {
+                totalSyncedRecords += supplementsResult.getOrNull()!!.totalRecords
+                Timber.tag(TAG).d("✅ Supplements sync successful")
+            } else {
+                Timber.tag(TAG).e(supplementsResult.exceptionOrNull(), "❌ Supplements sync failed")
+            }
+
+            // 6. Sync Global Surgical Consumables
+            Timber.tag(TAG).d("📊 Starting Global Surgical Consumables sync")
+            setProgress(workDataOf(
+                PROGRESS_TABLE to "Surgical Items",
+                PROGRESS_STATUS to "Syncing Surgical...",
+                PROGRESS_CURRENT to 0,
+                PROGRESS_TOTAL to 0
+            ))
+            
+            val surgicalResult = repository.syncGlobalSurgicalConsumables { current, total, page, totalPages ->
+                setProgress(workDataOf(
+                    PROGRESS_TABLE to "Surgical Items",
+                    PROGRESS_STATUS to "Syncing...",
+                    PROGRESS_CURRENT to current,
+                    PROGRESS_TOTAL to total,
+                    PROGRESS_PAGE to page,
+                    PROGRESS_TOTAL_PAGES to totalPages
+                ))
+            }
+            
+            if (surgicalResult.isSuccess) {
+                totalSyncedRecords += surgicalResult.getOrNull()!!.totalRecords
+                Timber.tag(TAG).d("✅ Surgical sync successful")
+            } else {
+                Timber.tag(TAG).e(surgicalResult.exceptionOrNull(), "❌ Surgical sync failed")
+            }
+            
+            // Check overall success (if at least one succeeded)
+            if (drugsResult.isSuccess || cosmeticsResult.isSuccess || fmcgResult.isSuccess || 
+                devicesResult.isSuccess || supplementsResult.isSuccess || surgicalResult.isSuccess) {
                 
                 // Save sync metadata
                 try {
                     SyncPreferences.setLastSyncTime(applicationContext, System.currentTimeMillis())
-                    SyncPreferences.setLastSyncStatus(applicationContext, "Success") // Or "Partial Success"
+                    SyncPreferences.setLastSyncStatus(applicationContext, "Success")
                     SyncPreferences.setTotalSyncedRecords(applicationContext, totalSyncedRecords.toLong())
                     Timber.tag(TAG).d("📝 Sync metadata saved")
                 } catch (e: Exception) {
@@ -124,7 +232,9 @@ class DataSyncWorker(
                     "total_records" to totalSyncedRecords
                 ))
             } else {
-                val error = drugsResult.exceptionOrNull() ?: cosmeticsResult.exceptionOrNull()
+                val error = drugsResult.exceptionOrNull() ?: cosmeticsResult.exceptionOrNull() 
+                    ?: fmcgResult.exceptionOrNull() ?: devicesResult.exceptionOrNull()
+                    ?: supplementsResult.exceptionOrNull() ?: surgicalResult.exceptionOrNull()
                 Timber.tag(TAG).e(error, "❌ All syncs failed")
                 Result.retry()
             }

@@ -29,7 +29,7 @@ fun SettingsScreen(
     val syncState by syncViewModel.syncState.collectAsState()
     val GreenDark = Color(0xFF005005)
     val GreenLight = Color(0xFFE8F5E9)
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,10 +73,9 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold,
                         color = GreenDark
                     )
-                    
-                    Divider()
-                    
-                    // Last Sync Time
+
+                    HorizontalDivider()
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -88,8 +87,7 @@ fun SettingsScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-                    
-                    // Last Sync Status
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -99,25 +97,23 @@ fun SettingsScreen(
                             syncState.lastSyncStatus,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (syncState.lastSyncStatus.contains("Success")) 
+                            color = if (syncState.lastSyncStatus.contains("Success"))
                                 Color(0xFF4CAF50) else Color(0xFFFF5722)
                         )
                     }
-                    
-                    // Total Records
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Total Records:", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "${syncState.localDrugCount}",
+                            "${syncState.totalRecordsSynced}",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = GreenDark
                         )
                     }
-                }
                 }
             }
 
@@ -133,15 +129,14 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "🗄️ Database Status (Verification)",
+                        text = "🗄️ Database Status",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = GreenDark
                     )
-                    
-                    Divider()
-                    
-                    // Table Counts
+
+                    HorizontalDivider()
+
                     TableCountRow("Drugs", syncState.localDrugCount)
                     TableCountRow("Cosmetics", syncState.localCosmeticCount)
                     TableCountRow("FMCG", syncState.localFmcgCount)
@@ -150,8 +145,8 @@ fun SettingsScreen(
                     TableCountRow("Surgical Items", syncState.localSurgicalCount)
                 }
             }
-            
-            // Global Drugs Sync Card
+
+            // Sync Progress Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -163,39 +158,38 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "💊 Global Drugs Sync",
+                        text = "💊 Sync Progress",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = GreenDark
                     )
-                    
-                    Divider()
-                    
+
+                    HorizontalDivider()
+
                     if (syncState.isSyncing) {
-                        // Progress Info
                         Text(
                             text = syncState.syncStatus,
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Gray
                         )
-                        
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        
-                        // Progress Bar
+
                         LinearProgressIndicator(
-                            progress = if (syncState.totalProgress > 0) 
-                                syncState.currentProgress.toFloat() / syncState.totalProgress.toFloat() 
-                            else 0f,
+                            progress = { 
+                                if (syncState.totalProgress > 0)
+                                    syncState.currentProgress.toFloat() / syncState.totalProgress.toFloat()
+                                else 0f
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(8.dp),
                             color = GreenDark,
                             trackColor = GreenLight
                         )
-                        
+
                         Spacer(modifier = Modifier.height(4.dp))
-                        
-                        // Progress Text
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -211,10 +205,7 @@ fun SettingsScreen(
                                 color = Color.Gray
                             )
                         }
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        // Syncing Indicator
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -239,7 +230,7 @@ fun SettingsScreen(
                     }
                 }
             }
-            
+
             // Manual Sync Button
             Button(
                 onClick = { syncViewModel.triggerManualSync() },
@@ -265,7 +256,7 @@ fun SettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             // Info Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -284,9 +275,9 @@ fun SettingsScreen(
                     )
                     Text(
                         "• Automatic sync runs daily\n" +
-                        "• Sync continues in background\n" +
-                        "• Requires internet connection\n" +
-                        "• All data is stored locally",
+                                "• Sync continues in background\n" +
+                                "• Requires internet connection\n" +
+                                "• All data is stored locally",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF5D4037)
                     )
@@ -294,7 +285,7 @@ fun SettingsScreen(
             }
         }
     }
-
+}
 
 @Composable
 fun TableCountRow(tableName: String, count: Int) {

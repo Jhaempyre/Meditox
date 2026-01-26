@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -199,6 +200,29 @@ fun Dashboard(modifier: Modifier = Modifier, navController: NavController) {
                                 } else {
                                     navController.navigate(Routes.SUBSCRIPTION)
                                 }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = "Settings",
+                                        tint = primaryGreen
+                                    )
+                                    Text(
+                                        text = "Settings",
+                                        color = Color.Black,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            },
+                            onClick = {
+                                showDropdownMenu = false
+                                navController.navigate(Routes.SETTINGS)
                             }
                         )
                         DropdownMenuItem(

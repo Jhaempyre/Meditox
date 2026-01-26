@@ -205,6 +205,210 @@ class SyncRepository(
             Result.failure(e)
         }
     }
+
+    /**
+     * Sync Global FMCG from server to local database
+     */
+    suspend fun syncGlobalFmcg(
+        onProgress: suspend (current: Int, total: Int, page: Int, totalPages: Int) -> Unit
+    ): Result<SyncResult> = withContext(Dispatchers.IO) {
+        Timber.tag(TAG).d("🔄 Starting Global FMCG sync")
+        
+        var currentPage = 1
+        var totalSynced = 0
+        var totalRecords = 0
+        var totalPages = 0
+        
+        try {
+            Timber.tag(TAG).d("📥 Fetching FMCG page $currentPage")
+            val firstResponse = apiService.getGlobalGeneralFmcg(page = currentPage, limit = PAGE_SIZE)
+            
+            if (!firstResponse.isSuccessful) {
+                return@withContext Result.failure(Exception("API call failed: ${firstResponse.code()}"))
+            }
+            
+            val firstBody = firstResponse.body()
+            if (firstBody == null || !firstBody.success) {
+                return@withContext Result.failure(Exception("Invalid response body"))
+            }
+            
+            val firstData = firstBody.data
+            totalRecords = firstData.pagination.total_records
+            totalPages = firstData.pagination.total_pages
+            
+            val firstEntities = firstData.generalFmcg.map { it.toEntity() }
+            globalGeneralFmcgDao.insertAll(firstEntities)
+            totalSynced += firstEntities.size
+            onProgress(totalSynced, totalRecords, currentPage, totalPages)
+            
+            currentPage++
+            while (currentPage <= totalPages) {
+                Timber.tag(TAG).d("📥 Fetching FMCG page $currentPage of $totalPages")
+                val response = apiService.getGlobalGeneralFmcg(page = currentPage, limit = PAGE_SIZE)
+                
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val entities = response.body()!!.data.generalFmcg.map { it.toEntity() }
+                    globalGeneralFmcgDao.insertAll(entities)
+                    totalSynced += entities.size
+                    onProgress(totalSynced, totalRecords, currentPage, totalPages)
+                }
+                currentPage++
+            }
+            
+            Result.success(SyncResult(totalSynced, totalPages, true))
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "❌ FMCG Sync failed")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Sync Global Medical Devices from server to local database
+     */
+    suspend fun syncGlobalMedicalDevices(
+        onProgress: suspend (current: Int, total: Int, page: Int, totalPages: Int) -> Unit
+    ): Result<SyncResult> = withContext(Dispatchers.IO) {
+        Timber.tag(TAG).d("🔄 Starting Global Medical Devices sync")
+        
+        var currentPage = 1
+        var totalSynced = 0
+        var totalRecords = 0
+        var totalPages = 0
+        
+        try {
+            Timber.tag(TAG).d("📥 Fetching Medical Devices page $currentPage")
+            val firstResponse = apiService.getGlobalMedicalDevices(page = currentPage, limit = PAGE_SIZE)
+            
+            if (!firstResponse.isSuccessful) return@withContext Result.failure(Exception("API call failed"))
+            
+            val firstBody = firstResponse.body() ?: return@withContext Result.failure(Exception("Empty body"))
+            if (!firstBody.success) return@withContext Result.failure(Exception("API Error"))
+            
+            val firstData = firstBody.data
+            totalRecords = firstData.pagination.total_records
+            totalPages = firstData.pagination.total_pages
+            
+            val firstEntities = firstData.medicalDevices.map { it.toEntity() }
+            globalMedicalDeviceDao.insertAll(firstEntities)
+            totalSynced += firstEntities.size
+            onProgress(totalSynced, totalRecords, currentPage, totalPages)
+            
+            currentPage++
+            while (currentPage <= totalPages) {
+                Timber.tag(TAG).d("📥 Fetching Devices page $currentPage")
+                val response = apiService.getGlobalMedicalDevices(page = currentPage, limit = PAGE_SIZE)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val entities = response.body()!!.data.medicalDevices.map { it.toEntity() }
+                    globalMedicalDeviceDao.insertAll(entities)
+                    totalSynced += entities.size
+                    onProgress(totalSynced, totalRecords, currentPage, totalPages)
+                }
+                currentPage++
+            }
+            Result.success(SyncResult(totalSynced, totalPages, true))
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "❌ Medical Devices Sync failed")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Sync Global Supplements from server to local database
+     */
+    suspend fun syncGlobalSupplements(
+        onProgress: suspend (current: Int, total: Int, page: Int, totalPages: Int) -> Unit
+    ): Result<SyncResult> = withContext(Dispatchers.IO) {
+        Timber.tag(TAG).d("🔄 Starting Global Supplements sync")
+        
+        var currentPage = 1
+        var totalSynced = 0
+        var totalRecords = 0
+        var totalPages = 0
+        
+        try {
+            Timber.tag(TAG).d("📥 Fetching Supplements page $currentPage")
+            val firstResponse = apiService.getGlobalSupplements(page = currentPage, limit = PAGE_SIZE)
+            
+            if (!firstResponse.isSuccessful) return@withContext Result.failure(Exception("API call failed"))
+            
+            val firstBody = firstResponse.body() ?: return@withContext Result.failure(Exception("Empty body"))
+            if (!firstBody.success) return@withContext Result.failure(Exception("API Error"))
+            
+            val firstData = firstBody.data
+            totalRecords = firstData.pagination.total_records
+            totalPages = firstData.pagination.total_pages
+            
+            val firstEntities = firstData.supplements.map { it.toEntity() }
+            globalSupplementDao.insertAll(firstEntities)
+            totalSynced += firstEntities.size
+            onProgress(totalSynced, totalRecords, currentPage, totalPages)
+            
+            currentPage++
+            while (currentPage <= totalPages) {
+                val response = apiService.getGlobalSupplements(page = currentPage, limit = PAGE_SIZE)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val entities = response.body()!!.data.supplements.map { it.toEntity() }
+                    globalSupplementDao.insertAll(entities)
+                    totalSynced += entities.size
+                    onProgress(totalSynced, totalRecords, currentPage, totalPages)
+                }
+                currentPage++
+            }
+            Result.success(SyncResult(totalSynced, totalPages, true))
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "❌ Supplements Sync failed")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Sync Global Surgical Consumables from server to local database
+     */
+    suspend fun syncGlobalSurgicalConsumables(
+        onProgress: suspend (current: Int, total: Int, page: Int, totalPages: Int) -> Unit
+    ): Result<SyncResult> = withContext(Dispatchers.IO) {
+        Timber.tag(TAG).d("🔄 Starting Global Surgical Consumables sync")
+        
+        var currentPage = 1
+        var totalSynced = 0
+        var totalRecords = 0
+        var totalPages = 0
+        
+        try {
+            Timber.tag(TAG).d("📥 Fetching Surgical Items page $currentPage")
+            val firstResponse = apiService.getGlobalSurgicalConsumables(page = currentPage, limit = PAGE_SIZE)
+            
+            if (!firstResponse.isSuccessful) return@withContext Result.failure(Exception("API call failed"))
+            
+            val firstBody = firstResponse.body() ?: return@withContext Result.failure(Exception("Empty body"))
+            if (!firstBody.success) return@withContext Result.failure(Exception("API Error"))
+            
+            val firstData = firstBody.data
+            totalRecords = firstData.pagination.total_records
+            totalPages = firstData.pagination.total_pages
+            
+            val firstEntities = firstData.surgicalConsumables.map { it.toEntity() }
+            globalSurgicalConsumableDao.insertAll(firstEntities)
+            totalSynced += firstEntities.size
+            onProgress(totalSynced, totalRecords, currentPage, totalPages)
+            
+            currentPage++
+            while (currentPage <= totalPages) {
+                val response = apiService.getGlobalSurgicalConsumables(page = currentPage, limit = PAGE_SIZE)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val entities = response.body()!!.data.surgicalConsumables.map { it.toEntity() }
+                    globalSurgicalConsumableDao.insertAll(entities)
+                    totalSynced += entities.size
+                    onProgress(totalSynced, totalRecords, currentPage, totalPages)
+                }
+                currentPage++
+            }
+            Result.success(SyncResult(totalSynced, totalPages, true))
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "❌ Surgical Sync failed")
+            Result.failure(e)
+        }
+    }
     
     /**
      * Get current count of drugs in local database

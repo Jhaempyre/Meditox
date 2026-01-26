@@ -1,16 +1,15 @@
 @RestController
-@RequestMapping("/api/v3/global/cosmetics")
-public class GlobalCosmeticController {
+@RequestMapping("/api/v3/global/fmcg")
+public class GlobalGeneralFmcgController {
 
-    private final GlobalCosmeticService service;
+    private final GlobalGeneralFmcgService service;
 
-    public GlobalCosmeticController(GlobalCosmeticService service) {
+    public GlobalGeneralFmcgController(GlobalGeneralFmcgService service) {
         this.service = service;
     }
 
-    // Get All Global Cosmetics with Filters
     @GetMapping
-    public ResponseEntity<ApiResponseDto<GetGlobalCosmeticsResponse>> getAllGlobalCosmetics(
+    public ResponseEntity<ApiResponseDto<GetGlobalGeneralFmcgResponse>> getAllGlobalGeneralFmcg(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String manufacturer,
             @RequestParam(required = false) String brand,
@@ -20,31 +19,29 @@ public class GlobalCosmeticController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "50") Integer limit) {
 
-        GetGlobalCosmeticsResponse response = service.getAllGlobalCosmetics(
+        GetGlobalGeneralFmcgResponse response = service.getAllGlobalGeneralFmcg(
                 search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
 
-        return ResponseEntity.ok(ApiResponseDto.success("Global cosmetics retrieved successfully", response));
+        return ResponseEntity.ok(ApiResponseDto.success("Global FMCG products retrieved successfully", response));
     }
 
-    public class GetGlobalCosmeticsResponse {
 
-    private List<GlobalCosmeticResponse> cosmetics;
+public class GetGlobalGeneralFmcgResponse {
+
+    private List<GlobalGeneralFmcgResponse> generalFmcg;
     private PaginationInfo pagination;
 
 
-public class GlobalCosmeticResponse {
 
-    private Long globalCosmeticId;
+public class GlobalGeneralFmcgResponse {
+
+    private Long globalFmcgId;
     private String productName;
     private String brand;
     private String manufacturer;
-    private String form;
-    private String variant;
+    private String categoryLabel;
     private String baseUnit;
     private Integer unitsPerPack;
-    private String intendedUse;
-    private String skinType;
-    private String cosmeticLicenseNumber;
     private String hsnCode;
     private BigDecimal gstRate;
     private Boolean verified;
@@ -54,4 +51,169 @@ public class GlobalCosmeticResponse {
 }
 
 
+@RestController
+@RequestMapping("/api/v3/global/medical-devices")
+public class GlobalMedicalDeviceController {
+
+    private final GlobalMedicalDeviceService service;
+
+    public GlobalMedicalDeviceController(GlobalMedicalDeviceService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponseDto<GetGlobalMedicalDevicesResponse>> getAllGlobalMedicalDevices(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String manufacturer,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
+            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "50") Integer limit) {
+
+        GetGlobalMedicalDevicesResponse response = service.getAllGlobalMedicalDevices(
+                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
+
+        return ResponseEntity.ok(ApiResponseDto.success("Global medical devices retrieved successfully", response));
+    }
+
+
+    
+public class GetGlobalMedicalDevicesResponse {
+
+    private List<GlobalMedicalDeviceResponse> medicalDevices;
+    private PaginationInfo pagination;
+}
+
+public class GlobalMedicalDeviceResponse {
+
+    private Long globalDeviceId;
+    private String productName;
+    private String brand;
+    private String manufacturer;
+    private String modelNumber;
+    private String deviceType;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private Boolean reusable;
+    private String medicalDeviceClass;
+    private String certification;
+    private Integer warrantyMonths;
+    private String hsnCode;
+    private BigDecimal gstRate;
+    private Boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private Boolean isActive;
+}
+
+@RestController
+@RequestMapping("/api/v3/global/supplements")
+public class GlobalSupplementController {
+
+    private final GlobalSupplementService service;
+
+    public GlobalSupplementController(GlobalSupplementService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponseDto<GetGlobalSupplementsResponse>> getAllGlobalSupplements(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String manufacturer,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
+            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "50") Integer limit) {
+
+        GetGlobalSupplementsResponse response = service.getAllGlobalSupplements(
+                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
+
+        return ResponseEntity.ok(ApiResponseDto.success("Global supplements retrieved successfully", response));
+    }
+
+public class GetGlobalSupplementsResponse {
+
+    private List<GlobalSupplementResponse> supplements;
+    private PaginationInfo pagination;
+}
+    public class GlobalSupplementResponse {
+
+    private Long globalSupplementId;
+    private String productName;
+    private String brand;
+    private String manufacturer;
+    private String supplementType;
+    private String compositionSummary;
+    private String ageGroup;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private Boolean isLooseSaleAllowed;
+    private String fssaiLicense;
+    private String hsnCode;
+    private BigDecimal gstRate;
+    private Boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private Boolean isActive;
+    }
+
+
+@RestController
+@RequestMapping("/api/v3/global/surgical-consumables")
+public class GlobalSurgicalConsumableController {
+
+    private final GlobalSurgicalConsumableService service;
+
+    public GlobalSurgicalConsumableController(GlobalSurgicalConsumableService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponseDto<GetGlobalSurgicalConsumablesResponse>> getAllGlobalSurgicalConsumables(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String manufacturer,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
+            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "50") Integer limit) {
+
+        GetGlobalSurgicalConsumablesResponse response = service.getAllGlobalSurgicalConsumables(
+                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
+
+        return ResponseEntity
+                .ok(ApiResponseDto.success("Global surgical consumables retrieved successfully", response));
+    }
+
+
+public class GetGlobalSurgicalConsumablesResponse {
+
+    private List<GlobalSurgicalConsumableResponse> surgicalConsumables;
+    private PaginationInfo pagination;
+}
+
+public class GlobalSurgicalConsumableResponse {
+
+    private Long globalSurgicalId;
+    private String productName;
+    private String brand;
+    private String manufacturer;
+    private String material;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private Boolean sterile;
+    private Boolean disposable;
+    private String intendedUse;
+    private String sizeSpecification;
+    private String hsnCode;
+    private BigDecimal gstRate;
+    private Boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private Boolean isActive; }
 

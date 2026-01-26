@@ -29,7 +29,7 @@ class HTTPsTokenInterceptor(private val context: Context): Interceptor {
        val response = chain.proceed(builder.build())
 
         // Check if we got 401 or 403 (unauthorized/forbidden)
-        if (response.code() == 401 || response.code() == 403) {
+        if (response.code == 401 || response.code == 403) {
             Log.d("HTTPsTokenInterceptor", "Token expired, attempting refresh...")
             response.close()
 

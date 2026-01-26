@@ -4,8 +4,10 @@ package com.example.meditox.services
 import android.content.Context
 import com.example.meditox.utils.HTTPsTokenInterceptor
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+
 object ApiClient {
 
     private const val Base_Url = "http://api.meditox.in:30085/"
@@ -14,9 +16,12 @@ object ApiClient {
 
     // This function creates the Retrofit instance with an OkHttpClient and adds an interceptor
     private fun create(context: Context): Retrofit {
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 
         val client = OkHttpClient.Builder()
             .addInterceptor(HTTPsTokenInterceptor(context)) // Add the interceptor
+            .addInterceptor(interceptor) // Add logging
             .build()
 
         return Retrofit.Builder()
@@ -27,8 +32,12 @@ object ApiClient {
     }
 
     private fun createWithoutInterceptor(): Retrofit {
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        
         val client = OkHttpClient.Builder()
-            // No interceptor here to avoid infinite recursion
+            // No auth interceptor, but add logging
+            .addInterceptor(interceptor)
             .build()
 
         return Retrofit.Builder()

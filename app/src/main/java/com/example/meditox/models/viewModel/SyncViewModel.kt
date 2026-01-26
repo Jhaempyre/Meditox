@@ -19,6 +19,17 @@ class SyncViewModel(private val context: Context) : ViewModel() {
     
     companion object {
         private const val TAG = "SyncViewModel"
+        
+        fun provideFactory(context: Context): androidx.lifecycle.ViewModelProvider.Factory = 
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    if (modelClass.isAssignableFrom(SyncViewModel::class.java)) {
+                        return SyncViewModel(context) as T
+                    }
+                    throw IllegalArgumentException("Unknown ViewModel class")
+                }
+            }
     }
     
     private val _syncState = MutableStateFlow(SyncState())
