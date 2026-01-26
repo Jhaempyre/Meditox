@@ -22,6 +22,7 @@
 
 
     <application
+        android:name=".MeditoxApplication"
         android:allowBackup="false"
         android:requestLegacyExternalStorage="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

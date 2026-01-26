@@ -1,0 +1,57 @@
+@RestController
+@RequestMapping("/api/v3/global/cosmetics")
+public class GlobalCosmeticController {
+
+    private final GlobalCosmeticService service;
+
+    public GlobalCosmeticController(GlobalCosmeticService service) {
+        this.service = service;
+    }
+
+    // Get All Global Cosmetics with Filters
+    @GetMapping
+    public ResponseEntity<ApiResponseDto<GetGlobalCosmeticsResponse>> getAllGlobalCosmetics(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String manufacturer,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
+            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "50") Integer limit) {
+
+        GetGlobalCosmeticsResponse response = service.getAllGlobalCosmetics(
+                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
+
+        return ResponseEntity.ok(ApiResponseDto.success("Global cosmetics retrieved successfully", response));
+    }
+
+    public class GetGlobalCosmeticsResponse {
+
+    private List<GlobalCosmeticResponse> cosmetics;
+    private PaginationInfo pagination;
+
+
+public class GlobalCosmeticResponse {
+
+    private Long globalCosmeticId;
+    private String productName;
+    private String brand;
+    private String manufacturer;
+    private String form;
+    private String variant;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private String intendedUse;
+    private String skinType;
+    private String cosmeticLicenseNumber;
+    private String hsnCode;
+    private BigDecimal gstRate;
+    private Boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private Boolean isActive;
+}
+
+
+

@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     //for serilization
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    //for Room annotation processing
+    id("com.google.devtools.ksp") version "2.0.21-1.0.25"
 
 }
 
@@ -97,6 +99,18 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation("com.razorpay:checkout:1.6.41")
+
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // Paging 3 for pagination support
+    implementation("androidx.paging:paging-runtime-ktx:3.2.1")
+    implementation("androidx.paging:paging-compose:3.2.1")
+
+    // Timber for logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
 
 

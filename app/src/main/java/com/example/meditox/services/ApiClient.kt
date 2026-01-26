@@ -56,6 +56,12 @@ object ApiClient {
             .create(SubscriptionApiService::class.java)
     }
 
+    // Create global data sync API service (no auth needed for global data)
+    fun createGlobalDataSyncApiService(): GlobalDataSyncApiService {
+        return createWithoutInterceptor()
+            .create(GlobalDataSyncApiService::class.java)
+    }
+
 }
 
 
