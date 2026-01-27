@@ -23,10 +23,14 @@ object ApiClient {
             .addInterceptor(HTTPsTokenInterceptor(context)) // Add the interceptor
             .addInterceptor(interceptor) // Add logging
             .build()
+            
+        val gson = com.google.gson.GsonBuilder()
+            .registerTypeAdapter(java.time.LocalDateTime::class.java, com.example.meditox.utils.GsonLocalDateTimeAdapter())
+            .create()
 
         return Retrofit.Builder()
             .baseUrl(Base_Url)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(client)
             .build()
     }
@@ -39,10 +43,14 @@ object ApiClient {
             // No auth interceptor, but add logging
             .addInterceptor(interceptor)
             .build()
+            
+        val gson = com.google.gson.GsonBuilder()
+             .registerTypeAdapter(java.time.LocalDateTime::class.java, com.example.meditox.utils.GsonLocalDateTimeAdapter())
+             .create()
 
         return Retrofit.Builder()
             .baseUrl(Base_Url)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(client)
             .build()
     }

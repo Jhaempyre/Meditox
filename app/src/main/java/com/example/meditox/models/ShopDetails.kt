@@ -1,6 +1,7 @@
 package com.example.meditox.models
 
 import com.example.meditox.utils.UUIDSerializer
+import com.example.meditox.utils.LocalDateTimeKSerializer
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 import java.util.UUID
@@ -8,7 +9,7 @@ import java.util.UUID
 @Serializable
 data class ShopDetails(
     @Serializable(with = UUIDSerializer::class)
-    val id : UUID,
+    val id: UUID,
     val shopName: String,
     val licenseNumber: String,
     val gstNumber: String,
@@ -20,6 +21,23 @@ data class ShopDetails(
     val contactEmail: String,
     val latitude: String,
     val longitude: String,
-    val shopStatus : Boolean,
-    val createdAt : List<Int?>, //TODO: //this we will change for editscreen afterward
+    val shopStatus: Boolean,
+    
+    // New fields
+    val chemistId: Long? = null,
+    val ownerName: String? = null,
+    val stateCode: String? = null,
+    val addressLine2: String? = null,
+    val bankAccountNumber: String? = null,
+    val bankIfscCode: String? = null,
+    val bankName: String? = null,
+    val upiId: String? = null,
+    val isActive: Boolean? = true,
+    
+    @Serializable(with = LocalDateTimeKSerializer::class)
+    val createdAt: LocalDateTime? = null,
+    
+    @Serializable(with = LocalDateTimeKSerializer::class)
+    val meditoxUpdatedAt: LocalDateTime? = null
 )
+

@@ -169,7 +169,18 @@ class EditShopViewModel(application: Application) : AndroidViewModel(application
                                 latitude = updateResponse.latitude,
                                 longitude = updateResponse.longitude,
                                 shopStatus = updateResponse.shopStatus,
-                                createdAt = _shopDetails.value?.createdAt ?: listOf() // Keep existing createdAt
+                                // Map new fields
+                                chemistId = updateResponse.chemistId,
+                                ownerName = updateResponse.ownerName,
+                                stateCode = updateResponse.stateCode,
+                                addressLine2 = updateResponse.addressLine2,
+                                bankAccountNumber = updateResponse.bankAccountNumber,
+                                bankIfscCode = updateResponse.bankIfscCode,
+                                bankName = updateResponse.bankName,
+                                upiId = updateResponse.upiId,
+                                isActive = updateResponse.isActive,
+                                createdAt = updateResponse.createdAt ?: _shopDetails.value?.createdAt,
+                                meditoxUpdatedAt = updateResponse.meditoxUpdatedAt
                             )
                             
                             DataStoreManager.saveShopDetails(getApplication(), updatedShop)
