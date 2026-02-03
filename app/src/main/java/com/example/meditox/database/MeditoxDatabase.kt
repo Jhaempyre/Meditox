@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.meditox.database.dao.GlobalDrugDao
+import com.example.meditox.database.entity.ChemistProductMasterEntity
 import com.example.meditox.database.entity.GlobalDrugEntity
 import com.example.meditox.database.entity.GlobalCosmeticEntity
 import com.example.meditox.database.entity.GlobalGeneralFmcgEntity
@@ -20,9 +21,11 @@ import timber.log.Timber
         GlobalGeneralFmcgEntity::class,
         GlobalMedicalDeviceEntity::class,
         GlobalSupplementEntity::class,
-        GlobalSurgicalConsumableEntity::class
+        GlobalSurgicalConsumableEntity::class,
+        ChemistProductMasterEntity::class
+
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class MeditoxDatabase : RoomDatabase() {
@@ -33,6 +36,7 @@ abstract class MeditoxDatabase : RoomDatabase() {
     abstract fun globalMedicalDeviceDao(): com.example.meditox.database.dao.GlobalMedicalDeviceDao
     abstract fun globalSupplementDao(): com.example.meditox.database.dao.GlobalSupplementDao
     abstract fun globalSurgicalConsumableDao(): com.example.meditox.database.dao.GlobalSurgicalConsumableDao
+    abstract fun chemistProductMasterDao(): com.example.meditox.database.dao.ChemistProductMasterDao
     
     companion object {
         @Volatile
