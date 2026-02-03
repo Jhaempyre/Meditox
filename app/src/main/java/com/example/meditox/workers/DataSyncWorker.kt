@@ -5,8 +5,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.meditox.repository.SyncRepository
+import com.example.meditox.repository.SyncResult
 import com.example.meditox.services.ApiClient
+import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.SyncPreferences
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
 class DataSyncWorker(
@@ -30,7 +33,8 @@ class DataSyncWorker(
         return try {
             // Create API service and repository
             val apiService = ApiClient.createGlobalDataSyncApiService()
-            val repository = SyncRepository(applicationContext, apiService)
+            val chemistProductApiService = ApiClient.createChemistProductApiService(applicationContext)
+            val repository = SyncRepository(applicationContext, apiService, chemistProductApiService)
             
             // Update progress: Starting
             setProgress(workDataOf(
@@ -206,10 +210,58 @@ class DataSyncWorker(
             } else {
                 Timber.tag(TAG).e(surgicalResult.exceptionOrNull(), "❌ Surgical sync failed")
             }
+
+            // 7. Sync Chemist Products
+            var chemistProductsResult: kotlin.Result<SyncResult>? = null
+            val shopDetails = DataStoreManager.getShopDetails(applicationContext).first()
+            val chemistId = shopDetails?.chemistId
+
+            if (chemistId != null) {
+                Timber.tag(TAG).d("📊 Starting Chemist Products sync")
+                setProgress(
+                    workDataOf(
+                        PROGRESS_TABLE to "Chemist Products",
+                        PROGRESS_STATUS to "Syncing Chemist Products...",
+                        PROGRESS_CURRENT to 0,
+                        PROGRESS_TOTAL to 0
+                    )
+                )
+
+                chemistProductsResult = repository.syncChemistProducts(chemistId) { current, total, page, totalPages ->
+                    setProgress(
+                        workDataOf(
+                            PROGRESS_TABLE to "Chemist Products",
+                            PROGRESS_STATUS to "Syncing...",
+                            PROGRESS_CURRENT to current,
+                            PROGRESS_TOTAL to total,
+                            PROGRESS_PAGE to page,
+                            PROGRESS_TOTAL_PAGES to totalPages
+                        )
+                    )
+                }
+
+                if (chemistProductsResult!!.isSuccess) {
+                    totalSyncedRecords += chemistProductsResult!!.getOrNull()!!.totalRecords
+                    Timber.tag(TAG).d("✅ Chemist products sync successful")
+                } else {
+                    Timber.tag(TAG).e(chemistProductsResult!!.exceptionOrNull(), "❌ Chemist products sync failed")
+                }
+            } else {
+                Timber.tag(TAG).w("⚠️ Chemist ID missing; skipping chemist products sync")
+                setProgress(
+                    workDataOf(
+                        PROGRESS_TABLE to "Chemist Products",
+                        PROGRESS_STATUS to "Skipped: missing chemist ID",
+                        PROGRESS_CURRENT to 0,
+                        PROGRESS_TOTAL to 0
+                    )
+                )
+            }
             
             // Check overall success (if at least one succeeded)
-            if (drugsResult.isSuccess || cosmeticsResult.isSuccess || fmcgResult.isSuccess || 
-                devicesResult.isSuccess || supplementsResult.isSuccess || surgicalResult.isSuccess) {
+            if (drugsResult.isSuccess || cosmeticsResult.isSuccess || fmcgResult.isSuccess ||
+                devicesResult.isSuccess || supplementsResult.isSuccess || surgicalResult.isSuccess ||
+                (chemistProductsResult?.isSuccess == true)) {
                 
                 // Save sync metadata
                 try {
@@ -232,9 +284,10 @@ class DataSyncWorker(
                     "total_records" to totalSyncedRecords
                 ))
             } else {
-                val error = drugsResult.exceptionOrNull() ?: cosmeticsResult.exceptionOrNull() 
+                val error = drugsResult.exceptionOrNull() ?: cosmeticsResult.exceptionOrNull()
                     ?: fmcgResult.exceptionOrNull() ?: devicesResult.exceptionOrNull()
                     ?: supplementsResult.exceptionOrNull() ?: surgicalResult.exceptionOrNull()
+                    ?: chemistProductsResult?.exceptionOrNull()
                 Timber.tag(TAG).e(error, "❌ All syncs failed")
                 Result.retry()
             }

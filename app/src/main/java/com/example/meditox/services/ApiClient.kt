@@ -79,8 +79,13 @@ object ApiClient {
             .create(GlobalDataSyncApiService::class.java)
     }
 
-}
+    // Create chemist product API service (auth required)
+    fun createChemistProductApiService(context: Context): ChemistProductApiService {
+        return create(context.applicationContext)
+            .create(ChemistProductApiService::class.java)
+    }
 
+}
 
 
 

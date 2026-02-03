@@ -143,6 +143,7 @@ fun SettingsScreen(
                     TableCountRow("Medical Devices", syncState.localDeviceCount)
                     TableCountRow("Supplements", syncState.localSupplementCount)
                     TableCountRow("Surgical Items", syncState.localSurgicalCount)
+                    TableCountRow("Chemist Products", syncState.localChemistProductCount)
                 }
             }
 

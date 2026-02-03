@@ -37,7 +37,8 @@ class SyncViewModel(private val context: Context) : ViewModel() {
     
     private val repository = SyncRepository(
         context,
-        ApiClient.createGlobalDataSyncApiService()
+        ApiClient.createGlobalDataSyncApiService(),
+        ApiClient.createChemistProductApiService(context)
     )
     
     init {
@@ -75,8 +76,9 @@ class SyncViewModel(private val context: Context) : ViewModel() {
             val deviceCount = repository.getLocalDeviceCount()
             val supplementCount = repository.getLocalSupplementCount()
             val surgicalCount = repository.getLocalSurgicalCount()
+            val chemistProductCount = repository.getLocalChemistProductCount()
             
-            Timber.tag(TAG).d("Local counts: Drugs=$count, Cosmetic=$cosmeticCount, FMCG=$fmcgCount, Device=$deviceCount, Supp=$supplementCount, Surg=$surgicalCount")
+            Timber.tag(TAG).d("Local counts: Drugs=$count, Cosmetic=$cosmeticCount, FMCG=$fmcgCount, Device=$deviceCount, Supp=$supplementCount, Surg=$surgicalCount, Chemist=$chemistProductCount")
             
             _syncState.update { 
                 it.copy(
@@ -85,7 +87,8 @@ class SyncViewModel(private val context: Context) : ViewModel() {
                     localFmcgCount = fmcgCount,
                     localDeviceCount = deviceCount,
                     localSupplementCount = supplementCount,
-                    localSurgicalCount = surgicalCount
+                    localSurgicalCount = surgicalCount,
+                    localChemistProductCount = chemistProductCount
                 ) 
             }
         }
@@ -196,5 +199,6 @@ data class SyncState(
     val localFmcgCount: Int = 0,
     val localDeviceCount: Int = 0,
     val localSupplementCount: Int = 0,
-    val localSurgicalCount: Int = 0
+    val localSurgicalCount: Int = 0,
+    val localChemistProductCount: Int = 0
 )

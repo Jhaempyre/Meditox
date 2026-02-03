@@ -1,0 +1,23 @@
+package com.example.meditox.services
+
+import com.example.meditox.models.ApiResponse
+import com.example.meditox.models.chemist.GetProductsResponse
+import com.example.meditox.models.chemist.ProductCategory
+import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface ChemistProductApiService {
+
+    @GET("api/v3/chemist/{chemistId}/products")
+    suspend fun getChemistProducts(
+        @Path("chemistId") chemistId: Long,
+        @Query("category") category: ProductCategory? = null,
+        @Query("stock_status") stockStatus: String? = null,
+        @Query("page") page: Int,
+        @Query("limit") limit: Int = 50,
+        @Query("search") search: String? = null,
+        @Query("sort_by") sortBy: String = "stock_status"
+    ): Response<ApiResponse<GetProductsResponse>>
+}

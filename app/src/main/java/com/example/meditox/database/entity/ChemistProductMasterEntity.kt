@@ -32,10 +32,6 @@ data class ChemistProductMasterEntity(
 
     @ColumnInfo(name = "is_active")
     val isActive: Boolean,
-
-    @ColumnInfo(name = "created_at")
-    val createdAt: String, // Stored as ISO String
-
     @ColumnInfo(name = "updated_at")
     val updatedAt: String? // Stored as ISO String
 )
