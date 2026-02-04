@@ -12,7 +12,9 @@ import com.example.meditox.database.entity.GlobalGeneralFmcgEntity
 import com.example.meditox.database.entity.GlobalMedicalDeviceEntity
 import com.example.meditox.database.entity.GlobalSupplementEntity
 import com.example.meditox.database.entity.GlobalSurgicalConsumableEntity
+import com.example.meditox.database.entity.WholesalerEntity
 import timber.log.Timber
+import com.example.meditox.database.dao.*
 
 @Database(
     entities = [
@@ -22,21 +24,23 @@ import timber.log.Timber
         GlobalMedicalDeviceEntity::class,
         GlobalSupplementEntity::class,
         GlobalSurgicalConsumableEntity::class,
-        ChemistProductMasterEntity::class
+        ChemistProductMasterEntity::class,
+        WholesalerEntity::class
 
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class MeditoxDatabase : RoomDatabase() {
     
     abstract fun globalDrugDao(): GlobalDrugDao
-    abstract fun globalCosmeticDao(): com.example.meditox.database.dao.GlobalCosmeticDao
-    abstract fun globalGeneralFmcgDao(): com.example.meditox.database.dao.GlobalGeneralFmcgDao
-    abstract fun globalMedicalDeviceDao(): com.example.meditox.database.dao.GlobalMedicalDeviceDao
-    abstract fun globalSupplementDao(): com.example.meditox.database.dao.GlobalSupplementDao
-    abstract fun globalSurgicalConsumableDao(): com.example.meditox.database.dao.GlobalSurgicalConsumableDao
-    abstract fun chemistProductMasterDao(): com.example.meditox.database.dao.ChemistProductMasterDao
+    abstract fun globalCosmeticDao(): GlobalCosmeticDao
+    abstract fun globalGeneralFmcgDao(): GlobalGeneralFmcgDao
+    abstract fun globalMedicalDeviceDao(): GlobalMedicalDeviceDao
+    abstract fun globalSupplementDao(): GlobalSupplementDao
+    abstract fun globalSurgicalConsumableDao(): GlobalSurgicalConsumableDao
+    abstract fun chemistProductMasterDao(): ChemistProductMasterDao
+    abstract fun wholesalerDao(): WholesalerDao
     
     companion object {
         @Volatile

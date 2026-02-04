@@ -14,14 +14,15 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.lifecycle.ViewModelProvider.*
 
 class SyncViewModel(private val context: Context) : ViewModel() {
-    
+
     companion object {
         private const val TAG = "SyncViewModel"
         
-        fun provideFactory(context: Context): androidx.lifecycle.ViewModelProvider.Factory = 
-            object : androidx.lifecycle.ViewModelProvider.Factory {
+        fun provideFactory(context: Context): Factory =
+            object : Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     if (modelClass.isAssignableFrom(SyncViewModel::class.java)) {
@@ -38,7 +39,8 @@ class SyncViewModel(private val context: Context) : ViewModel() {
     private val repository = SyncRepository(
         context,
         ApiClient.createGlobalDataSyncApiService(),
-        ApiClient.createChemistProductApiService(context)
+        ApiClient.createChemistProductApiService(context),
+        ApiClient.createWholesalerApiService(context)
     )
     
     init {
@@ -77,8 +79,9 @@ class SyncViewModel(private val context: Context) : ViewModel() {
             val supplementCount = repository.getLocalSupplementCount()
             val surgicalCount = repository.getLocalSurgicalCount()
             val chemistProductCount = repository.getLocalChemistProductCount()
+            val wholesalerCount = repository.getLocalWholesalerCount()
             
-            Timber.tag(TAG).d("Local counts: Drugs=$count, Cosmetic=$cosmeticCount, FMCG=$fmcgCount, Device=$deviceCount, Supp=$supplementCount, Surg=$surgicalCount, Chemist=$chemistProductCount")
+            Timber.tag(TAG).d("Local counts: Drugs=$count, Cosmetic=$cosmeticCount, FMCG=$fmcgCount, Device=$deviceCount, Supp=$supplementCount, Surg=$surgicalCount, Chemist=$chemistProductCount, Wholesaler=$wholesalerCount")
             
             _syncState.update { 
                 it.copy(
@@ -88,7 +91,8 @@ class SyncViewModel(private val context: Context) : ViewModel() {
                     localDeviceCount = deviceCount,
                     localSupplementCount = supplementCount,
                     localSurgicalCount = surgicalCount,
-                    localChemistProductCount = chemistProductCount
+                    localChemistProductCount = chemistProductCount,
+                    localWholesalerCount = wholesalerCount
                 ) 
             }
         }
@@ -200,5 +204,6 @@ data class SyncState(
     val localDeviceCount: Int = 0,
     val localSupplementCount: Int = 0,
     val localSurgicalCount: Int = 0,
-    val localChemistProductCount: Int = 0
+    val localChemistProductCount: Int = 0,
+    val localWholesalerCount: Int = 0
 )

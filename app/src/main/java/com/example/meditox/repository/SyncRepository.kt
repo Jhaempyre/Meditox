@@ -3,6 +3,7 @@ package com.example.meditox.repository
 import android.content.Context
 import com.example.meditox.database.MeditoxDatabase
 import com.example.meditox.services.ChemistProductApiService
+import com.example.meditox.services.WholesalerApiService
 import com.example.meditox.services.GlobalDataSyncApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,7 +12,8 @@ import timber.log.Timber
 class SyncRepository(
     private val context: Context,
     private val apiService: GlobalDataSyncApiService,
-    private val chemistProductApiService: ChemistProductApiService
+    private val chemistProductApiService: ChemistProductApiService,
+    private val wholesalerApiService: WholesalerApiService
 ) {
     private val database = MeditoxDatabase.getDatabase(context)
     private val globalDrugDao = database.globalDrugDao()
@@ -21,6 +23,7 @@ class SyncRepository(
     private val globalSupplementDao = database.globalSupplementDao()
     private val globalSurgicalConsumableDao = database.globalSurgicalConsumableDao()
     private val chemistProductMasterDao = database.chemistProductMasterDao()
+    private val wholesalerDao = database.wholesalerDao()
     
     companion object {
         private const val TAG = "SyncRepository"
@@ -509,6 +512,103 @@ class SyncRepository(
             Result.failure(e)
         }
     }
+
+    /**
+     * Sync Wholesalers by Chemist from server to local database
+     */
+    suspend fun syncWholesalers(
+        chemistId: Long,
+        onProgress: suspend (current: Int, total: Int, page: Int, totalPages: Int) -> Unit
+    ): Result<SyncResult> = withContext(Dispatchers.IO) {
+        Timber.tag(TAG).d("🔄 Starting Wholesalers sync for chemistId=$chemistId")
+
+        var currentPage = 1
+        var totalSynced = 0
+        var totalRecords = 0
+        var totalPages = 0
+
+        try {
+            Timber.tag(TAG).d("📥 Fetching wholesalers page $currentPage")
+            val firstResponse = wholesalerApiService.getWholesalersByChemist(
+                chemistId = chemistId,
+                page = currentPage,
+                limit = PAGE_SIZE
+            )
+
+            if (!firstResponse.isSuccessful) {
+                val errorMsg = "API call failed: ${firstResponse.code()} - ${firstResponse.message()}"
+                Timber.tag(TAG).e(errorMsg)
+                return@withContext Result.failure(Exception(errorMsg))
+            }
+
+            val firstBody = firstResponse.body()
+            if (firstBody == null || !firstBody.success) {
+                val errorMsg = "Invalid response body or success=false"
+                Timber.tag(TAG).e(errorMsg)
+                return@withContext Result.failure(Exception(errorMsg))
+            }
+
+            val firstData = firstBody.data
+            totalRecords = firstData.pagination.total_records
+            totalPages = firstData.pagination.total_pages
+
+            Timber.tag(TAG).d("📊 Total wholesalers: $totalRecords, Total pages: $totalPages")
+
+            val firstEntities = firstData.wholesalers.map { it.toEntity() }
+            wholesalerDao.insertAll(firstEntities)
+            totalSynced += firstEntities.size
+
+            Timber.tag(TAG).d("✅ Page $currentPage synced: ${firstEntities.size} records")
+            onProgress(totalSynced, totalRecords, currentPage, totalPages)
+
+            currentPage++
+            while (currentPage <= totalPages) {
+                Timber.tag(TAG).d("📥 Fetching wholesalers page $currentPage of $totalPages")
+
+                val response = wholesalerApiService.getWholesalersByChemist(
+                    chemistId = chemistId,
+                    page = currentPage,
+                    limit = PAGE_SIZE
+                )
+
+                if (!response.isSuccessful) {
+                    val errorMsg = "Page $currentPage failed: ${response.code()}"
+                    Timber.tag(TAG).e(errorMsg)
+                    return@withContext Result.failure(Exception(errorMsg))
+                }
+
+                val body = response.body()
+                if (body == null || !body.success) {
+                    val errorMsg = "Invalid response for page $currentPage"
+                    Timber.tag(TAG).e(errorMsg)
+                    return@withContext Result.failure(Exception(errorMsg))
+                }
+
+                val entities = body.data.wholesalers.map { it.toEntity() }
+                wholesalerDao.insertAll(entities)
+                totalSynced += entities.size
+
+                Timber.tag(TAG).d("✅ Page $currentPage synced: ${entities.size} records")
+                onProgress(totalSynced, totalRecords, currentPage, totalPages)
+
+                currentPage++
+            }
+
+            val finalCount = wholesalerDao.getCount()
+            Timber.tag(TAG).d("🎉 Wholesalers sync completed! Total in DB: $finalCount")
+
+            Result.success(
+                SyncResult(
+                    totalRecords = totalSynced,
+                    totalPages = totalPages,
+                    success = true
+                )
+            )
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "❌ Wholesalers sync failed")
+            Result.failure(e)
+        }
+    }
     
     /**
      * Get current count of drugs in local database
@@ -555,6 +655,12 @@ class SyncRepository(
     suspend fun getLocalSurgicalCount(): Int = withContext(Dispatchers.IO) {
         val count = globalSurgicalConsumableDao.getCount()
         Timber.tag(TAG).d("Local surgical count: $count")
+        count
+    }
+
+    suspend fun getLocalWholesalerCount(): Int = withContext(Dispatchers.IO) {
+        val count = wholesalerDao.getCount()
+        Timber.tag(TAG).d("Local wholesaler count: $count")
         count
     }
 

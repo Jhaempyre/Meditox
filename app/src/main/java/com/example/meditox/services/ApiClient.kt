@@ -85,8 +85,13 @@ object ApiClient {
             .create(ChemistProductApiService::class.java)
     }
 
-}
+    // Create wholesaler API service (auth required)
+    fun createWholesalerApiService(context: Context): WholesalerApiService {
+        return create(context.applicationContext)
+            .create(WholesalerApiService::class.java)
+    }
 
+}
 
 
 

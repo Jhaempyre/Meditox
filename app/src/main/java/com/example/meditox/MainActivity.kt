@@ -41,6 +41,8 @@ import com.example.meditox.utils.DataStoreManager
 import com.example.meditox.utils.SubscriptionDataHolder
 import com.example.meditox.utils.SubscriptionManager
 import com.example.meditox.models.subscription.SubscriptionDetails
+import com.example.meditox.models.viewModel.SyncViewModel
+import com.example.meditox.models.viewModel.SyncViewModel.Companion.provideFactory
 import com.example.meditox.screens.EditShopDetailsScreen
 import com.example.meditox.screens.SettingThingsUpScreen
 import kotlinx.coroutines.CoroutineScope
@@ -128,8 +130,8 @@ fun AppNavigation() {
             EditShopDetailsScreen(modifier = Modifier, navController = navController)
         }
         composable(Routes.SETTINGS) {
-            val syncViewModel: com.example.meditox.models.viewModel.SyncViewModel = viewModel(
-                factory = com.example.meditox.models.viewModel.SyncViewModel.provideFactory(LocalContext.current)
+            val syncViewModel: SyncViewModel = viewModel(
+                factory = provideFactory(LocalContext.current)
             )
             com.example.meditox.screens.SettingsScreen(navController = navController, syncViewModel = syncViewModel)
         }
