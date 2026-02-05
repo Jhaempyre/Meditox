@@ -24,8 +24,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.meditox.ui.theme.primaryGreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReleaseScreen(navController: NavController) {
+    var showAddMedicineSheet by remember { mutableStateOf(false) }
+    val addMedicineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -83,7 +87,7 @@ fun AddReleaseScreen(navController: NavController) {
                 title = "Add New Medicine",
                 description = "Add new medicine to inventory with details",
                 icon = Icons.Default.Add,
-                onClick = { navController.navigate("add_new_medicine") }
+                onClick = { showAddMedicineSheet = true }
             )
         }
 
@@ -132,6 +136,38 @@ fun AddReleaseScreen(navController: NavController) {
                 quantity = "+${(10..50).random()}",
                 time = "${(1..12).random()}h ago"
             )
+        }
+    }
+
+    if (showAddMedicineSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddMedicineSheet = false },
+            sheetState = addMedicineSheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Add New Medicine",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "This is a placeholder bottom sheet. We can add fields, validation, and save actions next.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+                Button(
+                    onClick = { showAddMedicineSheet = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Close")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
 }
