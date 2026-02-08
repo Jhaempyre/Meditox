@@ -64,7 +64,9 @@ fun AddDrugScreen(
             is ApiResult.Success -> {
                 Toast.makeText(context, "Drug added successfully!", Toast.LENGTH_SHORT).show()
                 viewModel.resetCreateResult()
-                navController.popBackStack()
+                // Instead of popping back, show the Add to Catalog sheet for the new drug
+                selectedDrug = result.data
+                showAddToCatalogSheet = true
             }
             is ApiResult.Error -> {
                 Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
