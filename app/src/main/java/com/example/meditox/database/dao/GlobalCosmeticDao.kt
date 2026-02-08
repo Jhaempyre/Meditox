@@ -20,4 +20,10 @@ interface GlobalCosmeticDao {
 
     @Query("SELECT COUNT(*) FROM global_cosmetic")
     suspend fun getCount(): Int
+
+    @Query("SELECT * FROM global_cosmetic WHERE product_name LIKE '%' || :query || '%' OR brand LIKE '%' || :query || '%'")
+    fun searchCosmetics(query: String): Flow<List<GlobalCosmeticEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(cosmetic: GlobalCosmeticEntity)
 }

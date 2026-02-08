@@ -67,6 +67,7 @@ object Routes{
     const val SETTINGS = "settings"
     const val SETTING_THINGS_UP = "setting_things_up/{userId}/{isRegistered}/{isBusinessRegistered}/{accessToken}/{refreshToken}"
     const val ADD_DRUG_SCREEN = "globalscreen/adddrug"
+    const val ADD_COSMETIC_SCREEN = "globalscreen/addcosmetic"
 
     // Helper function to create the route with parameters
     fun settingThingsUp(
@@ -140,6 +141,10 @@ fun AppNavigation() {
 
         composable(Routes.ADD_DRUG_SCREEN) {
             AddDrugScreen(navController = navController)
+        }
+
+        composable(Routes.ADD_COSMETIC_SCREEN) {
+            com.example.meditox.screens.globaldataaddscreen.AddCosmeticScreen(navController = navController)
         }
 
         // NEW: Setting Things Up Screen with navigation arguments

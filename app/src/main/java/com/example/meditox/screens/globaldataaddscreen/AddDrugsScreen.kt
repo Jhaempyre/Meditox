@@ -207,6 +207,11 @@ fun AddDrugScreen(
                 showAddToCatalogSheet = false
                 selectedDrug = null
             },
+            onSuccess = {
+                showAddToCatalogSheet = false
+                selectedDrug = null
+                navController.popBackStack()
+            },
             sheetState = addToCatalogSheetState
         )
     }

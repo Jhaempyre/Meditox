@@ -16,6 +16,11 @@ interface GlobalDataSyncApiService {
     suspend fun createGlobalDrug(
         @Body request: CreateGlobalDrugRequest
     ): Response<ApiResponse<GlobalDrugApiResponse>>
+
+    @POST("api/v3/global/cosmetics/add")
+    suspend fun createGlobalCosmetic(
+        @Body request: com.example.meditox.models.GlobalChemist.CreateGlobalCosmeticRequest
+    ): Response<ApiResponse<com.example.meditox.models.GlobalChemist.GlobalCosmeticApiResponse>>
     
     @GET("api/v3/global/drugs")
     suspend fun getGlobalDrugs(

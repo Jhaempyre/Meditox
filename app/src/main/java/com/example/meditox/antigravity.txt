@@ -1,0 +1,125 @@
+@RequestMapping("/api/v3/global/cosmetics")
+public class GlobalCosmeticController {
+
+    private final GlobalCosmeticService service;
+
+    public GlobalCosmeticController(GlobalCosmeticService service) {
+        this.service = service;
+    }
+
+     @PostMapping("/add")
+    public ResponseEntity<ApiResponseDto<GlobalCosmeticResponse>> create(
+            @Valid @RequestBody CreateGlobalCosmeticRequest request) {
+
+        GlobalCosmetic cosmetic = service.createGlobalCosmetic(request);
+
+        GlobalCosmeticResponse response = mapToResponse(cosmetic);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponseDto.success("Global cosmetic product created successfully", response));
+    }
+
+    private GlobalCosmeticResponse mapToResponse(GlobalCosmetic cosmetic) {
+        GlobalCosmeticResponse r = new GlobalCosmeticResponse();
+        r.setGlobalCosmeticId(cosmetic.getGlobalCosmeticId());
+        r.setProductName(cosmetic.getProductName());
+        r.setBrand(cosmetic.getBrand());
+        r.setManufacturer(cosmetic.getManufacturer());
+        r.setForm(cosmetic.getForm());
+        r.setVariant(cosmetic.getVariant());
+        r.setBaseUnit(cosmetic.getBaseUnit());
+        r.setUnitsPerPack(cosmetic.getUnitsPerPack());
+        r.setIntendedUse(cosmetic.getIntendedUse());
+        r.setSkinType(cosmetic.getSkinType());
+        r.setCosmeticLicenseNumber(cosmetic.getCosmeticLicenseNumber());
+        r.setHsnCode(cosmetic.getHsnCode());
+        r.setGstRate(cosmetic.getGstRate());
+        r.setVerified(cosmetic.getVerified());
+        r.setCreatedByChemistId(cosmetic.getCreatedByChemistId());
+        r.setCreatedAt(cosmetic.getCreatedAt());
+        r.setActive(cosmetic.getActive());
+        return r;
+    }
+}
+
+
+public class CreateGlobalCosmeticRequest {
+
+    @NotBlank(message = "Product name is required")
+    @JsonProperty("product_name")
+    private String productName;
+
+    @NotBlank(message = "Brand is required")
+    @JsonProperty("brand")
+    private String brand;
+
+    @NotBlank(message = "Manufacturer is required")
+    @JsonProperty("manufacturer")
+    private String manufacturer;
+
+    @NotBlank(message = "Form is required")
+    @JsonProperty("form")
+    private String form;
+
+    @NotBlank(message = "Variant is required")
+    @JsonProperty("variant")
+    private String variant;
+
+    @NotBlank(message = "Base unit is required")
+    @JsonProperty("base_unit")
+    private String baseUnit;
+
+    @Positive(message = "Units per pack must be positive")
+    @JsonProperty("units_per_pack")
+    private Integer unitsPerPack;
+
+    @NotBlank(message = "Intended use is required")
+    @JsonProperty("intended_use")
+    private String intendedUse;
+
+    @NotBlank(message = "Skin type is required")
+    @JsonProperty("skin_type")
+    private String skinType;
+
+    @NotBlank(message = "Cosmetic license number is required")
+    @JsonProperty("cosmetic_license_number")
+    private String cosmeticLicenseNumber;
+
+    @NotBlank(message = "HSN code is required")
+    @JsonProperty("hsn_code")
+    private String hsnCode;
+
+    @NotNull(message = "GST rate is required")
+    @PositiveOrZero(message = "GST rate must be zero or positive")
+    @JsonProperty("gst_rate")
+    private BigDecimal gstRate;
+
+    @NotNull(message = "Created by chemist ID is required")
+    @JsonProperty("created_by_chemist_id")
+    private Long createdByChemistId;
+
+
+    package com.example.InventoryManager.Dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+public class GlobalCosmeticResponse {
+
+    private Long globalCosmeticId;
+    private String productName;
+    private String brand;
+    private String manufacturer;
+    private String form;
+    private String variant;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private String intendedUse;
+    private String skinType;
+    private String cosmeticLicenseNumber;
+    private String hsnCode;
+    private BigDecimal gstRate;
+    private Boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private Boolean isActive;

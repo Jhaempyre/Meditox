@@ -54,9 +54,10 @@ class AddToCatalogViewModel(private val context: Context) : ViewModel() {
         _formState.value = update(_formState.value)
     }
 
-    fun addProductToCatalog(globalDrugId: Long) {
+    fun addProductToCatalog(globalDrugId: Long, category: String = "DRUG") {
         viewModelScope.launch {
             try {
+                print(category)
                 _addResult.value = ApiResult.Loading
                 _uiState.update { it.copy(isLoading = true) }
 
@@ -66,7 +67,7 @@ class AddToCatalogViewModel(private val context: Context) : ViewModel() {
 
                 val form = _formState.value
                 val request = AddProductToCatalogRequest(
-                    productCategory = "DRUG",
+                    productCategory = category,
                     globalProductId = globalDrugId,
                     minimumStockLevel = form.minimumStockLevel.toIntOrNull() ?: 10,
                     maximumStockLevel = form.maximumStockLevel.toIntOrNull() ?: 100,
