@@ -1,219 +1,148 @@
 @RestController
-@RequestMapping("/api/v3/global/fmcg")
-public class GlobalGeneralFmcgController {
+@RequestMapping("/api/v3/global/drugs")
+public class GlobalDrugController {
+    private final GlobalDrugService service;
 
-    private final GlobalGeneralFmcgService service;
-
-    public GlobalGeneralFmcgController(GlobalGeneralFmcgService service) {
+    public GlobalDrugController(GlobalDrugService service) {
         this.service = service;
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponseDto<GetGlobalGeneralFmcgResponse>> getAllGlobalGeneralFmcg(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String manufacturer,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) Boolean verified,
-            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
-            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "50") Integer limit) {
+     @PostMapping("/add")
+    public ResponseEntity<ApiResponseDto<GlobalDrugResponse>> create(
+            @Valid @RequestBody CreateGlobalDrugRequest request) {
 
-        GetGlobalGeneralFmcgResponse response = service.getAllGlobalGeneralFmcg(
-                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
+        GlobalDrug drug = service.createGlobalDrug(request);
 
-        return ResponseEntity.ok(ApiResponseDto.success("Global FMCG products retrieved successfully", response));
+        GlobalDrugResponse response = mapToResponse(drug);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponseDto.success("Global drug created successfully", response));
+    }
+
+    private GlobalDrugResponse mapToResponse(GlobalDrug drug) {
+        GlobalDrugResponse r = new GlobalDrugResponse();
+        r.setGlobalDrugId(drug.getGlobalDrugId());
+        r.setBrandName(drug.getBrandName());
+        r.setGenericName(drug.getGenericName());
+        r.setManufacturer(drug.getManufacturer());
+        r.setSystemOfMedicine(drug.getSystemOfMedicine());
+        r.setDosageForm(drug.getDosageForm());
+        r.setStrengthValue(drug.getStrengthValue());
+        r.setStrengthUnit(drug.getStrengthUnit());
+        r.setRouteOfAdministration(drug.getRouteOfAdministration());
+        r.setBaseUnit(drug.getBaseUnit());
+        r.setUnitsPerPack(drug.getUnitsPerPack());
+        r.setLooseSaleAllowed(drug.getLooseSaleAllowed());
+        r.setDrugSchedule(drug.getDrugSchedule());
+        r.setPrescriptionRequired(drug.getPrescriptionRequired());
+        r.setNarcoticDrug(drug.getNarcoticDrug());
+        r.setRegulatoryAuthority(drug.getRegulatoryAuthority());
+        r.setHsnCode(drug.getHsnCode());
+        r.setVerified(drug.getVerified());
+        r.setCreatedByChemistId(drug.getCreatedByChemistId());
+        r.setCreatedAt(drug.getCreatedAt());
+        r.setActive(drug.getActive());
+        return r;
     }
 
 
-public class GetGlobalGeneralFmcgResponse {
 
-    private List<GlobalGeneralFmcgResponse> generalFmcg;
-    private PaginationInfo pagination;
-
-
-
-public class GlobalGeneralFmcgResponse {
-
-    private Long globalFmcgId;
-    private String productName;
-    private String brand;
-    private String manufacturer;
-    private String categoryLabel;
-    private String baseUnit;
-    private Integer unitsPerPack;
-    private String hsnCode;
-    private BigDecimal gstRate;
-    private Boolean verified;
-    private Long createdByChemistId;
-    private LocalDateTime createdAt;
-    private Boolean isActive;
 }
 
 
-@RestController
-@RequestMapping("/api/v3/global/medical-devices")
-public class GlobalMedicalDeviceController {
+this is somethings response of api 
 
-    private final GlobalMedicalDeviceService service;
+public class GlobalDrugResponse {
+    private Long globalDrugId;
+    private String brandName;
+    private String genericName;
+    private String manufacturer;
+    private GlobalDrug.SystemOfMedicine systemOfMedicine;
+    private GlobalDrug.DosageForm dosageForm;
+    private java.math.BigDecimal strengthValue;
+    private String strengthUnit;
+    private GlobalDrug.RouteOfAdministration routeOfAdministration;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private boolean looseSaleAllowed;
+    private GlobalDrug.DrugSchedule drugSchedule;
+    private boolean prescriptionRequired;
+    private boolean narcoticDrug;
+    private String regulatoryAuthority;
+    private String hsnCode;
+    private boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private boolean isActive;
 
-    public GlobalMedicalDeviceController(GlobalMedicalDeviceService service) {
-        this.service = service;
+    public GlobalDrugResponse() {
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponseDto<GetGlobalMedicalDevicesResponse>> getAllGlobalMedicalDevices(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String manufacturer,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) Boolean verified,
-            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
-            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "50") Integer limit) {
 
-        GetGlobalMedicalDevicesResponse response = service.getAllGlobalMedicalDevices(
-                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
+    public class CreateGlobalDrugRequest {
+    @NotBlank(message = "Brand name is required")
+    @JsonProperty("brand_name")
+    private String brandName;
 
-        return ResponseEntity.ok(ApiResponseDto.success("Global medical devices retrieved successfully", response));
-    }
+    @NotBlank(message = "Generic name is required")
+    @JsonProperty("generic_name")
+    private String genericName;
 
+    @NotBlank(message = "Manufacturer is required")
+    @JsonProperty("manufacturer")
+    private String manufacturer;
+
+    @NotNull
+    @JsonProperty("system_of_medicine")
+    private GlobalDrug.SystemOfMedicine systemOfMedicine;
+
+    @NotNull
+    @JsonProperty("dosage_form")
+    private GlobalDrug.DosageForm dosageForm;
+
+    @Positive(message = "Strength value must be positive")
+    @JsonProperty("strength_value")
+    private java.math.BigDecimal strengthValue;
+
+    @NotBlank
+    @JsonProperty("strength_unit")
+    private String strengthUnit;
+
+    @NotNull
+    @JsonProperty("route_of_administration")
+    private GlobalDrug.RouteOfAdministration routeOfAdministration;
+
+    @NotBlank
+    @JsonProperty("base_unit")
+    private String baseUnit;
+
+    @Positive
+    @JsonProperty("units_per_pack")
+    private Integer unitsPerPack;
+
+    @JsonProperty("is_loose_sale_allowed")
+    private boolean looseSaleAllowed;
+
+    @NotNull
+    @JsonProperty("drug_schedule")
+    private GlobalDrug.DrugSchedule drugSchedule;
+
+    @JsonProperty("prescription_required")
+    private boolean prescriptionRequired;
+
+    @JsonProperty("narcotic_drug")
+    private boolean narcoticDrug;
+
+    @NotBlank
+    @JsonProperty("regulatory_authority")
+    private String regulatoryAuthority;
+
+    @NotBlank
+    @JsonProperty("hsn_code")
+    private String hsnCode;
+
+    @NotNull
+    @JsonProperty("created_by_chemist_id")
+    private Long createdByChemistId;
 
     
-public class GetGlobalMedicalDevicesResponse {
-
-    private List<GlobalMedicalDeviceResponse> medicalDevices;
-    private PaginationInfo pagination;
-}
-
-public class GlobalMedicalDeviceResponse {
-
-    private Long globalDeviceId;
-    private String productName;
-    private String brand;
-    private String manufacturer;
-    private String modelNumber;
-    private String deviceType;
-    private String baseUnit;
-    private Integer unitsPerPack;
-    private Boolean reusable;
-    private String medicalDeviceClass;
-    private String certification;
-    private Integer warrantyMonths;
-    private String hsnCode;
-    private BigDecimal gstRate;
-    private Boolean verified;
-    private Long createdByChemistId;
-    private LocalDateTime createdAt;
-    private Boolean isActive;
-}
-
-@RestController
-@RequestMapping("/api/v3/global/supplements")
-public class GlobalSupplementController {
-
-    private final GlobalSupplementService service;
-
-    public GlobalSupplementController(GlobalSupplementService service) {
-        this.service = service;
-    }
-
-    @GetMapping
-    public ResponseEntity<ApiResponseDto<GetGlobalSupplementsResponse>> getAllGlobalSupplements(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String manufacturer,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) Boolean verified,
-            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
-            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "50") Integer limit) {
-
-        GetGlobalSupplementsResponse response = service.getAllGlobalSupplements(
-                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
-
-        return ResponseEntity.ok(ApiResponseDto.success("Global supplements retrieved successfully", response));
-    }
-
-public class GetGlobalSupplementsResponse {
-
-    private List<GlobalSupplementResponse> supplements;
-    private PaginationInfo pagination;
-}
-    public class GlobalSupplementResponse {
-
-    private Long globalSupplementId;
-    private String productName;
-    private String brand;
-    private String manufacturer;
-    private String supplementType;
-    private String compositionSummary;
-    private String ageGroup;
-    private String baseUnit;
-    private Integer unitsPerPack;
-    private Boolean isLooseSaleAllowed;
-    private String fssaiLicense;
-    private String hsnCode;
-    private BigDecimal gstRate;
-    private Boolean verified;
-    private Long createdByChemistId;
-    private LocalDateTime createdAt;
-    private Boolean isActive;
-    }
-
-
-@RestController
-@RequestMapping("/api/v3/global/surgical-consumables")
-public class GlobalSurgicalConsumableController {
-
-    private final GlobalSurgicalConsumableService service;
-
-    public GlobalSurgicalConsumableController(GlobalSurgicalConsumableService service) {
-        this.service = service;
-    }
-
-    @GetMapping
-    public ResponseEntity<ApiResponseDto<GetGlobalSurgicalConsumablesResponse>> getAllGlobalSurgicalConsumables(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String manufacturer,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) Boolean verified,
-            @RequestParam(name = "sort_by", defaultValue = "productName") String sortBy,
-            @RequestParam(name = "sort_order", defaultValue = "asc") String sortOrder,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "50") Integer limit) {
-
-        GetGlobalSurgicalConsumablesResponse response = service.getAllGlobalSurgicalConsumables(
-                search, manufacturer, brand, verified, sortBy, sortOrder, page, limit);
-
-        return ResponseEntity
-                .ok(ApiResponseDto.success("Global surgical consumables retrieved successfully", response));
-    }
-
-
-public class GetGlobalSurgicalConsumablesResponse {
-
-    private List<GlobalSurgicalConsumableResponse> surgicalConsumables;
-    private PaginationInfo pagination;
-}
-
-public class GlobalSurgicalConsumableResponse {
-
-    private Long globalSurgicalId;
-    private String productName;
-    private String brand;
-    private String manufacturer;
-    private String material;
-    private String baseUnit;
-    private Integer unitsPerPack;
-    private Boolean sterile;
-    private Boolean disposable;
-    private String intendedUse;
-    private String sizeSpecification;
-    private String hsnCode;
-    private BigDecimal gstRate;
-    private Boolean verified;
-    private Long createdByChemistId;
-    private LocalDateTime createdAt;
-    private Boolean isActive; }
-

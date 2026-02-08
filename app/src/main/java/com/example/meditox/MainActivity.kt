@@ -30,6 +30,7 @@ import com.example.meditox.screens.LocationTrackingScreen
 import com.example.meditox.screens.SplashScreen
 import com.example.meditox.screens.subscription.SubscriptionScreen
 import com.example.meditox.screens.subscription.SucceededSubscriptionScreen
+import com.example.meditox.screens.globaldataaddscreen.AddDrugScreen
 import com.example.meditox.services.ApiClient
 import com.example.meditox.services.AuthApiService
 import com.example.meditox.ui.screens.RegisterUserScreen
@@ -65,6 +66,7 @@ object Routes{
     const val EDIT_SHOP="edit_shop"
     const val SETTINGS = "settings"
     const val SETTING_THINGS_UP = "setting_things_up/{userId}/{isRegistered}/{isBusinessRegistered}/{accessToken}/{refreshToken}"
+    const val ADD_DRUG_SCREEN = "globalscreen/adddrug"
 
     // Helper function to create the route with parameters
     fun settingThingsUp(
@@ -134,6 +136,10 @@ fun AppNavigation() {
                 factory = provideFactory(LocalContext.current)
             )
             com.example.meditox.screens.SettingsScreen(navController = navController, syncViewModel = syncViewModel)
+        }
+
+        composable(Routes.ADD_DRUG_SCREEN) {
+            AddDrugScreen(navController = navController)
         }
 
         // NEW: Setting Things Up Screen with navigation arguments

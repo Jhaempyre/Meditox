@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.draw.clip
 import androidx.navigation.NavController
+import com.example.meditox.Routes
 import com.example.meditox.ui.theme.primaryGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +149,8 @@ fun AddReleaseScreen(navController: NavController) {
     if (showAddMedicineSheet) {
         AddInventoryBottomSheet(
             onDismiss = { showAddMedicineSheet = false },
-            sheetState = addMedicineSheetState
+            sheetState = addMedicineSheetState,
+            navController = navController
         )
     }
 }
@@ -165,7 +167,8 @@ data class InventoryCategory(
 @Composable
 fun AddInventoryBottomSheet(
     onDismiss: () -> Unit,
-    sheetState: SheetState
+    sheetState: SheetState,
+    navController: NavController
 ) {
     val categories = listOf(
         InventoryCategory("Add Drugs", "Prescription medicines", Icons.Default.Check, Color(0xFFE8F5E9), Color(0xFF4CAF50)),
@@ -218,7 +221,6 @@ fun AddInventoryBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Categories Grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -226,7 +228,16 @@ fun AddInventoryBottomSheet(
                 modifier = Modifier.heightIn(max = 400.dp)
             ) {
                 items(categories) { category ->
-                    CategoryCard(category)
+                    CategoryCard(
+                        category = category,
+                        onClick = {
+                            if (category.title == "Add Drugs") {
+                                onDismiss()
+                                navController.navigate(Routes.ADD_DRUG_SCREEN)
+                            }
+                            // TODO: Add navigation for other categories
+                        }
+                    )
                 }
             }
 
@@ -238,14 +249,17 @@ fun AddInventoryBottomSheet(
 }
 
 @Composable
-fun CategoryCard(category: InventoryCategory) {
+fun CategoryCard(
+    category: InventoryCategory,
+    onClick: () -> Unit = {}
+) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = Color(0xFFF9F9F9),
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .clickable { /* Handle Category Selection */ }
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

@@ -2,11 +2,20 @@ package com.example.meditox.services
 
 import com.example.meditox.models.ApiResponse
 import com.example.meditox.models.sync.GetGlobalDrugsResponse
+import com.example.meditox.models.GlobalDrug.CreateGlobalDrugRequest
+import com.example.meditox.models.GlobalDrug.GlobalDrugApiResponse
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface GlobalDataSyncApiService {
+    
+    @POST("api/v3/global/drugs/add")
+    suspend fun createGlobalDrug(
+        @Body request: CreateGlobalDrugRequest
+    ): Response<ApiResponse<GlobalDrugApiResponse>>
     
     @GET("api/v3/global/drugs")
     suspend fun getGlobalDrugs(
