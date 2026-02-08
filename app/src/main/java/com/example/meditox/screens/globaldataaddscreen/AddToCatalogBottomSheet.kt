@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.meditox.database.entity.GlobalDrugEntity
+import com.example.meditox.enums.ProductCategory
 import com.example.meditox.models.viewModel.AddToCatalogViewModel
 import com.example.meditox.ui.theme.primaryGreen
 import com.example.meditox.utils.ApiResult
@@ -124,6 +125,60 @@ fun AddToCatalogBottomSheet(
             uiState = uiState,
             onUpdateField = viewModel::updateFormField,
             onSubmit = { viewModel.addProductToCatalog(cosmetic.globalCosmeticId, "COSMETIC") }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddToCatalogBottomSheet(
+    fmcg: com.example.meditox.database.entity.GlobalGeneralFmcgEntity,
+    onDismiss: () -> Unit,
+    onSuccess: () -> Unit = {},
+    sheetState: SheetState,
+    viewModel: AddToCatalogViewModel = viewModel(
+        factory = AddToCatalogViewModel.provideFactory(LocalContext.current)
+    )
+) {
+    val context = LocalContext.current
+    val formState by viewModel.formState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val addResult by viewModel.addResult.collectAsState()
+
+    // Handle result
+    LaunchedEffect(addResult) {
+        when (val result = addResult) {
+            is ApiResult.Success -> {
+                Toast.makeText(context, "Product added to catalog!", Toast.LENGTH_SHORT).show()
+                viewModel.resetResult()
+                viewModel.resetForm()
+                onSuccess()
+                onDismiss()
+            }
+            is ApiResult.Error -> {
+                Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                viewModel.resetResult()
+            }
+            else -> {}
+        }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            viewModel.resetForm()
+            onDismiss()
+        },
+        sheetState = sheetState,
+        containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle() }
+    ) {
+        AddToCatalogContent(
+            title = fmcg.productName,
+            subtitle = "${fmcg.categoryLabel} • ${fmcg.brand}",
+            formState = formState,
+            uiState = uiState,
+            onUpdateField = viewModel::updateFormField,
+            onSubmit = { viewModel.addProductToCatalog(fmcg.globalFmcgId, ProductCategory.GENERAL_FMCG.toString()) }
         )
     }
 }

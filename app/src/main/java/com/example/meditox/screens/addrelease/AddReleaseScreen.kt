@@ -241,6 +241,9 @@ fun AddInventoryBottomSheet(
                             } else if (category.title == "Cosmetic") {
                                 onDismiss()
                                 navController.navigate(Routes.ADD_COSMETIC_SCREEN)
+                            } else if (category.title == "FMCG") {
+                                onDismiss()
+                                navController.navigate(Routes.ADD_FMCG_SCREEN)
                             }
                             // TODO: Add navigation for other categories
                         }

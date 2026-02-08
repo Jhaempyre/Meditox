@@ -20,4 +20,10 @@ interface GlobalGeneralFmcgDao {
 
     @Query("SELECT COUNT(*) FROM global_general_fmcg")
     suspend fun getCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(fmcg: GlobalGeneralFmcgEntity)
+
+    @Query("SELECT * FROM global_general_fmcg WHERE product_name LIKE '%' || :query || '%' OR brand LIKE '%' || :query || '%' ORDER BY product_name ASC")
+    fun searchFmcg(query: String): Flow<List<GlobalGeneralFmcgEntity>>
 }

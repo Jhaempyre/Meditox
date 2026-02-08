@@ -57,7 +57,7 @@ class AddToCatalogViewModel(private val context: Context) : ViewModel() {
     fun addProductToCatalog(globalDrugId: Long, category: String = "DRUG") {
         viewModelScope.launch {
             try {
-                print(category)
+                print("Adding to catalog: $category")
                 _addResult.value = ApiResult.Loading
                 _uiState.update { it.copy(isLoading = true) }
 

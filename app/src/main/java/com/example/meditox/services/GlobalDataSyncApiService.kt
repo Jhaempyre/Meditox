@@ -10,8 +10,16 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 
+import com.example.meditox.models.api.CreateGlobalGeneralFmcgRequest
+import com.example.meditox.models.api.GlobalGeneralFmcgApiResponse
+
 interface GlobalDataSyncApiService {
-    
+
+    @POST("api/v3/global/fmcg/add")
+    suspend fun createGlobalGeneralFmcg(
+        @Body request: CreateGlobalGeneralFmcgRequest
+    ): Response<ApiResponse<GlobalGeneralFmcgApiResponse>>
+
     @POST("api/v3/global/drugs/add")
     suspend fun createGlobalDrug(
         @Body request: CreateGlobalDrugRequest
