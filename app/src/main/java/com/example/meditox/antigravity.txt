@@ -1,148 +1,157 @@
 @RestController
-@RequestMapping("/api/v3/global/drugs")
-public class GlobalDrugController {
-    private final GlobalDrugService service;
+@RequestMapping("/api/v3/chemist")
+public class ChemistProductController {
 
-    public GlobalDrugController(GlobalDrugService service) {
-        this.service = service;
-    }
+        private final ChemistProductService chemistProductService;
+        private final StockService stockService;
 
-     @PostMapping("/add")
-    public ResponseEntity<ApiResponseDto<GlobalDrugResponse>> create(
-            @Valid @RequestBody CreateGlobalDrugRequest request) {
+        public ChemistProductController(ChemistProductService chemistProductService, StockService stockService) {
+                this.chemistProductService = chemistProductService;
+                this.stockService = stockService;
+        }
 
-        GlobalDrug drug = service.createGlobalDrug(request);
+        @PostMapping("/{chemistId}/products")
+        public ResponseEntity<ApiResponseDto<ChemistProductResponse>> addProductToCatalog(
+                        @PathVariable Long chemistId,
+                        @Valid @RequestBody AddProductToCatalogRequest request) {
 
-        GlobalDrugResponse response = mapToResponse(drug);
+                ChemistProductResponse response = chemistProductService.addProductToCatalog(chemistId, request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponseDto.success("Global drug created successfully", response));
-    }
-
-    private GlobalDrugResponse mapToResponse(GlobalDrug drug) {
-        GlobalDrugResponse r = new GlobalDrugResponse();
-        r.setGlobalDrugId(drug.getGlobalDrugId());
-        r.setBrandName(drug.getBrandName());
-        r.setGenericName(drug.getGenericName());
-        r.setManufacturer(drug.getManufacturer());
-        r.setSystemOfMedicine(drug.getSystemOfMedicine());
-        r.setDosageForm(drug.getDosageForm());
-        r.setStrengthValue(drug.getStrengthValue());
-        r.setStrengthUnit(drug.getStrengthUnit());
-        r.setRouteOfAdministration(drug.getRouteOfAdministration());
-        r.setBaseUnit(drug.getBaseUnit());
-        r.setUnitsPerPack(drug.getUnitsPerPack());
-        r.setLooseSaleAllowed(drug.getLooseSaleAllowed());
-        r.setDrugSchedule(drug.getDrugSchedule());
-        r.setPrescriptionRequired(drug.getPrescriptionRequired());
-        r.setNarcoticDrug(drug.getNarcoticDrug());
-        r.setRegulatoryAuthority(drug.getRegulatoryAuthority());
-        r.setHsnCode(drug.getHsnCode());
-        r.setVerified(drug.getVerified());
-        r.setCreatedByChemistId(drug.getCreatedByChemistId());
-        r.setCreatedAt(drug.getCreatedAt());
-        r.setActive(drug.getActive());
-        return r;
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(
+                                ApiResponseDto.success("Product added to chemist catalog successfully", response));
+        }
 
 
 
-}
+//add to catalouge 
+
+public class AddProductToCatalogRequest {
+
+    @NotNull(message = "Product category is required")
+    @JsonProperty("product_category")
+    private ProductCategory productCategory;
+
+    @NotNull(message = "Global product ID is required")
+    @Positive(message = "Global product ID must be positive")
+    @JsonProperty("global_product_id")
+    private Long globalProductId;
+
+    @NotNull(message = "Minimum stock level is required")
+    @Min(value = 0, message = "Minimum stock level must be non-negative")
+    @JsonProperty("minimum_stock_level")
+    private Integer minimumStockLevel;
+
+    @NotNull(message = "Maximum stock level is required")
+    @Positive(message = "Maximum stock level must be positive")
+    @JsonProperty("maximum_stock_level")
+    private Integer maximumStockLevel;
+
+    @NotNull(message = "Reorder quantity is required")
+    @Positive(message = "Reorder quantity must be positive")
+    @JsonProperty("reorder_quantity")
+    private Integer reorderQuantity;
 
 
-this is somethings response of api 
 
-public class GlobalDrugResponse {
-    private Long globalDrugId;
-    private String brandName;
-    private String genericName;
-    private String manufacturer;
-    private GlobalDrug.SystemOfMedicine systemOfMedicine;
-    private GlobalDrug.DosageForm dosageForm;
-    private java.math.BigDecimal strengthValue;
-    private String strengthUnit;
-    private GlobalDrug.RouteOfAdministration routeOfAdministration;
-    private String baseUnit;
-    private Integer unitsPerPack;
-    private boolean looseSaleAllowed;
-    private GlobalDrug.DrugSchedule drugSchedule;
-    private boolean prescriptionRequired;
-    private boolean narcoticDrug;
-    private String regulatoryAuthority;
-    private String hsnCode;
-    private boolean verified;
-    private Long createdByChemistId;
+
+public enum ProductCategory {
+    DRUG,
+    COSMETIC,
+    MEDICAL_DEVICE,
+    SUPPLEMENT,
+    SURGICAL_CONSUMABLE,
+    GENERAL_FMCG
+}already in enum folder 
+
+public class ChemistProductResponse {
+
+    @JsonProperty("chemist_product_id")
+    private Long chemistProductId;
+
+    @JsonProperty("chemist_id")
+    private Long chemistId;
+
+    @JsonProperty("product_category")
+    private ProductCategory productCategory;
+
+    @JsonProperty("global_product_id")
+    private Long globalProductId;
+
+    @JsonProperty("product_details")
+    private ProductDetailsDto productDetails;
+
+    @JsonProperty("minimum_stock_level")
+    private Integer minimumStockLevel;
+
+    @JsonProperty("maximum_stock_level")
+    private Integer maximumStockLevel;
+
+    @JsonProperty("reorder_quantity")
+    private Integer reorderQuantity;
+
+    @JsonProperty("current_stock")
+    private Integer currentStock;
+
+    @JsonProperty("stock_status")
+    private StockStatus stockStatus;
+
+    @JsonProperty("is_active")
+    private Boolean isActive;
+
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
-    private boolean isActive;
-
-    public GlobalDrugResponse() {
-    }
 
 
-    public class CreateGlobalDrugRequest {
-    @NotBlank(message = "Brand name is required")
+    import java.math.BigDecimal;
+
+public class ProductDetailsDto {
+
     @JsonProperty("brand_name")
     private String brandName;
 
-    @NotBlank(message = "Generic name is required")
     @JsonProperty("generic_name")
     private String genericName;
 
-    @NotBlank(message = "Manufacturer is required")
     @JsonProperty("manufacturer")
     private String manufacturer;
 
-    @NotNull
-    @JsonProperty("system_of_medicine")
-    private GlobalDrug.SystemOfMedicine systemOfMedicine;
-
-    @NotNull
     @JsonProperty("dosage_form")
-    private GlobalDrug.DosageForm dosageForm;
+    private String dosageForm;
 
-    @Positive(message = "Strength value must be positive")
-    @JsonProperty("strength_value")
-    private java.math.BigDecimal strengthValue;
+    @JsonProperty("strength")
+    private String strength;
 
-    @NotBlank
-    @JsonProperty("strength_unit")
-    private String strengthUnit;
+    @JsonProperty("current_mrp")
+    private BigDecimal currentMrp;
 
-    @NotNull
-    @JsonProperty("route_of_administration")
-    private GlobalDrug.RouteOfAdministration routeOfAdministration;
+    @JsonProperty("gst_rate")
+    private BigDecimal gstRate;
 
-    @NotBlank
-    @JsonProperty("base_unit")
-    private String baseUnit;
-
-    @Positive
-    @JsonProperty("units_per_pack")
-    private Integer unitsPerPack;
-
-    @JsonProperty("is_loose_sale_allowed")
-    private boolean looseSaleAllowed;
-
-    @NotNull
-    @JsonProperty("drug_schedule")
-    private GlobalDrug.DrugSchedule drugSchedule;
-
-    @JsonProperty("prescription_required")
-    private boolean prescriptionRequired;
-
-    @JsonProperty("narcotic_drug")
-    private boolean narcoticDrug;
-
-    @NotBlank
-    @JsonProperty("regulatory_authority")
-    private String regulatoryAuthority;
-
-    @NotBlank
     @JsonProperty("hsn_code")
     private String hsnCode;
 
-    @NotNull
-    @JsonProperty("created_by_chemist_id")
-    private Long createdByChemistId;
+    // Additional fields for other product types
+    @JsonProperty("product_name")
+    private String productName;
+
+    @JsonProperty("form")
+    private String form;
+
+    @JsonProperty("variant")
+    private String variant;
+
+    @JsonProperty("device_type")
+    private String deviceType;
+
+    @JsonProperty("supplement_type")
+    private String supplementType;
+
+    @JsonProperty("material")
+    private String material;
+
+    @JsonProperty("category_label")
+    private String categoryLabel;
+
 
     
+
