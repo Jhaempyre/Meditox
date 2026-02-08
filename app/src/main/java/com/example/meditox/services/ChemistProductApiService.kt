@@ -1,10 +1,14 @@
 package com.example.meditox.services
 
 import com.example.meditox.models.ApiResponse
+import com.example.meditox.models.chemist.AddProductToCatalogRequest
+import com.example.meditox.models.chemist.ChemistProductResponse
 import com.example.meditox.models.chemist.GetProductsResponse
 import com.example.meditox.models.chemist.ProductCategory
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -20,4 +24,10 @@ interface ChemistProductApiService {
         @Query("search") search: String? = null,
         @Query("sort_by") sortBy: String = "stock_status"
     ): Response<ApiResponse<GetProductsResponse>>
+
+    @POST("api/v3/chemist/{chemistId}/products")
+    suspend fun addProductToCatalog(
+        @Path("chemistId") chemistId: Long,
+        @Body request: AddProductToCatalogRequest
+    ): Response<ApiResponse<ChemistProductResponse>>
 }

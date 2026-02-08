@@ -1,19 +1,50 @@
 package com.example.meditox.models.chemist
 
+import com.google.gson.annotations.SerializedName
+
 data class ProductDetailsDto(
-    val brand_name: String? = null,
-    val generic_name: String? = null,
+    @SerializedName("brand_name")
+    val brandName: String? = null,
+    
+    @SerializedName("generic_name")
+    val genericName: String? = null,
+    
+    @SerializedName("manufacturer")
     val manufacturer: String? = null,
-    val dosage_form: String? = null,
+    
+    @SerializedName("dosage_form")
+    val dosageForm: String? = null,
+    
+    @SerializedName("strength")
     val strength: String? = null,
-    val current_mrp: Double? = null,
-    val gst_rate: Double? = null,
-    val hsn_code: String? = null,
-    val product_name: String? = null,
+    
+    @SerializedName("current_mrp")
+    val currentMrp: Double? = null,
+    
+    @SerializedName("gst_rate")
+    val gstRate: Double? = null,
+    
+    @SerializedName("hsn_code")
+    val hsnCode: String? = null,
+    
+    @SerializedName("product_name")
+    val productName: String? = null,
+    
+    @SerializedName("form")
     val form: String? = null,
+    
+    @SerializedName("variant")
     val variant: String? = null,
-    val device_type: String? = null,
-    val supplement_type: String? = null,
+    
+    @SerializedName("device_type")
+    val deviceType: String? = null,
+    
+    @SerializedName("supplement_type")
+    val supplementType: String? = null,
+    
+    @SerializedName("material")
     val material: String? = null,
-    val category_label: String? = null
+    
+    @SerializedName("category_label")
+    val categoryLabel: String? = null
 )

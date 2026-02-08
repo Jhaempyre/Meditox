@@ -53,6 +53,11 @@ fun AddDrugScreen(
     val uiState by viewModel.uiState.collectAsState()
     val createResult by viewModel.createDrugResult.collectAsState()
 
+    // Bottom sheet state for Add to Catalog
+    var showAddToCatalogSheet by remember { mutableStateOf(false) }
+    var selectedDrug by remember { mutableStateOf<GlobalDrugEntity?>(null) }
+    val addToCatalogSheetState = rememberModalBottomSheetState()
+
     // Handle API result
     LaunchedEffect(createResult) {
         when (val result = createResult) {
@@ -146,7 +151,10 @@ fun AddDrugScreen(
                         items(searchResults) { drug ->
                             DrugSearchResultCard(
                                 drug = drug,
-                                onClick = { viewModel.onDrugSelected(drug) }
+                                onClick = {
+                                    selectedDrug = drug
+                                    showAddToCatalogSheet = true
+                                }
                             )
                         }
                     }
@@ -187,6 +195,18 @@ fun AddDrugScreen(
                 }
             }
         }
+    }
+
+    // Add to Catalog Bottom Sheet
+    if (showAddToCatalogSheet && selectedDrug != null) {
+        AddToCatalogBottomSheet(
+            drug = selectedDrug!!,
+            onDismiss = {
+                showAddToCatalogSheet = false
+                selectedDrug = null
+            },
+            sheetState = addToCatalogSheetState
+        )
     }
 }
 
