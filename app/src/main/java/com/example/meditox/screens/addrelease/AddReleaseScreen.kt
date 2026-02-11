@@ -57,11 +57,11 @@ fun AddReleaseScreen(navController: NavController) {
                 )
 
                 IconButton(
-                    onClick = { navController.navigate("inventory_history") }
+                    onClick = { navController.navigate(Routes.WHOLESALER_LIST) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountBox,
-                        contentDescription = "History",
+                        contentDescription = "All Whole Sellers",
                         tint = primaryGreen
                     )
                 }
