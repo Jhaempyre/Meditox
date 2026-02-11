@@ -20,4 +20,10 @@ interface GlobalSurgicalConsumableDao {
 
     @Query("SELECT COUNT(*) FROM global_surgical_consumable")
     suspend fun getCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(consumable: GlobalSurgicalConsumableEntity)
+
+    @Query("SELECT * FROM global_surgical_consumable WHERE product_name LIKE '%' || :query || '%' OR brand LIKE '%' || :query || '%' ORDER BY product_name ASC")
+    fun searchConsumables(query: String): Flow<List<GlobalSurgicalConsumableEntity>>
 }

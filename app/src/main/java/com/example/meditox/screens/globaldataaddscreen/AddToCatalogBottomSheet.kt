@@ -290,6 +290,59 @@ fun AddToCatalogBottomSheet(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddToCatalogBottomSheet(
+    consumable: com.example.meditox.database.entity.GlobalSurgicalConsumableEntity,
+    onDismiss: () -> Unit,
+    onSuccess: () -> Unit = {},
+    sheetState: SheetState,
+    viewModel: AddToCatalogViewModel = viewModel(
+        factory = AddToCatalogViewModel.provideFactory(LocalContext.current)
+    )
+) {
+    val context = LocalContext.current
+    val formState by viewModel.formState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val addResult by viewModel.addResult.collectAsState()
+
+    LaunchedEffect(addResult) {
+        when (val result = addResult) {
+            is ApiResult.Success -> {
+                Toast.makeText(context, "Product added to catalog!", Toast.LENGTH_SHORT).show()
+                viewModel.resetResult()
+                viewModel.resetForm()
+                onSuccess()
+                onDismiss()
+            }
+            is ApiResult.Error -> {
+                Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                viewModel.resetResult()
+            }
+            else -> {}
+        }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            viewModel.resetForm()
+            onDismiss()
+        },
+        sheetState = sheetState,
+        containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle() }
+    ) {
+        AddToCatalogContent(
+            title = consumable.productName,
+            subtitle = "${consumable.material} • ${consumable.brand}",
+            formState = formState,
+            uiState = uiState,
+            onUpdateField = viewModel::updateFormField,
+            onSubmit = { viewModel.addProductToCatalog(consumable.globalSurgicalId, ProductCategory.SURGICAL_CONSUMABLE.toString()) }
+        )
+    }
+}
+
 @Composable
 fun AddToCatalogContent(
     title: String,
