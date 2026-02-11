@@ -54,6 +54,9 @@ data class GlobalDrugApiResponse(
     @SerializedName("hsnCode")
     val hsnCode: String,
 
+    @SerializedName("gst")
+    val gst: Double? = null,
+
     @SerializedName("verified")
     val verified: Boolean,
 

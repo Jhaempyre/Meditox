@@ -130,6 +130,7 @@ class AddDrugViewModel(private val context: Context) : ViewModel() {
                     narcoticDrug = form.narcoticDrug,
                     regulatoryAuthority = form.regulatoryAuthority.trim(),
                     hsnCode = form.hsnCode.trim(),
+                    gst = form.gst.toDoubleOrNull() ?: 12.0, // Default to 12.0 if parsing fails, but validation should prevent this
                     createdByChemistId = chemistId
                 )
 
@@ -160,6 +161,7 @@ class AddDrugViewModel(private val context: Context) : ViewModel() {
                             narcoticDrug = drug.narcoticDrug,
                             regulatoryAuthority = drug.regulatoryAuthority,
                             hsnCode = drug.hsnCode,
+                            gst = drug.gst,
                             verified = drug.verified,
                             createdByChemistId = drug.createdByChemistId,
                             createdAt = drug.createdAt,
@@ -194,7 +196,8 @@ class AddDrugViewModel(private val context: Context) : ViewModel() {
         return form.brandName.isNotBlank() &&
                 form.genericName.isNotBlank() &&
                 form.manufacturer.isNotBlank() &&
-                form.strengthValue.isNotBlank()
+                form.strengthValue.isNotBlank() &&
+                form.gst.isNotBlank()
     }
 
     fun resetCreateResult() {
@@ -230,5 +233,6 @@ data class DrugFormState(
     val drugSchedule: DrugSchedule = DrugSchedule.NONE,
     val looseSaleAllowed: Boolean = false,
     val prescriptionRequired: Boolean = false,
-    val narcoticDrug: Boolean = false
+    val narcoticDrug: Boolean = false,
+    val gst: String = ""
 )

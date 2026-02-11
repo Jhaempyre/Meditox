@@ -59,6 +59,9 @@ data class GlobalDrugEntity(
     @ColumnInfo(name = "hsn_code")
     val hsnCode: String,
 
+    @ColumnInfo(name = "gst")
+    val gst: Double? = null,
+
     @ColumnInfo(name = "verified")
     val verified: Boolean,
 

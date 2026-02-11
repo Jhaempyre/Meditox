@@ -1,0 +1,120 @@
+for the addtion api of /api/v3/global/drugs/add
+public class CreateGlobalDrugRequest {
+    @NotBlank(message = "Brand name is required")
+    @JsonProperty("brand_name")
+    private String brandName;
+
+    @NotBlank(message = "Generic name is required")
+    @JsonProperty("generic_name")
+    private String genericName;
+
+    @NotBlank(message = "Manufacturer is required")
+    @JsonProperty("manufacturer")
+    private String manufacturer;
+
+    @NotNull
+    @JsonProperty("system_of_medicine")
+    private GlobalDrug.SystemOfMedicine systemOfMedicine;
+
+    @NotNull
+    @JsonProperty("dosage_form")
+    private GlobalDrug.DosageForm dosageForm;
+
+    @Positive(message = "Strength value must be positive")
+    @JsonProperty("strength_value")
+    private java.math.BigDecimal strengthValue;
+
+    @NotBlank
+    @JsonProperty("strength_unit")
+    private String strengthUnit;
+
+    @NotNull
+    @JsonProperty("route_of_administration")
+    private GlobalDrug.RouteOfAdministration routeOfAdministration;
+
+    @NotBlank
+    @JsonProperty("base_unit")
+    private String baseUnit;
+
+    @Positive
+    @JsonProperty("units_per_pack")
+    private Integer unitsPerPack;
+
+    @JsonProperty("is_loose_sale_allowed")
+    private boolean looseSaleAllowed;
+
+    @NotNull
+    @JsonProperty("drug_schedule")
+    private GlobalDrug.DrugSchedule drugSchedule;
+
+    @JsonProperty("prescription_required")
+    private boolean prescriptionRequired;
+
+    @JsonProperty("narcotic_drug")
+    private boolean narcoticDrug;
+
+    @NotBlank
+    @JsonProperty("regulatory_authority")
+    private String regulatoryAuthority;
+
+    @NotBlank
+    @JsonProperty("hsn_code")
+    private String hsnCode;
+
+    @JsonProperty("gst")
+    private Double gst;
+
+    @NotNull
+    @JsonProperty("created_by_chemist_id")
+    private Long createdByChemistId;
+
+
+     private List<GlobalDrugResponse> drugs;
+    private PaginationInfo pagination;
+
+    // Getters and Setters
+
+    public List<GlobalDrugResponse> getDrugs() {
+        return drugs;
+    }
+
+    public void setDrugs(List<GlobalDrugResponse> drugs) {
+        this.drugs = drugs;
+    }
+
+    public PaginationInfo getPagination() {
+        return pagination;
+    }
+
+    public void setPagination(PaginationInfo pagination) {
+        this.pagination = pagination;
+    }
+
+
+    
+public class GlobalDrugResponse {
+    private Long globalDrugId;
+    private String brandName;
+    private String genericName;
+    private String manufacturer;
+    private GlobalDrug.SystemOfMedicine systemOfMedicine;
+    private GlobalDrug.DosageForm dosageForm;
+    private java.math.BigDecimal strengthValue;
+    private String strengthUnit;
+    private GlobalDrug.RouteOfAdministration routeOfAdministration;
+    private String baseUnit;
+    private Integer unitsPerPack;
+    private boolean looseSaleAllowed;
+    private GlobalDrug.DrugSchedule drugSchedule;
+    private boolean prescriptionRequired;
+    private boolean narcoticDrug;
+    private String regulatoryAuthority;
+    private String hsnCode;
+    private Double gst;
+    private boolean verified;
+    private Long createdByChemistId;
+    private LocalDateTime createdAt;
+    private boolean isActive; as you can see the gst feild is added new thus complete this 
+
+
+    

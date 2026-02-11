@@ -51,6 +51,9 @@ data class CreateGlobalDrugRequest(
     @SerializedName("hsn_code")
     val hsnCode: String,
 
+    @SerializedName("gst")
+    val gst: Double,
+
     @SerializedName("created_by_chemist_id")
     val createdByChemistId: Long
 )

@@ -346,6 +346,14 @@ private fun DrugFormContent(
             )
         }
 
+        // GST
+        FormTextField(
+            value = formState.gst,
+            onValueChange = { onFormUpdate { form -> form.copy(gst = it) } },
+            label = "GST % *",
+            keyboardType = KeyboardType.Decimal
+        )
+
         // Boolean Switches
         SwitchOption(
             label = "Loose Sale Allowed",
