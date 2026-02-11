@@ -13,7 +13,9 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 import com.example.meditox.models.api.CreateGlobalGeneralFmcgRequest
+import com.example.meditox.models.api.CreateGlobalMedicalDeviceRequest
 import com.example.meditox.models.api.GlobalGeneralFmcgApiResponse
+import com.example.meditox.models.api.GlobalMedicalDeviceApiResponse
 import com.example.meditox.models.sync.GetGlobalCosmeticsResponse
 import com.example.meditox.models.sync.GetGlobalGeneralFmcgResponse
 import com.example.meditox.models.sync.GetGlobalMedicalDevicesResponse
@@ -26,6 +28,11 @@ interface GlobalDataSyncApiService {
     suspend fun createGlobalGeneralFmcg(
         @Body request: CreateGlobalGeneralFmcgRequest
     ): Response<ApiResponse<GlobalGeneralFmcgApiResponse>>
+
+    @POST("api/v3/global/medical-devices/add")
+    suspend fun createGlobalMedicalDevice(
+        @Body request: CreateGlobalMedicalDeviceRequest
+    ): Response<ApiResponse<GlobalMedicalDeviceApiResponse>>
 
     @POST("api/v3/global/drugs/add")
     suspend fun createGlobalDrug(

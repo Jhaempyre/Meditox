@@ -231,21 +231,25 @@ fun AddInventoryBottomSheet(
                     CategoryCard(
                         category = category,
                         onClick = {
-                            if (category.title == "Add Drugs") {
-                                onDismiss()
-                                navController.navigate(Routes.ADD_DRUG_SCREEN)
+                            when (category.title) {
+                                "Add Drugs" -> {
+                                    onDismiss()
+                                    navController.navigate(Routes.ADD_DRUG_SCREEN)
+                                }
+                                "Cosmetic" -> {
+                                    onDismiss()
+                                    navController.navigate(Routes.ADD_COSMETIC_SCREEN)
+                                }
+                                "FMCG" -> {
+                                    onDismiss()
+                                    navController.navigate(Routes.ADD_FMCG_SCREEN)
+                                }
+                                "Device" -> {
+                                    onDismiss()
+                                    navController.navigate(Routes.ADD_MEDICAL_DEVICE_SCREEN)
+                                }
+                                // TODO: Add navigation for Supplement and Surgical
                             }
-                            if (category.title == "Add Drugs") {
-                                onDismiss()
-                                navController.navigate(Routes.ADD_DRUG_SCREEN)
-                            } else if (category.title == "Cosmetic") {
-                                onDismiss()
-                                navController.navigate(Routes.ADD_COSMETIC_SCREEN)
-                            } else if (category.title == "FMCG") {
-                                onDismiss()
-                                navController.navigate(Routes.ADD_FMCG_SCREEN)
-                            }
-                            // TODO: Add navigation for other categories
                         }
                     )
                 }

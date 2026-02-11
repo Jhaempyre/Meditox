@@ -20,4 +20,10 @@ interface GlobalMedicalDeviceDao {
 
     @Query("SELECT COUNT(*) FROM global_medical_device")
     suspend fun getCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(device: GlobalMedicalDeviceEntity)
+
+    @Query("SELECT * FROM global_medical_device WHERE product_name LIKE '%' || :query || '%' OR brand LIKE '%' || :query || '%' ORDER BY product_name ASC")
+    fun searchDevices(query: String): Flow<List<GlobalMedicalDeviceEntity>>
 }
