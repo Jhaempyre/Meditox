@@ -20,4 +20,10 @@ interface GlobalSupplementDao {
 
     @Query("SELECT COUNT(*) FROM global_supplement")
     suspend fun getCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(supplement: GlobalSupplementEntity)
+
+    @Query("SELECT * FROM global_supplement WHERE product_name LIKE '%' || :query || '%' OR brand LIKE '%' || :query || '%' ORDER BY product_name ASC")
+    fun searchSupplements(query: String): Flow<List<GlobalSupplementEntity>>
 }

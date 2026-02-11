@@ -50,6 +50,7 @@ import com.example.meditox.screens.SettingsScreen
 import com.example.meditox.screens.globaldataaddscreen.AddCosmeticScreen
 import com.example.meditox.screens.globaldataaddscreen.AddGeneralFmcgScreen
 import com.example.meditox.screens.globaldataaddscreen.AddMedicalDeviceScreen
+import com.example.meditox.screens.globaldataaddscreen.AddSupplementScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,6 +75,7 @@ object Routes{
     const val ADD_COSMETIC_SCREEN = "globalscreen/addcosmetic"
     const val ADD_FMCG_SCREEN = "globalscreen/addfmcg"
     const val ADD_MEDICAL_DEVICE_SCREEN = "globalscreen/addmedicaldevice"
+    const val ADD_SUPPLEMENT_SCREEN = "globalscreen/addsupplement"
 
     // Helper function to create the route with parameters
     fun settingThingsUp(
@@ -159,6 +161,10 @@ fun AppNavigation() {
 
         composable(Routes.ADD_MEDICAL_DEVICE_SCREEN) {
             AddMedicalDeviceScreen(navController = navController)
+        }
+
+        composable(Routes.ADD_SUPPLEMENT_SCREEN) {
+            AddSupplementScreen(navController = navController)
         }
 
         // NEW: Setting Things Up Screen with navigation arguments

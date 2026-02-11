@@ -248,7 +248,11 @@ fun AddInventoryBottomSheet(
                                     onDismiss()
                                     navController.navigate(Routes.ADD_MEDICAL_DEVICE_SCREEN)
                                 }
-                                // TODO: Add navigation for Supplement and Surgical
+                                "Supplement" -> {
+                                    onDismiss()
+                                    navController.navigate(Routes.ADD_SUPPLEMENT_SCREEN)
+                                }
+                                // TODO: Add navigation for Surgical
                             }
                         }
                     )
