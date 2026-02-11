@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.meditox.Routes
 import com.example.meditox.database.entity.WholesalerEntity
 import com.example.meditox.models.viewModel.WholesalerViewModel
 import com.example.meditox.ui.theme.darkGreen
@@ -78,6 +79,19 @@ fun WholesalerListScreen(navController: NavController) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate(Routes.ADD_WHOLESALER) },
+                containerColor = primaryGreen,
+                contentColor = Color.White,
+                shape = CircleShape
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Wholesaler"
+                )
+            }
+        },
         topBar = {
             Surface(
                 shadowElevation = 4.dp,

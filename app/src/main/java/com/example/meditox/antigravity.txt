@@ -1,0 +1,94 @@
+@RestController
+@RequestMapping("/api/v3/wholesalers")
+public class WholesalerController {
+
+    private final WholesalerService wholesalerService;
+
+    public WholesalerController(WholesalerService wholesalerService) {
+        this.wholesalerService = wholesalerService;
+    }
+
+    @PostMapping("/chemist/{chemist_id}/add")
+    public ResponseEntity<ApiResponseDto<WholesalerResponseDto>> createWholesaler(
+            @PathVariable("chemist_id") Long chemistId,
+            @Valid @RequestBody CreateWholesalerRequest request) {
+
+        WholesalerResponseDto response = wholesalerService.createWholesaler(chemistId, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDto.success("Wholesaler created successfully", response));
+    }
+
+
+    public class CreateWholesalerRequest {
+
+    @NotBlank(message = "Wholesaler name is required")
+    private String wholesaler_name;
+
+    @NotBlank(message = "Contact person is required")
+    private String contact_person;
+
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\+?[0-9\\-\\s]+$", message = "Invalid phone number format")
+    private String phone_number;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotBlank(message = "GSTIN is required")
+    @Size(min = 15, max = 15, message = "GSTIN must be exactly 15 characters")
+    private String gstin;
+
+    @NotBlank(message = "Drug license number is required")
+    private String drug_license_number;
+
+    @NotBlank(message = "State code is required")
+    @Size(min = 2, max = 2, message = "State code must be 2 digits")
+    private String state_code;
+
+    @NotBlank(message = "Address line 1 is required")
+    private String address_line1;
+
+    private String address_line2;
+
+    @NotBlank(message = "City is required")
+    private String city;
+
+    @NotBlank(message = "State is required")
+    private String state;
+
+    @NotBlank(message = "Pincode is required")
+    @Pattern(regexp = "^[0-9]{6}$", message = "Invalid pincode format")
+    private String pincode;
+
+    @NotNull(message = "Credit days is required")
+    @Min(value = 0, message = "Credit days cannot be negative")
+    private Integer credit_days;
+
+    @NotNull(message = "Credit limit is required")
+    @DecimalMin(value = "0.0", message = "Credit limit cannot be negative")
+    private BigDecimal credit_limit;
+
+
+    public class WholesalerResponseDto {
+
+    private Long wholesaler_id;
+    private String wholesaler_name;
+    private String contact_person;
+    private String phone_number;
+    private String email;
+    private String gstin;
+    private String drug_license_number;
+    private String state_code;
+    private String address_line1;
+    private String address_line2;
+    private String city;
+    private String state;
+    private String pincode;
+    private Integer credit_days;
+    private BigDecimal credit_limit;
+    private Boolean is_active;
+    private LocalDateTime created_at;
+    private LocalDateTime updated_at;
+    private Long added_by_chemist_id;
