@@ -1,24 +1,16 @@
-@RestController
-@RequestMapping("/api/v3/wholesalers")
-public class WholesalerController {
-
-    private final WholesalerService wholesalerService;
-
-    public WholesalerController(WholesalerService wholesalerService) {
-        this.wholesalerService = wholesalerService;
+@PutMapping("/{id}")
+    public ResponseEntity<ApiResponseDto<WholesalerResponseDto>> updateWholesaler(
+            @PathVariable Long id,
+            @RequestBody CreateWholesalerRequest request) {
+        WholesalerResponseDto response = wholesalerService.updateWholesaler(id, request);
+        return ResponseEntity.ok(ApiResponseDto.success("Wholesaler updated successfully", response));
     }
 
-    @PostMapping("/chemist/{chemist_id}/add")
-    public ResponseEntity<ApiResponseDto<WholesalerResponseDto>> createWholesaler(
-            @PathVariable("chemist_id") Long chemistId,
-            @Valid @RequestBody CreateWholesalerRequest request) {
-
-        WholesalerResponseDto response = wholesalerService.createWholesaler(chemistId, request);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseDto.success("Wholesaler created successfully", response));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseDto<WholesalerResponseDto>> deleteWholesaler(@PathVariable Long id) {
+        WholesalerResponseDto response = wholesalerService.deleteWholesaler(id);
+        return ResponseEntity.ok(ApiResponseDto.success("Wholesaler deactivated successfully", response));
     }
-
 
     public class CreateWholesalerRequest {
 
@@ -92,3 +84,4 @@ public class WholesalerController {
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
     private Long added_by_chemist_id;
+ see those and thus go ahaed .... also one small question here when you did the post request for adding a new wholesaler from that repsoinse did you update roomdb ??? if yes then respect the roomdb here also from the response coming from the api response

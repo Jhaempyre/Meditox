@@ -8,6 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -77,6 +79,39 @@ fun WholesalerListScreen(navController: NavController) {
     // Bottom sheet state
     var selectedWholesaler by remember { mutableStateOf<WholesalerEntity?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Delete Confirmation
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var wholesalerToDelete by remember { mutableStateOf<WholesalerEntity?>(null) }
+
+    if (showDeleteDialog && wholesalerToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Wholesaler?") },
+            text = { Text("Are you sure you want to delete ${wholesalerToDelete?.wholesalerName}? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        wholesalerToDelete?.let { w ->
+                            viewModel.deleteWholesaler(
+                                wholesalerId = w.wholesalerId,
+                                onSuccess = {
+                                    showDeleteDialog = false
+                                    wholesalerToDelete = null
+                                    selectedWholesaler = null
+                                },
+                                onError = { }
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                ) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -272,6 +307,14 @@ fun WholesalerListScreen(navController: NavController) {
                     data = Uri.parse("tel:$phoneNumber")
                 }
                 context.startActivity(intent)
+            },
+            onEditClick = {
+                navController.navigate("${Routes.ADD_WHOLESALER}?wholesalerId=${wholesaler.wholesalerId}")
+                selectedWholesaler = null
+            },
+            onDeleteClick = {
+                wholesalerToDelete = wholesaler
+                showDeleteDialog = true
             }
         )
     }
@@ -376,7 +419,9 @@ private fun WholesalerDetailBottomSheet(
     wholesaler: WholesalerEntity,
     sheetState: SheetState,
     onDismiss: () -> Unit,
-    onPhoneClick: (String) -> Unit
+    onPhoneClick: (String) -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val initials = getInitials(wholesaler.wholesalerName)
     val avatarColor = getAvatarColor(wholesaler.wholesalerName)
@@ -391,6 +436,7 @@ private fun WholesalerDetailBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(bottom = 32.dp)
         ) {
             // ── Header with avatar + name ──
@@ -568,6 +614,54 @@ private fun WholesalerDetailBottomSheet(
                         label = "Full Address",
                         value = null
                     )
+                }
+            }
+
+            // ── Edit / Delete Buttons ──
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = onEditClick,
+                    shape = RoundedCornerShape(24.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
+                    modifier = Modifier
+                        .height(40.dp)
+                        .padding(end = 12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        tint = Color(0xFF546E7A),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Edit", color = Color(0xFF546E7A), fontSize = 14.sp)
+                }
+
+                OutlinedButton(
+                    onClick = onDeleteClick,
+                    shape = RoundedCornerShape(24.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFEBEE)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFFFFEBEE),
+                        contentColor = Color(0xFFD32F2F)
+                    ),
+                    modifier = Modifier.height(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Delete", color = Color(0xFFD32F2F), fontSize = 14.sp)
                 }
             }
         }

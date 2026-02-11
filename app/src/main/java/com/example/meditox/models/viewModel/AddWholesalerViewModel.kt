@@ -43,6 +43,43 @@ class AddWholesalerViewModel(private val context: Context) : ViewModel() {
     private val _resultMessage = MutableStateFlow<ResultMessage?>(null)
     val resultMessage: StateFlow<ResultMessage?> = _resultMessage.asStateFlow()
 
+    private var currentWholesalerId: Long? = null
+    private val _isEditMode = MutableStateFlow(false)
+    val isEditMode: StateFlow<Boolean> = _isEditMode.asStateFlow()
+
+    fun loadWholesaler(id: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val wholesaler = wholesalerDao.getAllWholesalers().first().find { it.wholesalerId == id }
+                wholesaler?.let {
+                    currentWholesalerId = it.wholesalerId
+                    _isEditMode.value = true
+                    _formState.value = WholesalerFormState(
+                        wholesalerName = it.wholesalerName,
+                        contactPerson = it.contactPerson ?: "",
+                        phoneNumber = it.phoneNumber ?: "",
+                        email = it.email ?: "",
+                        gstin = it.gstin ?: "",
+                        drugLicenseNumber = it.drugLicenseNumber ?: "",
+                        stateCode = it.stateCode ?: "",
+                        addressLine1 = it.addressLine1 ?: "",
+                        addressLine2 = it.addressLine2 ?: "",
+                        city = it.city ?: "",
+                        state = it.state ?: "",
+                        pincode = it.pincode ?: "",
+                        creditDays = it.creditDays?.toString() ?: "",
+                        creditLimit = it.creditLimit?.toString() ?: ""
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading wholesaler", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun updateFormField(update: (WholesalerFormState) -> WholesalerFormState) {
         _formState.value = update(_formState.value)
     }
@@ -64,7 +101,7 @@ class AddWholesalerViewModel(private val context: Context) : ViewModel() {
                 form.creditLimit.toDoubleOrNull() != null
     }
 
-    fun createWholesaler() {
+    fun saveWholesaler() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -90,30 +127,42 @@ class AddWholesalerViewModel(private val context: Context) : ViewModel() {
                     creditLimit = form.creditLimit.toDoubleOrNull() ?: 0.0
                 )
 
-                Log.d(TAG, "Creating wholesaler: ${request.wholesalerName}")
-                val response = apiService.createWholesaler(chemistId, request)
-
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val dto = response.body()?.data
-                    dto?.let {
-                        // Save to local Room DB
-                        wholesalerDao.insert(it.toEntity())
-                        Log.d(TAG, "Wholesaler saved to local DB: ${it.wholesaler_name}")
+                if (currentWholesalerId != null) {
+                    Log.d(TAG, "Updating wholesaler ID: $currentWholesalerId")
+                    val response = apiService.updateWholesaler(currentWholesalerId!!, request)
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        response.body()?.data?.let {
+                            wholesalerDao.update(it.toEntity())
+                            Log.d(TAG, "Wholesaler updated in local DB")
+                        }
+                        _resultMessage.value = ResultMessage(isSuccess = true, message = "Wholesaler updated successfully!")
+                        _formState.value = WholesalerFormState()
+                        currentWholesalerId = null
+                        _isEditMode.value = false
+                    } else {
+                        val errorMsg = response.body()?.message ?: "Failed to update wholesaler"
+                        Log.e(TAG, "API Error: $errorMsg")
+                        _resultMessage.value = ResultMessage(isSuccess = false, message = errorMsg)
                     }
-                    _resultMessage.value = ResultMessage(
-                        isSuccess = true,
-                        message = "Wholesaler created successfully!"
-                    )
-                    // Reset form
-                    _formState.value = WholesalerFormState()
                 } else {
-                    val errorMsg = response.body()?.message ?: "Failed to create wholesaler"
-                    Log.e(TAG, "API Error: $errorMsg")
-                    _resultMessage.value = ResultMessage(isSuccess = false, message = errorMsg)
+                    Log.d(TAG, "Creating wholesaler: ${request.wholesalerName}")
+                    val response = apiService.createWholesaler(chemistId, request)
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        response.body()?.data?.let {
+                            wholesalerDao.insert(it.toEntity())
+                            Log.d(TAG, "Wholesaler saved to local DB")
+                        }
+                        _resultMessage.value = ResultMessage(isSuccess = true, message = "Wholesaler created successfully!")
+                        _formState.value = WholesalerFormState()
+                    } else {
+                        val errorMsg = response.body()?.message ?: "Failed to create wholesaler"
+                        Log.e(TAG, "API Error: $errorMsg")
+                        _resultMessage.value = ResultMessage(isSuccess = false, message = errorMsg)
+                    }
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "Exception creating wholesaler", e)
+                Log.e(TAG, "Exception saving wholesaler", e)
                 _resultMessage.value = ResultMessage(
                     isSuccess = false,
                     message = e.message ?: "Unknown error occurred"

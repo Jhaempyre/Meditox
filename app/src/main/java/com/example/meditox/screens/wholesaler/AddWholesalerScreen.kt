@@ -31,15 +31,22 @@ import com.example.meditox.ui.theme.primaryGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddWholesalerScreen(navController: NavController) {
+fun AddWholesalerScreen(navController: NavController, wholesalerId: Long? = null) {
     val context = LocalContext.current
     val viewModel: AddWholesalerViewModel = viewModel(
         factory = AddWholesalerViewModel.provideFactory(context)
     )
 
+    LaunchedEffect(wholesalerId) {
+        if (wholesalerId != null) {
+            viewModel.loadWholesaler(wholesalerId)
+        }
+    }
+
     val formState by viewModel.formState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val resultMessage by viewModel.resultMessage.collectAsState()
+    val isEditMode by viewModel.isEditMode.collectAsState()
 
     // Handle result messages
     LaunchedEffect(resultMessage) {
@@ -83,7 +90,7 @@ fun AddWholesalerScreen(navController: NavController) {
                             )
                         }
                         Text(
-                            text = "Add Wholesaler",
+                            text = if (isEditMode) "Edit Wholesaler" else "Add Wholesaler",
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -228,9 +235,23 @@ fun AddWholesalerScreen(navController: NavController) {
             }
 
             // ── Submit Button ──
+            val isFormValid = formState.wholesalerName.isNotBlank() &&
+                    formState.contactPerson.isNotBlank() &&
+                    formState.phoneNumber.isNotBlank() &&
+                    formState.email.isNotBlank() &&
+                    formState.gstin.isNotBlank() &&
+                    formState.drugLicenseNumber.isNotBlank() &&
+                    formState.stateCode.isNotBlank() && formState.stateCode.length == 2 &&
+                    formState.addressLine1.isNotBlank() &&
+                    formState.city.isNotBlank() &&
+                    formState.state.isNotBlank() &&
+                    formState.pincode.isNotBlank() && formState.pincode.length == 6 &&
+                    formState.creditDays.toIntOrNull() != null &&
+                    formState.creditLimit.toDoubleOrNull() != null
+
             Button(
-                onClick = { viewModel.createWholesaler() },
-                enabled = viewModel.isFormValid() && !isLoading,
+                onClick = { viewModel.saveWholesaler() },
+                enabled = isFormValid && !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -255,7 +276,7 @@ fun AddWholesalerScreen(navController: NavController) {
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add Wholesaler", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(if (isEditMode) "Update Wholesaler" else "Add Wholesaler", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 

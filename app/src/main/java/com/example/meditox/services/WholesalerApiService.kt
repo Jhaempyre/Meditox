@@ -6,8 +6,10 @@ import com.example.meditox.models.wholesaler.GetWholesalersResponse
 import com.example.meditox.models.wholesaler.WholesalerResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -28,5 +30,16 @@ interface WholesalerApiService {
     suspend fun createWholesaler(
         @Path("chemistId") chemistId: Long,
         @Body request: CreateWholesalerRequest
+    ): Response<ApiResponse<WholesalerResponseDto>>
+
+    @PUT("api/v3/wholesalers/{id}")
+    suspend fun updateWholesaler(
+        @Path("id") id: Long,
+        @Body request: CreateWholesalerRequest
+    ): Response<ApiResponse<WholesalerResponseDto>>
+
+    @DELETE("api/v3/wholesalers/{id}")
+    suspend fun deleteWholesaler(
+        @Path("id") id: Long
     ): Response<ApiResponse<WholesalerResponseDto>>
 }

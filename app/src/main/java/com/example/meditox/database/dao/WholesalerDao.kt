@@ -15,6 +15,12 @@ interface WholesalerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(wholesaler: WholesalerEntity)
 
+    @androidx.room.Update
+    suspend fun update(wholesaler: WholesalerEntity)
+
+    @Query("DELETE FROM wholesaler WHERE wholesaler_id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("DELETE FROM wholesaler")
     suspend fun deleteAll()
 

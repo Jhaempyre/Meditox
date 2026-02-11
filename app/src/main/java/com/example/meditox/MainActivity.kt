@@ -181,8 +181,20 @@ fun AppNavigation() {
             WholesalerListScreen(navController = navController)
         }
 
-        composable(Routes.ADD_WHOLESALER) {
-            AddWholesalerScreen(navController = navController)
+        composable(
+            route = "${Routes.ADD_WHOLESALER}?wholesalerId={wholesalerId}",
+            arguments = listOf(
+                navArgument("wholesalerId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) { backStackEntry ->
+            val wholesalerId = backStackEntry.arguments?.getLong("wholesalerId") ?: -1L
+            AddWholesalerScreen(
+                navController = navController,
+                wholesalerId = if (wholesalerId != -1L) wholesalerId else null
+            )
         }
 
         // NEW: Setting Things Up Screen with navigation arguments

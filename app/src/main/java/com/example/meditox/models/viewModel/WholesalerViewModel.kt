@@ -57,4 +57,22 @@ class WholesalerViewModel(context: Context) : ViewModel() {
             _searchQuery.value = ""
         }
     }
+
+    private val apiService = com.example.meditox.services.ApiClient.createWholesalerApiService(context)
+
+    fun deleteWholesaler(wholesalerId: Long, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.deleteWholesaler(wholesalerId)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    wholesalerDao.deleteById(wholesalerId)
+                    onSuccess()
+                } else {
+                    onError(response.body()?.message ?: "Failed to delete wholesaler")
+                }
+            } catch (e: Exception) {
+                onError(e.message ?: "Error deleting wholesaler")
+            }
+        }
+    }
 }
