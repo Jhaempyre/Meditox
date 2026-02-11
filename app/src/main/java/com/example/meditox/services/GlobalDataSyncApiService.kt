@@ -1,6 +1,8 @@
 package com.example.meditox.services
 
 import com.example.meditox.models.ApiResponse
+import com.example.meditox.models.GlobalChemist.CreateGlobalCosmeticRequest
+import com.example.meditox.models.GlobalChemist.GlobalCosmeticApiResponse
 import com.example.meditox.models.sync.GetGlobalDrugsResponse
 import com.example.meditox.models.GlobalDrug.CreateGlobalDrugRequest
 import com.example.meditox.models.GlobalDrug.GlobalDrugApiResponse
@@ -12,6 +14,11 @@ import retrofit2.http.Query
 
 import com.example.meditox.models.api.CreateGlobalGeneralFmcgRequest
 import com.example.meditox.models.api.GlobalGeneralFmcgApiResponse
+import com.example.meditox.models.sync.GetGlobalCosmeticsResponse
+import com.example.meditox.models.sync.GetGlobalGeneralFmcgResponse
+import com.example.meditox.models.sync.GetGlobalMedicalDevicesResponse
+import com.example.meditox.models.sync.GetGlobalSupplementsResponse
+import com.example.meditox.models.sync.GetGlobalSurgicalConsumablesResponse
 
 interface GlobalDataSyncApiService {
 
@@ -27,8 +34,8 @@ interface GlobalDataSyncApiService {
 
     @POST("api/v3/global/cosmetics/add")
     suspend fun createGlobalCosmetic(
-        @Body request: com.example.meditox.models.GlobalChemist.CreateGlobalCosmeticRequest
-    ): Response<ApiResponse<com.example.meditox.models.GlobalChemist.GlobalCosmeticApiResponse>>
+        @Body request: CreateGlobalCosmeticRequest
+    ): Response<ApiResponse<GlobalCosmeticApiResponse>>
     
     @GET("api/v3/global/drugs")
     suspend fun getGlobalDrugs(
@@ -52,7 +59,7 @@ interface GlobalDataSyncApiService {
         @Query("brand") brand: String? = null,
         @Query("sort_by") sortBy: String = "productName",
         @Query("sort_order") sortOrder: String = "asc"
-    ): Response<ApiResponse<com.example.meditox.models.sync.GetGlobalCosmeticsResponse>>
+    ): Response<ApiResponse<GetGlobalCosmeticsResponse>>
 
     @GET("api/v3/global/fmcg")
     suspend fun getGlobalGeneralFmcg(
@@ -64,7 +71,7 @@ interface GlobalDataSyncApiService {
         @Query("brand") brand: String? = null,
         @Query("sort_by") sortBy: String = "productName",
         @Query("sort_order") sortOrder: String = "asc"
-    ): Response<ApiResponse<com.example.meditox.models.sync.GetGlobalGeneralFmcgResponse>>
+    ): Response<ApiResponse<GetGlobalGeneralFmcgResponse>>
 
     @GET("api/v3/global/medical-devices")
     suspend fun getGlobalMedicalDevices(
@@ -76,7 +83,7 @@ interface GlobalDataSyncApiService {
         @Query("brand") brand: String? = null,
         @Query("sort_by") sortBy: String = "productName",
         @Query("sort_order") sortOrder: String = "asc"
-    ): Response<ApiResponse<com.example.meditox.models.sync.GetGlobalMedicalDevicesResponse>>
+    ): Response<ApiResponse<GetGlobalMedicalDevicesResponse>>
 
     @GET("api/v3/global/supplements")
     suspend fun getGlobalSupplements(
@@ -88,7 +95,7 @@ interface GlobalDataSyncApiService {
         @Query("brand") brand: String? = null,
         @Query("sort_by") sortBy: String = "productName",
         @Query("sort_order") sortOrder: String = "asc"
-    ): Response<ApiResponse<com.example.meditox.models.sync.GetGlobalSupplementsResponse>>
+    ): Response<ApiResponse<GetGlobalSupplementsResponse>>
 
     @GET("api/v3/global/surgical-consumables")
     suspend fun getGlobalSurgicalConsumables(
@@ -100,5 +107,5 @@ interface GlobalDataSyncApiService {
         @Query("brand") brand: String? = null,
         @Query("sort_by") sortBy: String = "productName",
         @Query("sort_order") sortOrder: String = "asc"
-    ): Response<ApiResponse<com.example.meditox.models.sync.GetGlobalSurgicalConsumablesResponse>>
+    ): Response<ApiResponse<GetGlobalSurgicalConsumablesResponse>>
 }

@@ -46,6 +46,9 @@ import com.example.meditox.models.viewModel.SyncViewModel
 import com.example.meditox.models.viewModel.SyncViewModel.Companion.provideFactory
 import com.example.meditox.screens.EditShopDetailsScreen
 import com.example.meditox.screens.SettingThingsUpScreen
+import com.example.meditox.screens.SettingsScreen
+import com.example.meditox.screens.globaldataaddscreen.AddCosmeticScreen
+import com.example.meditox.screens.globaldataaddscreen.AddGeneralFmcgScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -137,7 +140,7 @@ fun AppNavigation() {
             val syncViewModel: SyncViewModel = viewModel(
                 factory = provideFactory(LocalContext.current)
             )
-            com.example.meditox.screens.SettingsScreen(navController = navController, syncViewModel = syncViewModel)
+            SettingsScreen(navController = navController, syncViewModel = syncViewModel)
         }
 
         composable(Routes.ADD_DRUG_SCREEN) {
@@ -145,11 +148,11 @@ fun AppNavigation() {
         }
 
         composable(Routes.ADD_COSMETIC_SCREEN) {
-            com.example.meditox.screens.globaldataaddscreen.AddCosmeticScreen(navController = navController)
+            AddCosmeticScreen(navController = navController)
         }
 
         composable(Routes.ADD_FMCG_SCREEN) {
-            com.example.meditox.screens.globaldataaddscreen.AddGeneralFmcgScreen(navController = navController)
+            AddGeneralFmcgScreen(navController = navController)
         }
 
         // NEW: Setting Things Up Screen with navigation arguments
