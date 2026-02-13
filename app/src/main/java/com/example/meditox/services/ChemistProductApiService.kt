@@ -1,6 +1,8 @@
 package com.example.meditox.services
 
 import com.example.meditox.models.ApiResponse
+import com.example.meditox.models.chemist.AddStockRequest
+import com.example.meditox.models.chemist.AddStockResponse
 import com.example.meditox.models.chemist.AddProductToCatalogRequest
 import com.example.meditox.models.chemist.ChemistProductResponse
 import com.example.meditox.models.chemist.GetStockListResponse
@@ -31,6 +33,12 @@ interface ChemistProductApiService {
         @Path("chemistId") chemistId: Long,
         @Body request: AddProductToCatalogRequest
     ): Response<ApiResponse<ChemistProductResponse>>
+
+    @POST("api/v3/chemist/{chemistId}/stock/add")
+    suspend fun addStock(
+        @Path("chemistId") chemistId: Long,
+        @Body request: AddStockRequest
+    ): Response<ApiResponse<AddStockResponse>>
 
     @GET("api/v3/chemist/{chemistId}/stock")
     suspend fun getChemistStock(

@@ -1,0 +1,90 @@
+@RequestMapping("/api/v3/chemist")
+public class ChemistProductController {
+
+        private final ChemistProductService chemistProductService;
+        private final StockService stockService;
+
+        public ChemistProductController(ChemistProductService chemistProductService, StockService stockService) {
+                this.chemistProductService = chemistProductService;
+                this.stockService = stockService;
+        }
+
+
+        @PostMapping("/{chemistId}/stock/add")
+                public ResponseEntity<ApiResponseDto<AddStockResponse>> addStock(
+                                @PathVariable Long chemistId,
+                                @Valid @RequestBody AddStockRequest request) {
+                        try {
+                                AddStockResponse response = stockService.addStock(chemistId, request);
+                                return ResponseEntity.status(HttpStatus.CREATED)
+                                                .body(ApiResponseDto.success("Stock added successfully", response));
+                        } catch (IllegalArgumentException e) {
+                                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                                .body(new ApiResponseDto<>(false, e.getMessage(), null));
+                        } catch (Exception e) {
+                                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                                .body(new ApiResponseDto<>(false, "Failed to add stock: " + e.getMessage(),
+                                                                null));
+                        }
+                }
+
+
+
+                public class AddStockResponse {
+                    private Long batchStockId;
+                    private Long chemistProductId;
+                    private Long wholesalerId;
+                    private String wholesalerName;
+                    private String productName;
+                    private String batchNumber;
+                    private Integer quantityAdded;
+                    private Integer totalStock;
+                    private BigDecimal purchasePrice;
+                    private String expiryDate;
+                    private LocalDateTime addedAt;
+
+
+
+                    public class AddStockRequest {
+                        private Long chemistProductId;
+                        private Long wholesalerId;
+                        private String batchNumber;
+                        private Integer quantity;
+                        private BigDecimal purchasePrice;
+                        private String expiryDate; // Format: YYYY-MM-DD
+                        private String mfgDate; // Format: YYYY-MM-DD
+                        private BigDecimal mrp;
+                        private BigDecimal sellingPrice;
+
+
+
+                        {
+                            "chemistProductId": 1,
+                            "wholesalerId": 1,
+                            "batchNumber": "BATCH-2026-001",
+                            "quantity": 100,
+                            "purchasePrice": 45.50,
+                            "expiryDate": "2027-06-01",
+                            "mfgDate": "2026-01-15",
+                            "mrp": 65.00,
+                            "sellingPrice": 58.75
+                        }
+
+
+{
+    "success": true,
+    "message": "Stock added successfully",
+    "data": {
+        "addedAt": "2026-02-13T18:41:06.716317669",
+        "batchNumber": "BATCH-2026-001",
+        "batchStockId": 1,
+        "chemistProductId": 1,
+        "expiryDate": "2027-06-01",
+        "productName": "Panloc",
+        "purchasePrice": 45.50,
+        "quantityAdded": 100,
+        "totalStock": 100,
+        "wholesalerId": 1,
+        "wholesalerName": "Reddy Pharma Traders"
+    }
+}
