@@ -112,7 +112,7 @@ fun AddReleaseScreen(navController: NavController) {
                 title = "Update Stock",
                 description = "Update existing medicine stock quantities",
                 icon = Icons.Default.Edit,
-                onClick = { navController.navigate("update_stock") }
+                onClick = { navController.navigate(Routes.UPDATE_STOCK) }
             )
         }
 

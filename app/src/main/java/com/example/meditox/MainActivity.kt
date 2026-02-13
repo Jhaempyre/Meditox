@@ -82,6 +82,7 @@ object Routes{
     const val ADD_SURGICAL_CONSUMABLE_SCREEN = "globalscreen/addsurgicalconsumable"
     const val WHOLESALER_LIST = "whole_seller"
     const val ADD_WHOLESALER = "add_wholesaler"
+    const val UPDATE_STOCK = "update_stock"
 
     // Helper function to create the route with parameters
     fun settingThingsUp(
@@ -225,6 +226,10 @@ fun AppNavigation() {
                 accessToken = accessToken,
                 refreshToken = refreshToken
             )
+        }
+
+        composable(Routes.UPDATE_STOCK) {
+            com.example.meditox.screens.addrelease.UpdateStockScreen(navController = navController)
         }
     }
 }
