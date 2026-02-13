@@ -30,6 +30,9 @@ interface WholesalerDao {
     @Query("SELECT * FROM wholesaler WHERE added_by_chemist_id = :chemistId")
     fun getWholesalersByChemistId(chemistId: Long): Flow<List<WholesalerEntity>>
 
+    @Query("SELECT * FROM wholesaler WHERE wholesaler_id = :id LIMIT 1")
+    suspend fun getById(id: Long): WholesalerEntity?
+
     @Query("SELECT COUNT(*) FROM wholesaler")
     suspend fun getCount(): Int
 }

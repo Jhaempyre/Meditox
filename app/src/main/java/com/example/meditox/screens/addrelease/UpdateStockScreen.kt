@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import android.widget.Toast
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.meditox.database.MeditoxDatabase
 import com.example.meditox.enums.StockMonth
 import com.example.meditox.enums.StockYear
 import com.example.meditox.models.chemist.AddStockRequest
@@ -56,6 +57,10 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
     val addStockSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showAddStockSheet by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<ProductUiModel?>(null) }
+    val wholesalerName by produceState<String?>(initialValue = null, wholesalerId) {
+        val wholesaler = MeditoxDatabase.getDatabase(context).wholesalerDao().getById(wholesalerId)
+        value = wholesaler?.wholesalerName
+    }
 
     // Filter Menu State
     var showFilterMenu by remember { mutableStateOf(false) }
@@ -92,6 +97,7 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                 sheetState = addStockSheetState,
                 product = selectedProduct!!,
                 wholesalerId = wholesalerId,
+                wholesalerName = wholesalerName,
                 isLoading = isAddingStock,
                 result = addStockResult,
                 onDismiss = {
@@ -125,6 +131,7 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                 placeholder = {
                     Text("Search products...", color = Color.Gray)
                 },
+
                 leadingIcon = {
                     Icon(
                         Icons.Default.Search,
@@ -138,7 +145,8 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Clear",
-                                tint = Color.Gray
+                                tint = Color.Gray,
+
                             )
                         }
                     }
@@ -349,6 +357,7 @@ private fun AddStockBottomSheet(
     sheetState: SheetState,
     product: ProductUiModel,
     wholesalerId: Long,
+    wholesalerName: String?,
     isLoading: Boolean,
     result: AddStockResult?,
     onDismiss: () -> Unit,
@@ -395,6 +404,18 @@ private fun AddStockBottomSheet(
         containerColor = Color.White,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
+        val fieldShape = RoundedCornerShape(10.dp)
+        val fieldColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = primaryGreen,
+            unfocusedBorderColor = primaryGreen,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black,
+            disabledTextColor = Color.Black,
+            disabledLabelColor = Color.Black,
+            cursorColor = Color.Black
+        )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -414,22 +435,28 @@ private fun AddStockBottomSheet(
                 onValueChange = {},
                 label = { Text("Product") },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = false
+                enabled = false,
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             OutlinedTextField(
-                value = wholesalerId.toString(),
+                value = wholesalerName ?: "Wholesaler #$wholesalerId",
                 onValueChange = {},
-                label = { Text("Wholesaler ID") },
+                label = { Text("Wholesaler") },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = false
+                enabled = false,
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             OutlinedTextField(
                 value = batchNumber,
                 onValueChange = { batchNumber = it },
                 label = { Text("Batch Number") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             OutlinedTextField(
@@ -437,7 +464,9 @@ private fun AddStockBottomSheet(
                 onValueChange = { quantity = it },
                 label = { Text("Quantity") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             OutlinedTextField(
@@ -445,7 +474,9 @@ private fun AddStockBottomSheet(
                 onValueChange = { purchasePrice = it },
                 label = { Text("Purchase Price") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             DateSelectorRow(
@@ -455,7 +486,9 @@ private fun AddStockBottomSheet(
                 month = mfgMonth,
                 onMonthChange = { mfgMonth = it },
                 year = mfgYear,
-                onYearChange = { mfgYear = it }
+                onYearChange = { mfgYear = it },
+                fieldShape = fieldShape,
+                fieldColors = fieldColors
             )
 
             DateSelectorRow(
@@ -465,7 +498,9 @@ private fun AddStockBottomSheet(
                 month = expMonth,
                 onMonthChange = { expMonth = it },
                 year = expYear,
-                onYearChange = { expYear = it }
+                onYearChange = { expYear = it },
+                fieldShape = fieldShape,
+                fieldColors = fieldColors
             )
 
             OutlinedTextField(
@@ -473,7 +508,9 @@ private fun AddStockBottomSheet(
                 onValueChange = { mrp = it },
                 label = { Text("MRP") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             OutlinedTextField(
@@ -481,7 +518,9 @@ private fun AddStockBottomSheet(
                 onValueChange = { sellingPrice = it },
                 label = { Text("Selling Price") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                shape = fieldShape,
+                colors = fieldColors
             )
 
             Button(
@@ -527,6 +566,7 @@ private fun AddStockBottomSheet(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DateSelectorRow(
     label: String,
@@ -535,7 +575,9 @@ private fun DateSelectorRow(
     month: StockMonth,
     onMonthChange: (StockMonth) -> Unit,
     year: StockYear,
-    onYearChange: (StockYear) -> Unit
+    onYearChange: (StockYear) -> Unit,
+    fieldShape: RoundedCornerShape,
+    fieldColors: TextFieldColors
 ) {
     var showMonthMenu by remember { mutableStateOf(false) }
     var showYearMenu by remember { mutableStateOf(false) }
@@ -552,26 +594,31 @@ private fun DateSelectorRow(
                 onValueChange = onDayChange,
                 label = { Text("Day") },
                 modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                shape = fieldShape,
+                colors = fieldColors
             )
 
-            Box(modifier = Modifier.weight(1f)) {
+            ExposedDropdownMenuBox(
+                expanded = showMonthMenu,
+                onExpandedChange = { showMonthMenu = it },
+                modifier = Modifier.weight(1f)
+            ) {
                 OutlinedTextField(
                     value = month.label,
                     onValueChange = {},
                     label = { Text("Month") },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showMonthMenu = true },
+                        .menuAnchor()
+                        .fillMaxWidth(),
                     readOnly = true,
-                    trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Month")
-                    }
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showMonthMenu) },
+                    shape = fieldShape,
+                    colors = fieldColors
                 )
-                DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = showMonthMenu,
-                    onDismissRequest = { showMonthMenu = false },
-                    modifier = Modifier.background(Color.White)
+                    onDismissRequest = { showMonthMenu = false }
                 ) {
                     StockMonth.values().forEach { option ->
                         DropdownMenuItem(
@@ -585,23 +632,26 @@ private fun DateSelectorRow(
                 }
             }
 
-            Box(modifier = Modifier.weight(1f)) {
+            ExposedDropdownMenuBox(
+                expanded = showYearMenu,
+                onExpandedChange = { showYearMenu = it },
+                modifier = Modifier.weight(1f)
+            ) {
                 OutlinedTextField(
                     value = year.year.toString(),
                     onValueChange = {},
                     label = { Text("Year") },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showYearMenu = true },
+                        .menuAnchor()
+                        .fillMaxWidth(),
                     readOnly = true,
-                    trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Year")
-                    }
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showYearMenu) },
+                    shape = fieldShape,
+                    colors = fieldColors
                 )
-                DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = showYearMenu,
-                    onDismissRequest = { showYearMenu = false },
-                    modifier = Modifier.background(Color.White)
+                    onDismissRequest = { showYearMenu = false }
                 ) {
                     StockYear.values().forEach { option ->
                         DropdownMenuItem(
