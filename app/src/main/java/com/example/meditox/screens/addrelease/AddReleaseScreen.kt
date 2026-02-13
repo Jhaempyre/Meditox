@@ -4,13 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Edit
-
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,15 +27,56 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.meditox.Routes
+import com.example.meditox.database.entity.WholesalerEntity
+import com.example.meditox.models.viewModel.WholesalerViewModel
 import com.example.meditox.ui.theme.primaryGreen
+import kotlin.math.absoluteValue
+
+// Predefined avatar colors — vibrant and distinct
+private val avatarColors = listOf(
+    Color(0xFF1B5E20), // Dark Green
+    Color(0xFF0D47A1), // Dark Blue
+    Color(0xFF4A148C), // Deep Purple
+    Color(0xFFBF360C), // Deep Orange
+    Color(0xFF006064), // Dark Teal
+    Color(0xFF880E4F), // Dark Pink
+    Color(0xFF33691E), // Lime Dark
+    Color(0xFF4E342E), // Brown
+    Color(0xFF1A237E), // Indigo
+    Color(0xFFE65100), // Orange
+)
+
+private fun getInitials(name: String): String {
+    return name
+        .split(" ")
+        .take(2)
+        .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+        .joinToString("")
+        .ifEmpty { "W" }
+}
+
+private fun getAvatarColor(name: String): Color {
+    return avatarColors[name.hashCode().absoluteValue % avatarColors.size]
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReleaseScreen(navController: NavController) {
     var showAddMedicineSheet by remember { mutableStateOf(false) }
     val addMedicineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Wholesaler Selection Logic
+    var showWholesalerSheet by remember { mutableStateOf(false) }
+    val wholesalerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
+    val wholesalerViewModel: WholesalerViewModel = viewModel(
+        factory = WholesalerViewModel.provideFactory(context)
+    )
+    val wholesalers by wholesalerViewModel.wholesalers.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -112,7 +153,7 @@ fun AddReleaseScreen(navController: NavController) {
                 title = "Update Stock",
                 description = "Update existing medicine stock quantities",
                 icon = Icons.Default.Edit,
-                onClick = { navController.navigate(Routes.UPDATE_STOCK) }
+                onClick = { showWholesalerSheet = true }
             )
         }
 
@@ -152,6 +193,122 @@ fun AddReleaseScreen(navController: NavController) {
             sheetState = addMedicineSheetState,
             navController = navController
         )
+    }
+
+    if (showWholesalerSheet) {
+        WholesalerSelectionBottomSheet(
+            wholesalers = wholesalers,
+            onDismiss = { showWholesalerSheet = false },
+            sheetState = wholesalerSheetState,
+            onWholesalerSelected = { wholesalerId ->
+                showWholesalerSheet = false
+                navController.navigate("${Routes.UPDATE_STOCK}/$wholesalerId")
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WholesalerSelectionBottomSheet(
+    wholesalers: List<WholesalerEntity>,
+    onDismiss: () -> Unit,
+    sheetState: SheetState,
+    onWholesalerSelected: (Long) -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp)
+        ) {
+            Text(
+                text = "Select Wholesaler",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+            )
+            
+            if (wholesalers.isEmpty()) {
+                 Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No wholesalers found",
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    items(wholesalers) { wholesaler ->
+                        WholesalerSelectionItem(
+                            wholesaler = wholesaler,
+                            onClick = { onWholesalerSelected(wholesaler.wholesalerId) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WholesalerSelectionItem(
+    wholesaler: WholesalerEntity,
+    onClick: () -> Unit
+) {
+    val initials = getInitials(wholesaler.wholesalerName)
+    val avatarColor = getAvatarColor(wholesaler.wholesalerName)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(avatarColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = initials,
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = wholesaler.wholesalerName,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+            wholesaler.city?.let { city ->
+                Text(
+                    text = city,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+        }
     }
 }
 

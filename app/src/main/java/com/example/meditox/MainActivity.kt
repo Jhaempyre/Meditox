@@ -228,8 +228,17 @@ fun AppNavigation() {
             )
         }
 
-        composable(Routes.UPDATE_STOCK) {
-            com.example.meditox.screens.addrelease.UpdateStockScreen(navController = navController)
+        composable(
+            route = "${Routes.UPDATE_STOCK}/{wholesalerId}",
+            arguments = listOf(
+                navArgument("wholesalerId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val wholesalerId = backStackEntry.arguments?.getLong("wholesalerId") ?: -1L
+            com.example.meditox.screens.addrelease.UpdateStockScreen(
+                navController = navController,
+                wholesalerId = wholesalerId
+            )
         }
     }
 }

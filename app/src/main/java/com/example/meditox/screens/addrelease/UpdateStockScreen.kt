@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpdateStockScreen(navController: NavController) {
+fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,7 +32,7 @@ fun UpdateStockScreen(navController: NavController) {
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Text("Update Stock Screen")
+            Text("Update Stock Screen for Wholesaler ID: $wholesalerId")
         }
     }
 }
