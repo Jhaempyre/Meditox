@@ -122,7 +122,7 @@ class UpdateStockViewModel(context: Context) : ViewModel() {
                                 ProductUiModel(
                                     chemistProductId = product.chemistProductId,
                                     name = it.productName,
-                                    strength = it.variant.ifBlank { "..." },
+                                    strength = "...",
                                     genericName = it.brand.ifBlank { "..." },
                                     category = "Cosmetic"
                                 )
