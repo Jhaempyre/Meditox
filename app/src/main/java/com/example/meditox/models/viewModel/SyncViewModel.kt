@@ -80,8 +80,9 @@ class SyncViewModel(private val context: Context) : ViewModel() {
             val surgicalCount = repository.getLocalSurgicalCount()
             val chemistProductCount = repository.getLocalChemistProductCount()
             val wholesalerCount = repository.getLocalWholesalerCount()
+            val batchStockCount = repository.getLocalBatchStockCount()
             
-            Timber.tag(TAG).d("Local counts: Drugs=$count, Cosmetic=$cosmeticCount, FMCG=$fmcgCount, Device=$deviceCount, Supp=$supplementCount, Surg=$surgicalCount, Chemist=$chemistProductCount, Wholesaler=$wholesalerCount")
+            Timber.tag(TAG).d("Local counts: Drugs=$count, Cosmetic=$cosmeticCount, FMCG=$fmcgCount, Device=$deviceCount, Supp=$supplementCount, Surg=$surgicalCount, Chemist=$chemistProductCount, Wholesaler=$wholesalerCount, BatchStock=$batchStockCount")
             
             _syncState.update { 
                 it.copy(
@@ -92,7 +93,8 @@ class SyncViewModel(private val context: Context) : ViewModel() {
                     localSupplementCount = supplementCount,
                     localSurgicalCount = surgicalCount,
                     localChemistProductCount = chemistProductCount,
-                    localWholesalerCount = wholesalerCount
+                    localWholesalerCount = wholesalerCount,
+                    localBatchStockCount = batchStockCount
                 ) 
             }
         }
@@ -205,5 +207,6 @@ data class SyncState(
     val localSupplementCount: Int = 0,
     val localSurgicalCount: Int = 0,
     val localChemistProductCount: Int = 0,
-    val localWholesalerCount: Int = 0
+    val localWholesalerCount: Int = 0,
+    val localBatchStockCount: Int = 0
 )

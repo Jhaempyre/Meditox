@@ -24,6 +24,7 @@ class SyncRepository(
     private val globalSurgicalConsumableDao = database.globalSurgicalConsumableDao()
     private val chemistProductMasterDao = database.chemistProductMasterDao()
     private val wholesalerDao = database.wholesalerDao()
+    private val chemistBatchStockDao = database.chemistBatchStockDao()
     
     companion object {
         private const val TAG = "SyncRepository"
@@ -514,6 +515,103 @@ class SyncRepository(
     }
 
     /**
+     * Sync Chemist Batch Stock from server to local database
+     */
+    suspend fun syncChemistBatchStock(
+        chemistId: Long,
+        onProgress: suspend (current: Int, total: Int, page: Int, totalPages: Int) -> Unit
+    ): Result<SyncResult> = withContext(Dispatchers.IO) {
+        Timber.tag(TAG).d("🔄 Starting Chemist Batch Stock sync for chemistId=$chemistId")
+
+        var currentPage = 1
+        var totalSynced = 0
+        var totalRecords = 0
+        var totalPages = 0
+
+        try {
+            Timber.tag(TAG).d("📥 Fetching batch stock page $currentPage")
+            val firstResponse = chemistProductApiService.getChemistStock(
+                chemistId = chemistId,
+                page = currentPage,
+                limit = PAGE_SIZE
+            )
+
+            if (!firstResponse.isSuccessful) {
+                val errorMsg = "API call failed: ${firstResponse.code()} - ${firstResponse.message()}"
+                Timber.tag(TAG).e(errorMsg)
+                return@withContext Result.failure(Exception(errorMsg))
+            }
+
+            val firstBody = firstResponse.body()
+            if (firstBody == null || !firstBody.success) {
+                val errorMsg = "Invalid response body or success=false"
+                Timber.tag(TAG).e(errorMsg)
+                return@withContext Result.failure(Exception(errorMsg))
+            }
+
+            val firstData = firstBody.data
+            totalRecords = firstData.pagination.total_records
+            totalPages = firstData.pagination.total_pages
+
+            Timber.tag(TAG).d("📊 Total batch stock: $totalRecords, Total pages: $totalPages")
+
+            val firstEntities = firstData.stock_entries.map { it.toEntity(chemistId) }
+            chemistBatchStockDao.insertAll(firstEntities)
+            totalSynced += firstEntities.size
+
+            Timber.tag(TAG).d("✅ Page $currentPage synced: ${firstEntities.size} records")
+            onProgress(totalSynced, totalRecords, currentPage, totalPages)
+
+            currentPage++
+            while (currentPage <= totalPages) {
+                Timber.tag(TAG).d("📥 Fetching batch stock page $currentPage of $totalPages")
+
+                val response = chemistProductApiService.getChemistStock(
+                    chemistId = chemistId,
+                    page = currentPage,
+                    limit = PAGE_SIZE
+                )
+
+                if (!response.isSuccessful) {
+                    val errorMsg = "Page $currentPage failed: ${response.code()}"
+                    Timber.tag(TAG).e(errorMsg)
+                    return@withContext Result.failure(Exception(errorMsg))
+                }
+
+                val body = response.body()
+                if (body == null || !body.success) {
+                    val errorMsg = "Invalid response for page $currentPage"
+                    Timber.tag(TAG).e(errorMsg)
+                    return@withContext Result.failure(Exception(errorMsg))
+                }
+
+                val entities = body.data.stock_entries.map { it.toEntity(chemistId) }
+                chemistBatchStockDao.insertAll(entities)
+                totalSynced += entities.size
+
+                Timber.tag(TAG).d("✅ Page $currentPage synced: ${entities.size} records")
+                onProgress(totalSynced, totalRecords, currentPage, totalPages)
+
+                currentPage++
+            }
+
+            val finalCount = chemistBatchStockDao.getCount()
+            Timber.tag(TAG).d("🎉 Batch Stock sync completed! Total in DB: $finalCount")
+
+            Result.success(
+                SyncResult(
+                    totalRecords = totalSynced,
+                    totalPages = totalPages,
+                    success = true
+                )
+            )
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "❌ Batch Stock sync failed")
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Sync Wholesalers by Chemist from server to local database
      */
     suspend fun syncWholesalers(
@@ -667,6 +765,12 @@ class SyncRepository(
     suspend fun getLocalChemistProductCount(): Int = withContext(Dispatchers.IO) {
         val count = chemistProductMasterDao.getCount()
         Timber.tag(TAG).d("Local chemist product count: $count")
+        count
+    }
+
+    suspend fun getLocalBatchStockCount(): Int = withContext(Dispatchers.IO) {
+        val count = chemistBatchStockDao.getCount()
+        Timber.tag(TAG).d("Local batch stock count: $count")
         count
     }
 }

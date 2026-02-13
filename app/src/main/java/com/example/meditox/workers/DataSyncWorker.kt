@@ -259,7 +259,51 @@ class DataSyncWorker(
                 )
             }
 
-            // 8. Sync Wholesalers
+            // 8. Sync Batch Stock
+            var batchStockResult: kotlin.Result<SyncResult>? = null
+            if (chemistId != null) {
+                Timber.tag(TAG).d("📊 Starting Batch Stock sync")
+                setProgress(
+                    workDataOf(
+                        PROGRESS_TABLE to "Batch Stock",
+                        PROGRESS_STATUS to "Syncing Batch Stock...",
+                        PROGRESS_CURRENT to 0,
+                        PROGRESS_TOTAL to 0
+                    )
+                )
+
+                batchStockResult = repository.syncChemistBatchStock(chemistId) { current, total, page, totalPages ->
+                    setProgress(
+                        workDataOf(
+                            PROGRESS_TABLE to "Batch Stock",
+                            PROGRESS_STATUS to "Syncing...",
+                            PROGRESS_CURRENT to current,
+                            PROGRESS_TOTAL to total,
+                            PROGRESS_PAGE to page,
+                            PROGRESS_TOTAL_PAGES to totalPages
+                        )
+                    )
+                }
+
+                if (batchStockResult!!.isSuccess) {
+                    totalSyncedRecords += batchStockResult!!.getOrNull()!!.totalRecords
+                    Timber.tag(TAG).d("✅ Batch Stock sync successful")
+                } else {
+                    Timber.tag(TAG).e(batchStockResult!!.exceptionOrNull(), "❌ Batch Stock sync failed")
+                }
+            } else {
+                Timber.tag(TAG).w("⚠️ Chemist ID missing; skipping batch stock sync")
+                setProgress(
+                    workDataOf(
+                        PROGRESS_TABLE to "Batch Stock",
+                        PROGRESS_STATUS to "Skipped: missing chemist ID",
+                        PROGRESS_CURRENT to 0,
+                        PROGRESS_TOTAL to 0
+                    )
+                )
+            }
+
+            // 9. Sync Wholesalers
             var wholesalersResult: kotlin.Result<SyncResult>? = null
             if (chemistId != null) {
                 Timber.tag(TAG).d("📊 Starting Wholesalers sync")
@@ -306,7 +350,8 @@ class DataSyncWorker(
             // Check overall success (if at least one succeeded)
             if (drugsResult.isSuccess || cosmeticsResult.isSuccess || fmcgResult.isSuccess ||
                 devicesResult.isSuccess || supplementsResult.isSuccess || surgicalResult.isSuccess ||
-                (chemistProductsResult?.isSuccess == true) || (wholesalersResult?.isSuccess == true)) {
+                (chemistProductsResult?.isSuccess == true) || (batchStockResult?.isSuccess == true) ||
+                (wholesalersResult?.isSuccess == true)) {
                 
                 // Save sync metadata
                 try {
@@ -333,6 +378,7 @@ class DataSyncWorker(
                     ?: fmcgResult.exceptionOrNull() ?: devicesResult.exceptionOrNull()
                     ?: supplementsResult.exceptionOrNull() ?: surgicalResult.exceptionOrNull()
                     ?: chemistProductsResult?.exceptionOrNull()
+                    ?: batchStockResult?.exceptionOrNull()
                     ?: wholesalersResult?.exceptionOrNull()
                 Timber.tag(TAG).e(error, "❌ All syncs failed")
                 Result.retry()

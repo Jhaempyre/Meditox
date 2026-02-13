@@ -13,6 +13,7 @@ import com.example.meditox.database.entity.GlobalMedicalDeviceEntity
 import com.example.meditox.database.entity.GlobalSupplementEntity
 import com.example.meditox.database.entity.GlobalSurgicalConsumableEntity
 import com.example.meditox.database.entity.WholesalerEntity
+import com.example.meditox.database.entity.ChemistBatchStockEntity
 import timber.log.Timber
 import com.example.meditox.database.dao.*
 
@@ -25,10 +26,11 @@ import com.example.meditox.database.dao.*
         GlobalSupplementEntity::class,
         GlobalSurgicalConsumableEntity::class,
         ChemistProductMasterEntity::class,
-        WholesalerEntity::class
+        WholesalerEntity::class,
+        ChemistBatchStockEntity::class
 
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class MeditoxDatabase : RoomDatabase() {
@@ -41,6 +43,7 @@ abstract class MeditoxDatabase : RoomDatabase() {
     abstract fun globalSurgicalConsumableDao(): GlobalSurgicalConsumableDao
     abstract fun chemistProductMasterDao(): ChemistProductMasterDao
     abstract fun wholesalerDao(): WholesalerDao
+    abstract fun chemistBatchStockDao(): ChemistBatchStockDao
     
     companion object {
         @Volatile
