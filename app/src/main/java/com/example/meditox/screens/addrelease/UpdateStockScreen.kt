@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -60,9 +61,9 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    containerColor = primaryGreen,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
                 )
             )
         },
@@ -133,7 +134,7 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                         border = if (selectedCategory == null) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)) else null
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Search,
+                            imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = "Filter",
                             modifier = Modifier.size(16.dp)
                         )
@@ -228,7 +229,7 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                     items(filteredProducts, key = { it.chemistProductId }) { product ->
                         ProductListItem(product = product)
                         HorizontalDivider(
-                            color = Color(0xFFE0E0E0), // Darker separator
+                            color = Color(0xFFE0E0E0),
                             thickness = 0.5.dp,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
@@ -245,6 +246,7 @@ private fun ProductListItem(product: ProductUiModel) {
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
+            .clickable { /* Handle click if needed later */ }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -268,13 +270,28 @@ private fun ProductListItem(product: ProductUiModel) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Generic Name
             Text(
                 text = product.genericName,
                 fontSize = 12.sp,
                 color = Color.Gray
+            )
+        }
+
+        // Category Badge
+        Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = primaryGreen.copy(alpha = 0.1f),
+            modifier = Modifier.padding(start = 8.dp)
+        ) {
+            Text(
+                text = product.category,
+                fontSize = 11.sp,
+                color = primaryGreen,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
         }
     }
