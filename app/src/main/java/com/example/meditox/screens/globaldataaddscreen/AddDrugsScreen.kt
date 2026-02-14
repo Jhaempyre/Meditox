@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -264,7 +265,7 @@ private fun DrugFormContent(
                 onValueChange = { onFormUpdate { form -> form.copy(strengthValue = it) } },
                 label = "Strength *",
                 modifier = Modifier.weight(1f),
-                keyboardType = KeyboardType.Decimal
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
             FormTextField(
                 value = formState.strengthUnit,
@@ -316,14 +317,17 @@ private fun DrugFormContent(
                 value = formState.baseUnit,
                 onValueChange = { onFormUpdate { form -> form.copy(baseUnit = it) } },
                 label = "Base Unit",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters
+                )
             )
             FormTextField(
                 value = formState.unitsPerPack,
                 onValueChange = { onFormUpdate { form -> form.copy(unitsPerPack = it) } },
                 label = "Units/Pack",
                 modifier = Modifier.weight(1f),
-                keyboardType = KeyboardType.Number
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         }
 
@@ -351,7 +355,7 @@ private fun DrugFormContent(
             value = formState.gst,
             onValueChange = { onFormUpdate { form -> form.copy(gst = it) } },
             label = "GST % *",
-            keyboardType = KeyboardType.Decimal
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
         )
 
         // Boolean Switches
@@ -439,7 +443,7 @@ private fun FormTextField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     OutlinedTextField(
         value = value,
@@ -447,7 +451,7 @@ private fun FormTextField(
         label = { Text(label) },
         modifier = modifier.fillMaxWidth(),
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        keyboardOptions = keyboardOptions,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = primaryGreen,
             focusedLabelColor = primaryGreen,
