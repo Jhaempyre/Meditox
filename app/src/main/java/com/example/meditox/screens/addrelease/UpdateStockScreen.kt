@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,7 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
     val isLoading by viewModel.isLoading.collectAsState()
     val isAddingStock by addStockViewModel.isLoading.collectAsState()
     val addStockResult by addStockViewModel.resultMessage.collectAsState()
-    val addStockSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val addStockSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var showAddStockSheet by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<ProductUiModel?>(null) }
     val wholesalerName by produceState<String?>(initialValue = null, wholesalerId) {
@@ -408,26 +409,30 @@ private fun AddStockBottomSheet(
         val fieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = primaryGreen,
             unfocusedBorderColor = primaryGreen,
+            disabledBorderColor = Color.White,
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
             focusedLabelColor = Color.Black,
             unfocusedLabelColor = Color.Black,
-            disabledTextColor = Color.Black,
-            disabledLabelColor = Color.Black,
+            disabledTextColor = primaryGreen,
+            disabledLabelColor = primaryGreen,
             cursorColor = Color.Black
         )
+        val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+        val sheetMaxHeight = screenHeight * 0.75f
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(sheetMaxHeight)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = "Add Stock",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.Black
+                color = primaryGreen
             )
 
             OutlinedTextField(
@@ -540,7 +545,7 @@ private fun AddStockBottomSheet(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primaryGreen),
                 enabled = !isLoading
             ) {
@@ -552,7 +557,11 @@ private fun AddStockBottomSheet(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text(if (isLoading) "Adding..." else "Add Stock", fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isLoading) "Adding..." else "Add Stock",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             if (result != null && !result.isSuccess) {
