@@ -15,3 +15,4 @@ data class AddStockResponse(
     val expiryDate: String,
     val addedAt: String
 )
+
