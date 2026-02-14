@@ -223,7 +223,7 @@ data class DrugFormState(
     val manufacturer: String = "",
     val strengthValue: String = "",
     val strengthUnit: String = "mg",
-    val baseUnit: String = "Tablet",
+    val baseUnit: String = "TABLET",
     val unitsPerPack: String = "10",
     val hsnCode: String = "3004",
     val regulatoryAuthority: String = "CDSCO",
