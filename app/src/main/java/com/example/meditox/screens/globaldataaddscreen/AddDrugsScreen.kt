@@ -325,7 +325,7 @@ private fun DrugFormContent(
             FormTextField(
                 value = formState.unitsPerPack,
                 onValueChange = { onFormUpdate { form -> form.copy(unitsPerPack = it) } },
-                label = "Units/Pack",
+                label = "Tablets/Strip",
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )

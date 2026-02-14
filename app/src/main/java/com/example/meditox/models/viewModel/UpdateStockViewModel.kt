@@ -14,7 +14,8 @@ data class ProductUiModel(
     val name: String,
     val strength: String,   // e.g. "500 mg" for drugs, "..." for others
     val genericName: String, // e.g. "Paracetamol" for drugs, "..." for others
-    val category: String
+    val category: String,
+    val dosageForm: String? = null // e.g. "TABLET", "CAPSULE" — only for Drug products
 )
 
 class UpdateStockViewModel(context: Context) : ViewModel() {
@@ -112,7 +113,8 @@ class UpdateStockViewModel(context: Context) : ViewModel() {
                                     name = it.brandName,
                                     strength = "${it.strengthValue} ${it.strengthUnit}",
                                     genericName = it.genericName.ifBlank { "..." },
-                                    category = "Drug"
+                                    category = "Drug",
+                                    dosageForm = it.dosageForm
                                 )
                             }
                         }

@@ -33,11 +33,15 @@ import com.example.meditox.database.MeditoxDatabase
 import com.example.meditox.enums.StockMonth
 import com.example.meditox.enums.StockYear
 import com.example.meditox.models.chemist.AddStockRequest
+import com.example.meditox.models.chemist.AddTabletStockRequest
 import com.example.meditox.models.viewModel.AddStockViewModel
 import com.example.meditox.models.viewModel.AddStockResult
 import com.example.meditox.models.viewModel.ProductUiModel
 import com.example.meditox.models.viewModel.UpdateStockViewModel
 import com.example.meditox.ui.theme.primaryGreen
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +59,10 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
     val isLoading by viewModel.isLoading.collectAsState()
     val isAddingStock by addStockViewModel.isLoading.collectAsState()
     val addStockResult by addStockViewModel.resultMessage.collectAsState()
-    val addStockSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val addStockSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { it != SheetValue.PartiallyExpanded }
+    )
     var showAddStockSheet by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<ProductUiModel?>(null) }
     val wholesalerName by produceState<String?>(initialValue = null, wholesalerId) {
@@ -94,6 +101,7 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
         containerColor = Color.White
     ) { paddingValues ->
         if (showAddStockSheet && selectedProduct != null) {
+            val isTabletOrCapsule = selectedProduct!!.dosageForm?.uppercase() in listOf("TABLET", "CAPSULE")
             AddStockBottomSheet(
                 sheetState = addStockSheetState,
                 product = selectedProduct!!,
@@ -101,12 +109,16 @@ fun UpdateStockScreen(navController: NavController, wholesalerId: Long) {
                 wholesalerName = wholesalerName,
                 isLoading = isAddingStock,
                 result = addStockResult,
+                isTabletOrCapsule = isTabletOrCapsule,
                 onDismiss = {
                     addStockViewModel.clearResultMessage()
                     showAddStockSheet = false
                 },
-                onSubmit = { request ->
+                onSubmitGeneric = { request ->
                     addStockViewModel.addStock(selectedProduct!!, request)
+                },
+                onSubmitTablet = { request ->
+                    addStockViewModel.addTabletStock(selectedProduct!!, request)
                 },
                 onSuccess = {
                     Toast.makeText(context, "Stock added successfully", Toast.LENGTH_SHORT).show()
@@ -361,12 +373,16 @@ private fun AddStockBottomSheet(
     wholesalerName: String?,
     isLoading: Boolean,
     result: AddStockResult?,
+    isTabletOrCapsule: Boolean,
     onDismiss: () -> Unit,
-    onSubmit: (AddStockRequest) -> Unit,
+    onSubmitGeneric: (AddStockRequest) -> Unit,
+    onSubmitTablet: (AddTabletStockRequest) -> Unit,
     onSuccess: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+
     var batchNumber by remember { mutableStateOf("") }
-    var quantity by remember { mutableStateOf("") }
+    var quantity by remember { mutableStateOf("") }  // used as "quantity" or "numberOfStrips"
     var purchasePrice by remember { mutableStateOf("") }
     var mrp by remember { mutableStateOf("") }
     var sellingPrice by remember { mutableStateOf("") }
@@ -399,6 +415,21 @@ private fun AddStockBottomSheet(
         }
     }
 
+    LaunchedEffect(Unit) {
+        sheetState.expand()
+    }
+
+    LaunchedEffect(sheetState) {
+        snapshotFlow { sheetState.currentValue }
+            .filter { it == SheetValue.PartiallyExpanded }
+            .collectLatest {
+                scope.launch {
+                    sheetState.hide()
+                    onDismiss()
+                }
+            }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -429,7 +460,7 @@ private fun AddStockBottomSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Add Stock",
+                text = if (isTabletOrCapsule) "Add Strip Stock" else "Add Stock",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = primaryGreen
@@ -467,7 +498,7 @@ private fun AddStockBottomSheet(
             OutlinedTextField(
                 value = quantity,
                 onValueChange = { quantity = it },
-                label = { Text("Quantity") },
+                label = { Text(if (isTabletOrCapsule) "Number of Strips" else "Quantity") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = fieldShape,
@@ -477,7 +508,7 @@ private fun AddStockBottomSheet(
             OutlinedTextField(
                 value = purchasePrice,
                 onValueChange = { purchasePrice = it },
-                label = { Text("Purchase Price") },
+                label = { Text(if (isTabletOrCapsule) "Purchase Price Per Strip" else "Purchase Price") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 shape = fieldShape,
@@ -511,7 +542,7 @@ private fun AddStockBottomSheet(
             OutlinedTextField(
                 value = mrp,
                 onValueChange = { mrp = it },
-                label = { Text("MRP") },
+                label = { Text(if (isTabletOrCapsule) "MRP Per Strip" else "MRP") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 shape = fieldShape,
@@ -521,7 +552,7 @@ private fun AddStockBottomSheet(
             OutlinedTextField(
                 value = sellingPrice,
                 onValueChange = { sellingPrice = it },
-                label = { Text("Selling Price") },
+                label = { Text(if (isTabletOrCapsule) "Selling Price Per Strip" else "Selling Price") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 shape = fieldShape,
@@ -530,18 +561,33 @@ private fun AddStockBottomSheet(
 
             Button(
                 onClick = {
-                    val request = AddStockRequest(
-                        chemistProductId = product.chemistProductId,
-                        wholesalerId = wholesalerId,
-                        batchNumber = batchNumber.ifBlank { null },
-                        quantity = quantity.toIntOrNull() ?: 0,
-                        purchasePrice = purchasePrice.toBigDecimalOrNull(),
-                        expiryDate = formatDateForRequest(expDay, expMonth, expYear),
-                        mfgDate = formatDateForRequest(mfgDay, mfgMonth, mfgYear),
-                        mrp = mrp.toBigDecimalOrNull(),
-                        sellingPrice = sellingPrice.toBigDecimalOrNull()
-                    )
-                    onSubmit(request)
+                    if (isTabletOrCapsule) {
+                        val request = AddTabletStockRequest(
+                            chemistProductId = product.chemistProductId,
+                            wholesalerId = wholesalerId,
+                            batchNumber = batchNumber.ifBlank { null },
+                            numberOfStrips = quantity.toIntOrNull() ?: 0,
+                            purchasePricePerStrip = purchasePrice.toBigDecimalOrNull(),
+                            sellingPricePerStrip = sellingPrice.toBigDecimalOrNull(),
+                            mrpPerStrip = mrp.toBigDecimalOrNull(),
+                            expiryDate = formatDateForRequest(expDay, expMonth, expYear),
+                            mfgDate = formatDateForRequest(mfgDay, mfgMonth, mfgYear)
+                        )
+                        onSubmitTablet(request)
+                    } else {
+                        val request = AddStockRequest(
+                            chemistProductId = product.chemistProductId,
+                            wholesalerId = wholesalerId,
+                            batchNumber = batchNumber.ifBlank { null },
+                            quantity = quantity.toIntOrNull() ?: 0,
+                            purchasePrice = purchasePrice.toBigDecimalOrNull(),
+                            expiryDate = formatDateForRequest(expDay, expMonth, expYear),
+                            mfgDate = formatDateForRequest(mfgDay, mfgMonth, mfgYear),
+                            mrp = mrp.toBigDecimalOrNull(),
+                            sellingPrice = sellingPrice.toBigDecimalOrNull()
+                        )
+                        onSubmitGeneric(request)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

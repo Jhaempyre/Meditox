@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.meditox.database.MeditoxDatabase
 import com.example.meditox.database.entity.ChemistBatchStockEntity
 import com.example.meditox.models.chemist.AddStockRequest
+import com.example.meditox.models.chemist.AddTabletStockRequest
 import com.example.meditox.models.chemist.AddStockResponse
 import com.example.meditox.services.ApiClient
 import com.example.meditox.utils.DataStoreManager
@@ -85,6 +86,44 @@ class AddStockViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+    fun addTabletStock(product: ProductUiModel, request: AddTabletStockRequest) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _resultMessage.value = null
+
+                val shopDetails = DataStoreManager.getShopDetails(context).first()
+                val chemistId = shopDetails?.chemistId
+
+                if (chemistId == null) {
+                    _resultMessage.value = AddStockResult(false, "Chemist ID not found")
+                    return@launch
+                }
+
+                Log.d(TAG, "Posting add tablet stock (strips) for chemistId=$chemistId")
+                val response = apiService.addTabletStock(chemistId, request)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val data = response.body()?.data
+                    if (data != null) {
+                        batchStockDao.insert(buildEntityFromTabletResponse(chemistId, product, request, data))
+                        _resultMessage.value = AddStockResult(true, "Tablet/Capsule stock added successfully")
+                    } else {
+                        _resultMessage.value = AddStockResult(false, "Empty response from server")
+                    }
+                } else {
+                    val errorMsg = response.body()?.message ?: "Failed to add tablet stock"
+                    Log.e(TAG, "API Error: $errorMsg")
+                    _resultMessage.value = AddStockResult(false, errorMsg)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception adding tablet stock", e)
+                _resultMessage.value = AddStockResult(false, e.message ?: "Unknown error occurred")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     private fun buildEntityFromResponse(
         chemistId: Long,
         product: ProductUiModel,
@@ -107,6 +146,39 @@ class AddStockViewModel(private val context: Context) : ViewModel() {
             purchaseRate = response.purchasePrice?.toDouble(),
             sellingRate = request.sellingPrice?.toDouble(),
             mrp = request.mrp?.toDouble(),
+            manufacturingDate = request.mfgDate,
+            expiryDate = response.expiryDate,
+            receivedDate = null,
+            storageLocation = null,
+            isExpired = null,
+            isNearExpiry = null,
+            createdAt = response.addedAt,
+            updatedAt = response.addedAt
+        )
+    }
+
+    private fun buildEntityFromTabletResponse(
+        chemistId: Long,
+        product: ProductUiModel,
+        request: AddTabletStockRequest,
+        response: AddStockResponse
+    ): ChemistBatchStockEntity {
+        return ChemistBatchStockEntity(
+            batchStockId = response.batchStockId,
+            chemistId = chemistId,
+            chemistProductId = response.chemistProductId,
+            productName = response.productName,
+            productCategory = mapCategory(product.category),
+            wholesalerId = response.wholesalerId,
+            wholesalerName = response.wholesalerName,
+            batchNumber = response.batchNumber,
+            serialNumber = null,
+            quantityInStock = response.totalStock,
+            quantityReserved = 0,
+            quantityDamaged = 0,
+            purchaseRate = request.purchasePricePerStrip?.toDouble(),
+            sellingRate = request.sellingPricePerStrip?.toDouble(),
+            mrp = request.mrpPerStrip?.toDouble(),
             manufacturingDate = request.mfgDate,
             expiryDate = response.expiryDate,
             receivedDate = null,
