@@ -245,53 +245,71 @@ private fun SellItemDetailsSheet(details: SellItemDetails) {
             .fillMaxWidth()
             .heightIn(min = 200.dp, max = 600.dp)
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(24.dp), // Increased padding
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = details.title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black
-        )
-        Surface(
-            color = primaryGreen.copy(alpha = 0.12f),
-            shape = RoundedCornerShape(12.dp)
-        ) {
+        // Header Section
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = details.category,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = primaryGreen,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                text = details.title,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                lineHeight = 28.sp
             )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        details.details.forEach { (label, value) ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+            
+            Surface(
+                color = primaryGreen.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(8.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, primaryGreen.copy(alpha = 0.2f))
             ) {
                 Text(
-                    text = label,
-                    fontSize = 12.sp,
-                    color = Color(0xFF7A7A7A),
-                    modifier = Modifier.weight(0.45f)
-                )
-                Text(
-                    text = value,
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    modifier = Modifier.weight(0.55f)
+                    text = details.category.uppercase(),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryGreen,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    letterSpacing = 1.sp
                 )
             }
-            HorizontalDivider(
-                thickness = 0.5.dp,
-                color = Color(0xFFF0F0F0)
-            )
         }
+
+        HorizontalDivider(thickness = 1.dp, color = Color(0xFFF0F0F0))
+
+        // Details List
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            details.details.forEach { (label, value) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically // Center align for better visual
+                ) {
+                    Text(
+                        text = label,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF757575), // Muted label color
+                        modifier = Modifier.weight(0.4f)
+                    )
+                    Text(
+                        text = value,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold, // Emphasize value
+                        color = Color(0xFF212121), // Darker value color
+                        modifier = Modifier.weight(0.6f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End // Right align values
+                    )
+                }
+                if (label != details.details.last().first) { // Don't show divider after last item
+                     HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = Color(0xFFF5F5F5),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp)) 
     }
 }

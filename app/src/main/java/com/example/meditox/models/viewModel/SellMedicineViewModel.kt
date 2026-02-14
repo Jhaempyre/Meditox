@@ -233,25 +233,13 @@ class SellMedicineViewModel(context: Context) : ViewModel() {
         val details = mutableListOf<Pair<String, String>>()
 
         fun add(label: String, value: String?) {
-            if (!value.isNullOrBlank()) {
+            if (!value.isNullOrBlank() && value != "...") {
                 details.add(label to value)
             }
         }
 
-        fun addBool(label: String, value: Boolean?) {
-            if (value != null) {
-                details.add(label to if (value) "Yes" else "No")
-            }
-        }
-
         fun addInt(label: String, value: Int?) {
-            if (value != null) {
-                details.add(label to value.toString())
-            }
-        }
-
-        fun addLong(label: String, value: Long?) {
-            if (value != null) {
+            if (value != null && value > 0) {
                 details.add(label to value.toString())
             }
         }
@@ -261,186 +249,107 @@ class SellMedicineViewModel(context: Context) : ViewModel() {
                 details.add(label to "%.2f".format(value))
             }
         }
+        
+        fun addPercent(label: String, value: Double?) {
+             if (value != null) {
+                 details.add(label to "%.2f%%".format(value))
+             }
+        }
 
-        // Stock details (batch-level)
-        addLong("Batch Stock ID", stock.batchStockId)
-        addLong("Chemist ID", stock.chemistId)
-        addLong("Chemist Product ID", stock.chemistProductId)
-        add("Product Category", stock.productCategory)
+        // --- Core Stock Details ---
         add("Product Name", stock.productName)
-        addLong("Wholesaler ID", stock.wholesalerId)
-        add("Wholesaler Name", stock.wholesalerName)
-        add("Batch Number", stock.batchNumber)
-        add("Serial Number", stock.serialNumber)
-        addInt("Quantity In Stock", stock.quantityInStock)
-        addInt("Quantity Reserved", stock.quantityReserved)
-        addInt("Quantity Damaged", stock.quantityDamaged)
+        add("Category", stock.productCategory)
+        add("Wholesaler", stock.wholesalerName)
+        add("Batch No", stock.batchNumber)
+        addInt("Stock Quantity", stock.quantityInStock)
+        
+        // --- Pricing ---
         addDouble("Purchase Rate", stock.purchaseRate)
         addDouble("Selling Rate", stock.sellingRate)
         addDouble("MRP", stock.mrp)
-        add("Manufacturing Date", stock.manufacturingDate)
+        
+        // --- Dates ---
+        add("Mfg Date", stock.manufacturingDate)
         add("Expiry Date", stock.expiryDate)
-        add("Received Date", stock.receivedDate)
-        add("Storage Location", stock.storageLocation)
-        addBool("Is Expired", stock.isExpired)
-        addBool("Is Near Expiry", stock.isNearExpiry)
-        add("Created At", stock.createdAt)
-        add("Updated At", stock.updatedAt)
 
-        // Master details
-        addLong("Global Product ID", master?.globalProductId)
-        addInt("Minimum Stock Level", master?.minimumStockLevel)
-        addInt("Maximum Stock Level", master?.maximumStockLevel)
-        addInt("Reorder Quantity", master?.reorderQuantity)
-        addBool("Is Active (Master)", master?.isActive)
-        add("Master Updated At", master?.updatedAt)
-
-        // Global details by category
+        // --- Global Details by Category ---
         when (category.uppercase()) {
             "DRUG" -> {
-                addLong("Global Drug ID", drug?.globalDrugId)
                 add("Brand Name", drug?.brandName)
                 add("Generic Name", drug?.genericName)
                 add("Manufacturer", drug?.manufacturer)
-                add("System of Medicine", drug?.systemOfMedicine)
+                add("System of Med", drug?.systemOfMedicine)
                 add("Dosage Form", drug?.dosageForm)
-                add("Strength Value", drug?.strengthValue)
-                add("Strength Unit", drug?.strengthUnit)
-                add("Route of Administration", drug?.routeOfAdministration)
-                add("Base Unit", drug?.baseUnit)
-                addInt("Units Per Pack", drug?.unitsPerPack)
-                addBool("Loose Sale Allowed", drug?.isLooseSaleAllowed)
-                add("Drug Schedule", drug?.drugSchedule)
-                addBool("Prescription Required", drug?.prescriptionRequired)
-                addBool("Narcotic Drug", drug?.narcoticDrug)
-                add("Regulatory Authority", drug?.regulatoryAuthority)
-                add("HSN Code", drug?.hsnCode)
-                addDouble("GST", drug?.gst)
-                addBool("Verified", drug?.verified)
-                addLong("Created By Chemist ID", drug?.createdByChemistId)
-                add("Created At", drug?.createdAt)
-                addBool("Is Active", drug?.isActive)
-                add("Image URL", drug?.imageUrl)
-                add("Description", drug?.description)
-                add("Advice", drug?.advice)
+                
+                val strength = if (drug?.strengthValue != null && drug.strengthUnit != null) 
+                    "${drug.strengthValue} ${drug.strengthUnit}" else null
+                add("Strength", strength)
+                
+                add("Route", drug?.routeOfAdministration)
+                addPercent("GST", drug?.gst)
+                add("Schedule", drug?.drugSchedule)
             }
             "COSMETIC" -> {
-                addLong("Global Cosmetic ID", cosmetic?.globalCosmeticId)
-                add("Product Name", cosmetic?.productName)
                 add("Brand", cosmetic?.brand)
                 add("Manufacturer", cosmetic?.manufacturer)
                 add("Form", cosmetic?.form)
                 add("Variant", cosmetic?.variant)
-                add("Base Unit", cosmetic?.baseUnit)
-                addInt("Units Per Pack", cosmetic?.unitsPerPack)
                 add("Intended Use", cosmetic?.intendedUse)
                 add("Skin Type", cosmetic?.skinType)
-                add("Cosmetic License Number", cosmetic?.cosmeticLicenseNumber)
-                add("HSN Code", cosmetic?.hsnCode)
                 add("GST Rate", cosmetic?.gstRate)
-                addBool("Verified", cosmetic?.verified)
-                addLong("Created By Chemist ID", cosmetic?.createdByChemistId)
-                add("Created At", cosmetic?.createdAt)
-                add("Updated At", cosmetic?.updatedAt)
-                addBool("Is Active", cosmetic?.isActive)
-                add("Image URL", cosmetic?.imageUrl)
-                add("Description", cosmetic?.description)
-                add("Advice", cosmetic?.advice)
             }
             "FMCG", "GENERAL_FMCG" -> {
-                addLong("Global FMCG ID", fmcg?.globalFmcgId)
-                add("Product Name", fmcg?.productName)
                 add("Brand", fmcg?.brand)
                 add("Manufacturer", fmcg?.manufacturer)
                 add("Category Label", fmcg?.categoryLabel)
-                add("Base Unit", fmcg?.baseUnit)
-                addInt("Units Per Pack", fmcg?.unitsPerPack)
-                add("HSN Code", fmcg?.hsnCode)
                 add("GST Rate", fmcg?.gstRate)
-                addBool("Verified", fmcg?.verified)
-                addLong("Created By Chemist ID", fmcg?.createdByChemistId)
-                add("Created At", fmcg?.createdAt)
-                add("Updated At", fmcg?.updatedAt)
-                addBool("Is Active", fmcg?.isActive)
-                add("Image URL", fmcg?.imageUrl)
-                add("Description", fmcg?.description)
-                add("Advice", fmcg?.advice)
             }
             "MEDICAL_DEVICE" -> {
-                addLong("Global Device ID", device?.globalDeviceId)
-                add("Product Name", device?.productName)
                 add("Brand", device?.brand)
                 add("Manufacturer", device?.manufacturer)
-                add("Model Number", device?.modelNumber)
+                add("Model No", device?.modelNumber)
                 add("Device Type", device?.deviceType)
-                add("Base Unit", device?.baseUnit)
-                addInt("Units Per Pack", device?.unitsPerPack)
-                addBool("Reusable", device?.reusable)
-                add("Medical Device Class", device?.medicalDeviceClass)
-                add("Certification", device?.certification)
-                addInt("Warranty Months", device?.warrantyMonths)
-                add("HSN Code", device?.hsnCode)
+                add("Class", device?.medicalDeviceClass)
+                add("Usage", if (device?.reusable == true) "Reusable" else "Single Use")
                 add("GST Rate", device?.gstRate)
-                addBool("Verified", device?.verified)
-                addLong("Created By Chemist ID", device?.createdByChemistId)
-                add("Created At", device?.createdAt)
-                add("Updated At", device?.updatedAt)
-                addBool("Is Active", device?.isActive)
-                add("Image URL", device?.imageUrl)
-                add("Description", device?.description)
-                add("Advice", device?.advice)
             }
             "SUPPLEMENT" -> {
-                addLong("Global Supplement ID", supplement?.globalSupplementId)
-                add("Product Name", supplement?.productName)
                 add("Brand", supplement?.brand)
                 add("Manufacturer", supplement?.manufacturer)
-                add("Supplement Type", supplement?.supplementType)
-                add("Composition Summary", supplement?.compositionSummary)
+                add("Type", supplement?.supplementType)
+                add("Composition", supplement?.compositionSummary)
                 add("Age Group", supplement?.ageGroup)
-                add("Base Unit", supplement?.baseUnit)
-                addInt("Units Per Pack", supplement?.unitsPerPack)
-                addBool("Loose Sale Allowed", supplement?.isLooseSaleAllowed)
-                add("FSSAI License", supplement?.fssaiLicense)
-                add("HSN Code", supplement?.hsnCode)
+                add("FSSAI", supplement?.fssaiLicense)
                 add("GST Rate", supplement?.gstRate)
-                addBool("Verified", supplement?.verified)
-                addLong("Created By Chemist ID", supplement?.createdByChemistId)
-                add("Created At", supplement?.createdAt)
-                add("Updated At", supplement?.updatedAt)
-                addBool("Is Active", supplement?.isActive)
-                add("Image URL", supplement?.imageUrl)
-                add("Description", supplement?.description)
-                add("Advice", supplement?.advice)
             }
             "SURGICAL", "SURGICAL_CONSUMABLE" -> {
-                addLong("Global Surgical ID", surgical?.globalSurgicalId)
-                add("Product Name", surgical?.productName)
                 add("Brand", surgical?.brand)
                 add("Manufacturer", surgical?.manufacturer)
                 add("Material", surgical?.material)
-                add("Base Unit", surgical?.baseUnit)
-                addInt("Units Per Pack", surgical?.unitsPerPack)
-                addBool("Sterile", surgical?.sterile)
-                addBool("Disposable", surgical?.disposable)
-                add("Intended Use", surgical?.intendedUse)
-                add("Size Specification", surgical?.sizeSpecification)
-                add("HSN Code", surgical?.hsnCode)
+                add("Size", surgical?.sizeSpecification)
+                add("Usage", if (surgical?.disposable == true) "Disposable" else "Reusable")
+                add("Sterile", if (surgical?.sterile == true) "Yes" else "No")
                 add("GST Rate", surgical?.gstRate)
-                addBool("Verified", surgical?.verified)
-                addLong("Created By Chemist ID", surgical?.createdByChemistId)
-                add("Created At", surgical?.createdAt)
-                add("Updated At", surgical?.updatedAt)
-                addBool("Is Active", surgical?.isActive)
-                add("Image URL", surgical?.imageUrl)
-                add("Description", surgical?.description)
-                add("Advice", surgical?.advice)
             }
         }
+        
+        // --- Pack Info (Common if available) ---
+        // Using "unitsPerPack" from relevant entity
+        val packSize = when(category.uppercase()) {
+             "DRUG" -> drug?.unitsPerPack
+             "COSMETIC" -> cosmetic?.unitsPerPack
+             "FMCG", "GENERAL_FMCG" -> fmcg?.unitsPerPack
+             "MEDICAL_DEVICE" -> device?.unitsPerPack
+             "SUPPLEMENT" -> supplement?.unitsPerPack
+             "SURGICAL", "SURGICAL_CONSUMABLE" -> surgical?.unitsPerPack
+             else -> null
+        }
+        if (packSize != null && packSize > 1) {
+             add("Pack Size", "$packSize Units")
+        }
 
-        val title = stock.productName
         return SellItemDetails(
-            title = title,
+            title = stock.productName,
             category = category,
             details = details
         )
