@@ -12,6 +12,7 @@ import com.example.meditox.models.chemist.AddTabletStockRequest
 import com.example.meditox.models.chemist.AddStockResponse
 import com.example.meditox.services.ApiClient
 import com.example.meditox.utils.DataStoreManager
+import com.example.meditox.utils.SyncPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,6 +69,9 @@ class AddStockViewModel(private val context: Context) : ViewModel() {
                     val data = response.body()?.data
                     if (data != null) {
                         batchStockDao.insert(buildEntityFromResponse(chemistId, product, request, data))
+                        // Update sync stats
+                        val currentCount = SyncPreferences.getTotalSyncedRecords(context).first() ?: 0L
+                        SyncPreferences.setTotalSyncedRecords(context, currentCount + 1)
                         _resultMessage.value = AddStockResult(true, "Stock added successfully")
                     } else {
                         _resultMessage.value = AddStockResult(false, "Empty response from server")
@@ -106,6 +110,9 @@ class AddStockViewModel(private val context: Context) : ViewModel() {
                     val data = response.body()?.data
                     if (data != null) {
                         batchStockDao.insert(buildEntityFromTabletResponse(chemistId, product, request, data))
+                        // Update sync stats
+                        val currentCount = SyncPreferences.getTotalSyncedRecords(context).first() ?: 0L
+                        SyncPreferences.setTotalSyncedRecords(context, currentCount + 1)
                         _resultMessage.value = AddStockResult(true, "Tablet/Capsule stock added successfully")
                     } else {
                         _resultMessage.value = AddStockResult(false, "Empty response from server")
